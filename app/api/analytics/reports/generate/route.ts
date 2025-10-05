@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         },
         include: {
           client: true,
-          assignedUser: true,
+          assignedTo: true,
           documents: hasDocumentFields,
           timeEntries: hasTimeFields,
           invoices: hasInvoiceFields,
