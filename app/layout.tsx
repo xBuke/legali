@@ -4,6 +4,7 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from './providers'
+import { ResponsiveProvider } from './responsive-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,14 +21,16 @@ export default function RootLayout({
   return (
     <html lang="hr" suppressHydrationWarning>
       <body className={inter.className}>
-        <AuthProvider>
-          <ThemeProvider
-            defaultTheme="system"
-          >
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </AuthProvider>
+        <ResponsiveProvider>
+          <AuthProvider>
+            <ThemeProvider
+              defaultTheme="system"
+            >
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </AuthProvider>
+        </ResponsiveProvider>
       </body>
     </html>
   )

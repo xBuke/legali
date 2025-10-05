@@ -47,6 +47,8 @@ model Organization {
   payments          Payment[]
   auditLogs         AuditLog[]
   apiKeys           ApiKey[]
+  caseTimeline      CaseTimeline[]
+  caseDeadlines     CaseDeadline[]
   
   @@index([stripeCustomerId])
   @@map("organizations")
@@ -90,6 +92,9 @@ model User {
   auditLogs         AuditLog[]
   payments          Payment[]
   sessions          Session[]
+  caseTimeline      CaseTimeline[]
+  caseDeadlinesAssigned CaseDeadline[] @relation("DeadlineAssignedTo")
+  caseDeadlinesCreated  CaseDeadline[] @relation("DeadlineCreatedBy")
   
   @@index([organizationId])
   @@map("users")
@@ -211,6 +216,8 @@ model Case {
   timeEntries       TimeEntry[]
   tasks             Task[]
   notes             Note[]
+  timeline          CaseTimeline[]
+  deadlines         CaseDeadline[]
   
   @@unique([organizationId, caseNumber])
   @@index([organizationId])
@@ -441,6 +448,70 @@ model Note {
   
   @@index([caseId])
   @@map("notes")
+}
+
+model CaseTimeline {
+  id                String   @id @default(cuid())
+  
+  // Event details
+  type              String   // CREATED, STATUS_CHANGED, DOCUMENT_ADDED, HEARING_SCHEDULED, NOTE_ADDED, TASK_CREATED, TASK_COMPLETED, ASSIGNED, UNASSIGNED
+  title             String
+  description       String?
+  
+  // Metadata
+  metadata          String?  // JSON string for additional data
+  
+  caseId            String
+  case              Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  
+  createdById       String
+  createdBy         User     @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  createdAt         DateTime @default(now())
+  
+  @@index([caseId])
+  @@index([organizationId])
+  @@index([createdAt])
+  @@map("case_timeline")
+}
+
+model CaseDeadline {
+  id                String   @id @default(cuid())
+  
+  // Deadline details
+  title             String
+  description       String?
+  dueDate           DateTime
+  type              String   // hearing, filing, response, custom
+  priority          String   // low, medium, high, urgent
+  status            String   @default("pending") // pending, completed, overdue
+  
+  // Assignment
+  assignedToId      String?
+  assignedTo        User?    @relation("DeadlineAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  
+  // Relations
+  caseId            String
+  case              Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  
+  createdById       String
+  createdBy         User     @relation("DeadlineCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  completedAt       DateTime?
+  
+  @@index([caseId])
+  @@index([organizationId])
+  @@index([dueDate])
+  @@index([status])
+  @@map("case_deadlines")
 }
 
 // ============================================

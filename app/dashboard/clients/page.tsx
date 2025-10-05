@@ -431,7 +431,7 @@ export default function ClientsPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4 md:mx-0">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingClient ? 'Uredi klijenta' : 'Dodaj novog klijenta'}

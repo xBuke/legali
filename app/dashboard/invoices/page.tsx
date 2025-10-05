@@ -343,7 +343,7 @@ export default function InvoicesPage() {
                 Novi račun
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto mx-4 md:mx-0">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Novi račun</DialogTitle>
               <DialogDescription>

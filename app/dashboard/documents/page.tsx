@@ -511,7 +511,7 @@ export default function DocumentsPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4 md:mx-0">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingDocument ? 'Uredi dokument' : 'Dodaj novi dokument'}

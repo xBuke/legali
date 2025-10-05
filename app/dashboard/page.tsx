@@ -202,10 +202,10 @@ export default function DashboardPage() {
   return (
     <div className="space-y-4 md:space-y-6 w-full container-overflow-fix">
       <div className="w-full">
-        <h1 className="text-2xl md:text-3xl font-bold">
+        <h1 className="text-2xl md:text-3xl font-bold laptop-heading">
           Dobrodošli, {session?.user?.name?.split(' ')[0] || 'korisniče'}!
         </h1>
-        <p className="text-muted-foreground mt-1 text-sm md:text-base">
+        <p className="text-muted-foreground mt-1 text-sm md:text-base laptop-text">
           Evo pregleda vaše kancelarije
         </p>
       </div>
@@ -281,9 +281,9 @@ export default function DashboardPage() {
         ].map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.name} className="p-3 md:p-6 w-full grid-overflow-fix">
+            <Card key={stat.name} className="p-3 md:p-6 w-full grid-overflow-fix card-laptop">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0">
-                <CardTitle className="text-xs md:text-sm font-medium leading-tight text-responsive-truncate pr-2">
+                <CardTitle className="text-xs md:text-sm font-medium leading-tight text-responsive-truncate pr-2 laptop-text">
                   {stat.name}
                 </CardTitle>
                 <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -296,7 +296,7 @@ export default function DashboardPage() {
                     {stat.percentage}%
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground leading-tight text-responsive-truncate">
+                <p className="text-xs text-muted-foreground leading-tight text-responsive-truncate laptop-text">
                   {stat.description}
                 </p>
               </CardContent>

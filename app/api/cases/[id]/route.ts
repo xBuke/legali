@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { createStatusChangedEvent, createAssignmentEvent, createHearingScheduledEvent } from '@/lib/case-timeline'
 
 // GET /api/cases/[id] - Get single case
 export async function GET(
@@ -85,6 +86,22 @@ export async function PATCH(
 
     const body = await request.json()
 
+    // Get current case data to compare changes
+    const currentCase = await db.case.findFirst({
+      where: {
+        id: params.id,
+        organizationId: session.user.organizationId,
+        deletedAt: null,
+      },
+    })
+
+    if (!currentCase) {
+      return NextResponse.json(
+        { error: 'Predmet nije pronađen' },
+        { status: 404 }
+      )
+    }
+
     // Handle empty date strings - convert to null for Prisma
     const processedBody = {
       ...body,
@@ -110,6 +127,56 @@ export async function PATCH(
         { error: 'Predmet nije pronađen' },
         { status: 404 }
       )
+    }
+
+    // Create timeline events for changes
+    try {
+      // Status change
+      if (body.status && body.status !== currentCase.status) {
+        await createStatusChangedEvent(
+          params.id,
+          currentCase.caseNumber,
+          currentCase.status,
+          body.status,
+          session.user.id,
+          session.user.organizationId
+        )
+      }
+
+      // Assignment change
+      if (body.assignedToId !== currentCase.assignedToId) {
+        let assignedToName = null
+        if (body.assignedToId) {
+          const assignedUser = await db.user.findFirst({
+            where: { id: body.assignedToId },
+            select: { firstName: true, lastName: true },
+          })
+          assignedToName = assignedUser ? `${assignedUser.firstName} ${assignedUser.lastName}`.trim() : null
+        }
+
+        await createAssignmentEvent(
+          params.id,
+          currentCase.caseNumber,
+          body.assignedToId,
+          assignedToName,
+          session.user.id,
+          session.user.organizationId
+        )
+      }
+
+      // Hearing date change
+      if (body.nextHearingDate && body.nextHearingDate !== currentCase.nextHearingDate?.toISOString()) {
+        await createHearingScheduledEvent(
+          params.id,
+          currentCase.caseNumber,
+          new Date(body.nextHearingDate),
+          session.user.id,
+          session.user.organizationId
+        )
+      }
+    } catch (timelineError) {
+      console.error('Error creating timeline events:', timelineError)
+      // Don't fail the update if timeline events fail
     }
 
     return NextResponse.json({ success: true })

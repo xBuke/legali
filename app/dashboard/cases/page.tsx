@@ -34,6 +34,11 @@ import { Plus, Briefcase, Pencil, Trash2, Eye, Calendar, AlertCircle } from 'luc
 import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
+import { CaseSearchFilters, CaseFilters } from '@/components/cases/case-search-filters'
+import { CaseViewSelector, CaseViewMode } from '@/components/cases/case-view-selector'
+import { CaseKanbanBoard } from '@/components/cases/case-kanban-board'
+import { CaseCard } from '@/components/cases/case-card'
+import { VirtualizedCasesTable } from '@/components/cases/virtualized-cases-table'
 
 type Case = {
   id: string
@@ -74,9 +79,20 @@ type Client = {
 export default function CasesPage() {
   const [cases, setCases] = useState<Case[]>([])
   const [clients, setClients] = useState<Client[]>([])
+  const [users, setUsers] = useState<Array<{ id: string; firstName?: string; lastName?: string }>>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingCase, setEditingCase] = useState<Case | null>(null)
+  const [viewMode, setViewMode] = useState<CaseViewMode>('table')
+  const [filters, setFilters] = useState<CaseFilters>({
+    search: '',
+    status: [],
+    priority: [],
+    caseType: [],
+    client: [],
+    assignedTo: [],
+    dateRange: { from: null, to: null },
+  })
   const { toast } = useToast()
 
   const [formData, setFormData] = useState({
@@ -96,6 +112,7 @@ export default function CasesPage() {
   useEffect(() => {
     fetchCases()
     fetchClients()
+    fetchUsers()
   }, [])
 
   async function fetchCases() {
@@ -125,6 +142,18 @@ export default function CasesPage() {
       }
     } catch (error) {
       console.error('Error fetching clients:', error)
+    }
+  }
+
+  async function fetchUsers() {
+    try {
+      const response = await fetch('/api/users')
+      if (response.ok) {
+        const data = await response.json()
+        setUsers(data)
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error)
     }
   }
 
@@ -194,6 +223,32 @@ export default function CasesPage() {
     }
   }
 
+  async function handleStatusChange(caseId: string, newStatus: string) {
+    try {
+      const response = await fetch(`/api/cases/${caseId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (response.ok) {
+        toast({
+          title: 'Uspjeh',
+          description: 'Status predmeta uspješno ažuriran',
+        })
+        fetchCases()
+      } else {
+        throw new Error()
+      }
+    } catch (error) {
+      toast({
+        title: 'Greška',
+        description: 'Nije moguće ažurirati status predmeta',
+        variant: 'destructive',
+      })
+    }
+  }
+
   function openEditDialog(caseData: Case) {
     setEditingCase(caseData)
     setFormData({
@@ -235,6 +290,59 @@ export default function CasesPage() {
     }
     return `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Bez imena'
   }
+
+  // Filter cases based on current filters
+  const filteredCases = cases.filter(caseData => {
+    // Search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase()
+      const matchesSearch = 
+        caseData.caseNumber.toLowerCase().includes(searchLower) ||
+        caseData.title.toLowerCase().includes(searchLower) ||
+        getClientName(caseData.client).toLowerCase().includes(searchLower) ||
+        caseData.caseType.toLowerCase().includes(searchLower)
+      
+      if (!matchesSearch) return false
+    }
+
+    // Status filter
+    if (filters.status.length > 0 && !filters.status.includes(caseData.status)) {
+      return false
+    }
+
+    // Priority filter
+    if (filters.priority.length > 0 && !filters.priority.includes(caseData.priority)) {
+      return false
+    }
+
+    // Case type filter
+    if (filters.caseType.length > 0 && !filters.caseType.includes(caseData.caseType)) {
+      return false
+    }
+
+    // Client filter
+    if (filters.client.length > 0 && !filters.client.includes(caseData.client.id)) {
+      return false
+    }
+
+    // Assigned to filter
+    if (filters.assignedTo.length > 0 && (!caseData.assignedTo || !filters.assignedTo.includes(caseData.assignedTo.id))) {
+      return false
+    }
+
+    // Date range filter
+    if (filters.dateRange.from || filters.dateRange.to) {
+      const caseDate = new Date(caseData.openedAt)
+      if (filters.dateRange.from && caseDate < filters.dateRange.from) {
+        return false
+      }
+      if (filters.dateRange.to && caseDate > filters.dateRange.to) {
+        return false
+      }
+    }
+
+    return true
+  })
 
   const statusColors = {
     OPEN: 'bg-blue-500/10 text-blue-500',
@@ -279,25 +387,36 @@ export default function CasesPage() {
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Predmeti</h1>
-          <p className="text-muted-foreground mt-1 text-sm md:text-base">
+          <h1 className="text-2xl md:text-3xl font-bold laptop-heading">Predmeti</h1>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base laptop-text">
             Upravljajte svojim pravnim predmetima
           </p>
         </div>
-        <Button 
-          onClick={() => { resetForm(); setDialogOpen(true) }}
-          className="w-full sm:w-auto min-h-[44px]"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Dodaj predmet
-        </Button>
+        <div className="flex items-center gap-2">
+          <CaseViewSelector viewMode={viewMode} onViewModeChange={setViewMode} />
+          <Button 
+            onClick={() => { resetForm(); setDialogOpen(true) }}
+            className="w-full sm:w-auto min-h-[44px]"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Dodaj predmet
+          </Button>
+        </div>
       </div>
+
+      {/* Search and Filters */}
+      <CaseSearchFilters
+        filters={filters}
+        onFiltersChange={setFilters}
+        clients={clients}
+        users={users}
+      />
 
       <Card>
         <CardHeader>
           <CardTitle>Svi predmeti</CardTitle>
           <CardDescription>
-            Pregled svih vaših predmeta
+            Pregled svih vaših predmeta ({filteredCases.length} od {cases.length})
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -314,11 +433,36 @@ export default function CasesPage() {
                 Dodaj prvi predmet
               </Button>
             </div>
+          ) : filteredCases.length === 0 ? (
+            <div className="text-center py-12">
+              <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground">Nema predmeta koji odgovaraju filtru</p>
+            </div>
+          ) : viewMode === 'kanban' ? (
+            <CaseKanbanBoard
+              cases={filteredCases}
+              onEdit={openEditDialog}
+              onDelete={handleDelete}
+              onStatusChange={handleStatusChange}
+            />
+          ) : viewMode === 'cards' ? (
+            <div className="space-y-4">
+              {filteredCases.map((caseData) => (
+                <CaseCard
+                  key={caseData.id}
+                  case={caseData}
+                  viewMode="detailed"
+                  onEdit={() => openEditDialog(caseData)}
+                  onView={() => window.open(`/dashboard/cases/${caseData.id}`, '_blank')}
+                  onDelete={() => handleDelete(caseData.id)}
+                />
+              ))}
+            </div>
           ) : (
             <>
               {/* Mobile Card Layout */}
               <div className="block md:hidden space-y-3">
-                {cases.map((caseData) => (
+                {filteredCases.map((caseData) => (
                   <Card key={caseData.id} className="p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
@@ -386,97 +530,110 @@ export default function CasesPage() {
 
               {/* Desktop Table Layout */}
               <div className="hidden md:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Broj predmeta</TableHead>
-                      <TableHead>Naziv</TableHead>
-                      <TableHead>Klijent</TableHead>
-                      <TableHead>Tip</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Prioritet</TableHead>
-                      <TableHead>Sljedeće ročište</TableHead>
-                      <TableHead className="text-right">Akcije</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {cases.map((caseData) => (
-                      <TableRow key={caseData.id}>
-                        <TableCell className="font-medium">
-                          {caseData.caseNumber}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{caseData.title}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {caseData.caseType}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Link 
-                            href={`/dashboard/clients/${caseData.client.id}`}
-                            className="text-primary hover:underline"
-                          >
-                            {getClientName(caseData.client)}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {caseData.caseType}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={statusColors[caseData.status as keyof typeof statusColors]}>
-                            {caseData.status.replace('_', ' ')}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={priorityColors[caseData.priority as keyof typeof priorityColors]}>
-                            {caseData.priority}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {caseData.nextHearingDate ? (
-                            <div className="flex items-center gap-1 text-sm">
-                              <Calendar className="h-3 w-3" />
-                              {format(new Date(caseData.nextHearingDate), 'dd.MM.yyyy')}
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              asChild
-                            >
-                              <Link href={`/dashboard/cases/${caseData.id}`}>
-                                <Eye className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => openEditDialog(caseData)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(caseData.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </div>
-                        </TableCell>
+                {filteredCases.length > 50 ? (
+                  <VirtualizedCasesTable
+                    cases={filteredCases}
+                    onEdit={openEditDialog}
+                    onDelete={handleDelete}
+                    getClientName={getClientName}
+                    getStatusLabel={(status) => status.replace('_', ' ')}
+                    getPriorityLabel={(priority) => priority}
+                    getStatusColor={(status) => statusColors[status as keyof typeof statusColors]}
+                    getPriorityColor={(priority) => priorityColors[priority as keyof typeof priorityColors]}
+                  />
+                ) : (
+                  <Table className="laptop-table table-laptop">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Broj predmeta</TableHead>
+                        <TableHead>Naziv</TableHead>
+                        <TableHead>Klijent</TableHead>
+                        <TableHead>Tip</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Prioritet</TableHead>
+                        <TableHead>Sljedeće ročište</TableHead>
+                        <TableHead className="text-right">Akcije</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredCases.map((caseData) => (
+                        <TableRow key={caseData.id}>
+                          <TableCell className="font-medium">
+                            {caseData.caseNumber}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{caseData.title}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {caseData.caseType}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Link 
+                              href={`/dashboard/clients/${caseData.client.id}`}
+                              className="text-primary hover:underline"
+                            >
+                              {getClientName(caseData.client)}
+                            </Link>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">
+                              {caseData.caseType}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={statusColors[caseData.status as keyof typeof statusColors]}>
+                              {caseData.status.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={priorityColors[caseData.priority as keyof typeof priorityColors]}>
+                              {caseData.priority}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {caseData.nextHearingDate ? (
+                              <div className="flex items-center gap-1 text-sm">
+                                <Calendar className="h-3 w-3" />
+                                {format(new Date(caseData.nextHearingDate), 'dd.MM.yyyy')}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                              >
+                                <Link href={`/dashboard/cases/${caseData.id}`}>
+                                  <Eye className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => openEditDialog(caseData)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDelete(caseData.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </div>
             </>
           )}
@@ -485,7 +642,7 @@ export default function CasesPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto mx-4 md:mx-0">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto laptop-dialog">
           <DialogHeader>
             <DialogTitle>
               {editingCase ? 'Uredi predmet' : 'Dodaj novi predmet'}

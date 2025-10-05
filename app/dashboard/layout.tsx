@@ -76,7 +76,7 @@ export default function DashboardLayout({
         className={`${
           sidebarOpen 
             ? 'w-64' 
-            : 'w-0 md:w-20'
+            : 'w-0 md:w-20 lg:w-24'
         } bg-card border-r border-border transition-all duration-300 flex flex-col fixed md:relative z-50 md:z-auto h-full overflow-hidden ${
           !sidebarOpen ? 'hidden md:flex' : 'flex'
         }`}
@@ -185,7 +185,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-background min-h-0 w-full main-content-fix">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-background min-h-0 w-full main-content-fix laptop-optimized">
           <div className="w-full max-w-full overflow-hidden">
             {children}
           </div>

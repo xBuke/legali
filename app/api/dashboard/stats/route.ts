@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
+import { db } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get user's organization
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id: session.user.id },
       include: { organization: true }
     })
@@ -29,7 +28,7 @@ export async function GET(request: NextRequest) {
       monthlyRevenue
     ] = await Promise.all([
       // Active clients count
-      prisma.client.count({
+      db.client.count({
         where: {
           organizationId: user.organizationId,
           status: 'ACTIVE',
@@ -38,7 +37,7 @@ export async function GET(request: NextRequest) {
       }),
       
       // Open cases count
-      prisma.case.count({
+      db.case.count({
         where: {
           organizationId: user.organizationId,
           status: 'OPEN',
@@ -47,7 +46,7 @@ export async function GET(request: NextRequest) {
       }),
       
       // Total documents count
-      prisma.document.count({
+      db.document.count({
         where: {
           organizationId: user.organizationId,
           deletedAt: null
@@ -55,7 +54,7 @@ export async function GET(request: NextRequest) {
       }),
       
       // Monthly revenue (current month)
-      prisma.invoice.aggregate({
+      db.invoice.aggregate({
         where: {
           organizationId: user.organizationId,
           status: 'PAID',
@@ -81,7 +80,7 @@ export async function GET(request: NextRequest) {
       previousTotalDocuments,
       previousMonthlyRevenue
     ] = await Promise.all([
-      prisma.client.count({
+      db.client.count({
         where: {
           organizationId: user.organizationId,
           status: 'ACTIVE',
@@ -92,7 +91,7 @@ export async function GET(request: NextRequest) {
         }
       }),
       
-      prisma.case.count({
+      db.case.count({
         where: {
           organizationId: user.organizationId,
           status: 'OPEN',
@@ -103,7 +102,7 @@ export async function GET(request: NextRequest) {
         }
       }),
       
-      prisma.document.count({
+      db.document.count({
         where: {
           organizationId: user.organizationId,
           deletedAt: null,
@@ -113,7 +112,7 @@ export async function GET(request: NextRequest) {
         }
       }),
       
-      prisma.invoice.aggregate({
+      db.invoice.aggregate({
         where: {
           organizationId: user.organizationId,
           status: 'PAID',

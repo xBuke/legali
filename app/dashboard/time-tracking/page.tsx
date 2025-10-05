@@ -522,7 +522,7 @@ export default function TimeTrackingPage() {
       {/* Create/Edit Dialog */}
       <PermissionGuard permission={PERMISSIONS.TIME_ENTRIES_CREATE}>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-2xl mx-4 md:mx-0">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
                 {editingEntry ? 'Uredi unos vremena' : 'Novi unos vremena'}

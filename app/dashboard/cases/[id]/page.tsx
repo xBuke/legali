@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Briefcase, Calendar, User, FileText, Clock, CheckSquare, AlertCircle, Building2 } from 'lucide-react'
-import { CaseTimeline } from '@/components/timeline/case-timeline'
+import { CaseTimeline } from '@/components/cases/case-timeline'
+import { CaseDeadlines } from '@/components/cases/case-deadlines'
 import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
@@ -51,12 +52,26 @@ export default function CaseDetailPage() {
   const params = useParams()
   const router = useRouter()
   const [caseData, setCaseData] = useState<CaseDetail | null>(null)
+  const [users, setUsers] = useState<Array<{ id: string; firstName?: string; lastName?: string }>>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
 
   useEffect(() => {
     fetchCase()
+    fetchUsers()
   }, [params.id])
+
+  async function fetchUsers() {
+    try {
+      const response = await fetch('/api/users')
+      if (response.ok) {
+        const data = await response.json()
+        setUsers(data)
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    }
+  }
 
   async function fetchCase() {
     try {
@@ -315,6 +330,12 @@ export default function CaseDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Case Deadlines */}
+      <CaseDeadlines 
+        caseId={caseData.id} 
+        users={users}
+      />
 
       {/* Case Timeline */}
       <CaseTimeline 

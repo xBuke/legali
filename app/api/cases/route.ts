@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { createCaseCreatedEvent } from '@/lib/case-timeline'
 
 // GET /api/cases - List all cases
 export async function GET(request: Request) {
@@ -95,6 +96,19 @@ export async function POST(request: Request) {
         assignedTo: true,
       },
     })
+
+    // Create timeline event for case creation
+    try {
+      await createCaseCreatedEvent(
+        caseData.id,
+        caseData.caseNumber,
+        session.user.id,
+        session.user.organizationId
+      )
+    } catch (timelineError) {
+      console.error('Error creating timeline event:', timelineError)
+      // Don't fail the case creation if timeline event fails
+    }
 
     return NextResponse.json(caseData, { status: 201 })
   } catch (error) {
