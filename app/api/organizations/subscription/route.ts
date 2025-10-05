@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { SUBSCRIPTION_PLANS, type SubscriptionTier } from '@/lib/subscription';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/organizations/subscription
  * Get organization subscription information

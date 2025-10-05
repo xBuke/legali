@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { uploadEncryptedDocument } from '@/lib/document-storage'
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/documents - List all documents
 export async function GET(request: Request) {
   try {

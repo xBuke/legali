@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { getDocumentMetadata, deleteDocument } from '@/lib/document-storage'
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/documents/[id] - Get document details
 export async function GET(
   request: Request,

@@ -4,6 +4,8 @@ import { db } from '@/lib/db';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/invoices/[id]/pdf - Generate PDF for an invoice
 export async function GET(
   request: NextRequest,

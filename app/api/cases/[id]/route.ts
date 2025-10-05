@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { createStatusChangedEvent, createAssignmentEvent, createHearingScheduledEvent } from '@/lib/case-timeline'
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/cases/[id] - Get single case
 export async function GET(
   request: Request,

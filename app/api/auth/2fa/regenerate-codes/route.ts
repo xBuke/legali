@@ -4,6 +4,8 @@ import { db } from '@/lib/db';
 import { regenerateBackupCodes } from '@/lib/two-factor';
 import { logActivity } from '@/lib/activity-logger';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/auth/2fa/regenerate-codes
  * Regenerate backup codes for 2FA

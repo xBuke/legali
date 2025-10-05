@@ -4,6 +4,8 @@ import { db } from '@/lib/db';
 import { verifyTwoFactorCode, validateTwoFactorCode } from '@/lib/two-factor';
 import { logActivity, logAuthActivity } from '@/lib/activity-logger';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/auth/2fa/verify
  * Verify 2FA code (TOTP or backup code) - supports both session-based and login flow

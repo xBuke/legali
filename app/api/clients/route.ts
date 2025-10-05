@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { createActivityLog } from '@/lib/activity-logger'
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/clients - List all clients
 export async function GET(request: Request) {
   try {

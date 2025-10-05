@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * PATCH /api/auth/password
  * Change user password

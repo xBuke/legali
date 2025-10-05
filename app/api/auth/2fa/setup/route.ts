@@ -4,6 +4,8 @@ import { db } from '@/lib/db';
 import { setupTwoFactor } from '@/lib/two-factor';
 import { logActivity } from '@/lib/activity-logger';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/auth/2fa/setup
  * Generate 2FA secret and QR code for user setup

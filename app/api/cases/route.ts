@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { createCaseCreatedEvent } from '@/lib/case-timeline'
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/cases - List all cases
 export async function GET(request: Request) {
   try {

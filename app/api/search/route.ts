@@ -3,6 +3,8 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import Fuse from 'fuse.js';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/search - Global search across all entities
 export async function GET(request: NextRequest) {
   try {

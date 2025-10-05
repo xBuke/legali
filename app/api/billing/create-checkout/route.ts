@@ -4,6 +4,8 @@ import { db } from '@/lib/db'
 import { stripe, STRIPE_PRICE_IDS } from '@/lib/stripe'
 import { SUBSCRIPTION_PLANS, type SubscriptionTier } from '@/lib/subscription'
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()

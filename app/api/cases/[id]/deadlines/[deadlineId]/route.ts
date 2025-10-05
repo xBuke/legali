@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 
+export const dynamic = 'force-dynamic';
+
 // PATCH /api/cases/[id]/deadlines/[deadlineId] - Update deadline
 export async function PATCH(
   request: Request,

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/cases/[id]/timeline - Get case timeline
 export async function GET(
   request: Request,

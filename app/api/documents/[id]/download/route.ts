@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { downloadDecryptedDocument } from '@/lib/document-storage';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/documents/[id]/download
  * Download and decrypt a document

@@ -4,6 +4,8 @@ import { db } from '@/lib/db';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/invoices/[id]/preview - Preview PDF for an invoice in browser
 export async function GET(
   request: NextRequest,

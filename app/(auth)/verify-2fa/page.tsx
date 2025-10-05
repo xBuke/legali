@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Shield, Key, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-export default function Verify2FAPage() {
+function Verify2FAContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -212,5 +212,24 @@ export default function Verify2FAPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function Verify2FAPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600">Učitavanje...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <Verify2FAContent />
+    </Suspense>
   );
 }

@@ -4,6 +4,8 @@ import { db } from '@/lib/db';
 import { verifyTwoFactorCode, validateTwoFactorCode } from '@/lib/two-factor';
 import { logActivity } from '@/lib/activity-logger';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/auth/2fa/disable
  * Disable 2FA for a user (requires verification)
