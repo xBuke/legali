@@ -57,8 +57,8 @@ export async function GET(
       type: 'note',
       isPrivate: false,
     })).map(note => {
-      delete note.createdBy;
-      return note;
+      const { createdBy, ...noteWithoutCreatedBy } = note;
+      return noteWithoutCreatedBy;
     });
 
     return NextResponse.json(transformedNotes);
@@ -147,13 +147,13 @@ export async function POST(
     });
 
     // Transform the response to match frontend expectations
+    const { createdBy, ...noteWithoutCreatedBy } = note;
     const transformedNote = {
-      ...note,
-      author: note.createdBy,
+      ...noteWithoutCreatedBy,
+      author: createdBy,
       type: type || 'note',
       isPrivate: false,
     };
-    delete transformedNote.createdBy;
 
     return NextResponse.json(transformedNote);
   } catch (error) {

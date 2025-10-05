@@ -95,13 +95,13 @@ export async function PATCH(
     });
 
     // Transform the response to match frontend expectations
+    const { createdBy, ...noteWithoutCreatedBy } = updatedNote;
     const transformedNote = {
-      ...updatedNote,
-      author: updatedNote.createdBy,
+      ...noteWithoutCreatedBy,
+      author: createdBy,
       type: 'note',
       isPrivate: false,
     };
-    delete transformedNote.createdBy;
 
     return NextResponse.json(transformedNote);
   } catch (error) {

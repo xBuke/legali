@@ -121,8 +121,9 @@ export async function POST(request: NextRequest) {
     // Calculate totals from time entries
     const timeEntries = await db.timeEntry.findMany({
       where: {
-        clientId: clientId,
-        organizationId: user.organizationId,
+        case: {
+          clientId: clientId
+        },
         invoiceId: null, // Only unbilled time entries
       }
     });

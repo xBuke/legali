@@ -49,8 +49,7 @@ export async function POST(request: NextRequest) {
       entityId: user.id,
       userId: user.id,
       organizationId: user.organizationId,
-      ipAddress: request.ip || request.headers.get('x-forwarded-for') || 'unknown',
-      userAgent: request.headers.get('user-agent') || 'unknown'
+      request
     });
 
     return NextResponse.json({

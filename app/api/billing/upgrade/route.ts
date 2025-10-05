@@ -22,8 +22,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
-    const { tier } = body
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      );
+    }
+    
+    const { tier } = body;
 
     // Validate subscription tier
     if (!tier || !['BASIC', 'PRO', 'ENTERPRISE'].includes(tier)) {
@@ -49,6 +58,13 @@ export async function POST(request: NextRequest) {
     const organization = user.organization
     const newTier = tier as SubscriptionTier
     const newPriceId = STRIPE_PRICE_IDS[newTier]
+
+    if (!organization.stripeSubscriptionId) {
+      return NextResponse.json(
+        { error: 'No active subscription found' },
+        { status: 400 }
+      )
+    }
 
     // Get current subscription from Stripe
     const subscription = await stripe.subscriptions.retrieve(organization.stripeSubscriptionId)

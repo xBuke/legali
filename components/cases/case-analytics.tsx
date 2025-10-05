@@ -88,7 +88,7 @@ export function CaseAnalytics({ caseId, timeRange = 'month' }: CaseAnalyticsProp
             Pregled performansi i trendova vaših predmeta
           </p>
         </div>
-        <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
+        <Select value={selectedTimeRange} onValueChange={(value) => setSelectedTimeRange(value as 'week' | 'month' | 'quarter' | 'year')}>
           <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>

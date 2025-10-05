@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
         createdAt: true,
         updatedAt: true,
       },
+      take: 1000, // Limit to prevent timeout
     });
 
     const averageResolutionTime = allCases.length > 0 

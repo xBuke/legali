@@ -424,7 +424,7 @@ export default function CasesPage() {
 
       {/* Case Analytics */}
       {showAnalytics && (
-        <CaseAnalytics className="mb-6" />
+        <CaseAnalytics />
       )}
 
       <Card>
@@ -548,7 +548,7 @@ export default function CasesPage() {
                 {filteredCases.length > 50 ? (
                   <VirtualizedCasesTable
                     cases={filteredCases}
-                    onEdit={openEditDialog}
+                    onEdit={openEditDialog as any}
                     onDelete={handleDelete}
                     getClientName={getClientName}
                     getStatusLabel={(status) => status.replace('_', ' ')}

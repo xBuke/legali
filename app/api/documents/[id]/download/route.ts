@@ -35,11 +35,11 @@ export async function GET(
     }
 
     // Return the decrypted file
-    return new NextResponse(result.data, {
+    return new NextResponse(result.data as any, {
       headers: {
         'Content-Type': result.mimeType || 'application/octet-stream',
         'Content-Disposition': `attachment; filename="${result.fileName}"`,
-        'Content-Length': result.data.length.toString(),
+        'Content-Length': (result.data?.length || 0).toString(),
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'

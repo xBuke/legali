@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No organization found' }, { status: 404 })
     }
 
-    // Get recent activities from activity logs
-    const activities = await db.activityLog.findMany({
+    // Get recent activities from audit logs
+    const activities = await db.auditLog.findMany({
       where: {
         organizationId: user.organizationId
       },
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Transform activities to match the interface
-    const transformedActivities = activities.map(activity => {
+    const transformedActivities = activities.map((activity: any) => {
       let type: 'client_created' | 'case_opened' | 'document_uploaded' | 'invoice_sent' | 'payment_received' = 'client_created'
       let title = activity.description
       let relatedEntity = null

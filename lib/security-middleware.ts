@@ -53,7 +53,7 @@ export async function withSecurity(
       if (config.validateInput) {
         const body = await request.json().catch(() => null);
         if (body) {
-          const validationResult = validateRequestBody(body, validationSchemas[config.validateInput]);
+          const validationResult = validateRequestBody(body, validationSchemas[config.validateInput] as any);
           
           if (!validationResult.success) {
             if (config.logSecurityEvents) {

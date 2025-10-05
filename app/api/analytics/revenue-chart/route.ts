@@ -21,34 +21,42 @@ export async function GET(request: NextRequest) {
 
     const organizationId = user.organization.id;
 
-    // Get revenue data for the last 12 months
+    // Get revenue data for the last 6 months (reduced from 12 to prevent timeout)
     const now = new Date();
-    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
     
     const monthlyRevenue = await db.invoice.groupBy({
       by: ['issueDate'],
       where: {
         client: { organizationId },
         status: 'PAID',
-        issueDate: { gte: twelveMonthsAgo },
+        issueDate: { gte: sixMonthsAgo },
       },
       _sum: { total: true },
       _count: { id: true },
       orderBy: { issueDate: 'asc' },
+    }).catch((error) => {
+      console.error('Error fetching monthly revenue:', error);
+      return [];
     });
 
-    // Generate data for all 12 months, filling in missing months with 0
+    // Generate data for all 6 months, filling in missing months with 0
     const revenueData = [];
-    for (let i = 0; i < 12; i++) {
-      const monthDate = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+    for (let i = 0; i < 6; i++) {
+      const monthDate = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
       const monthName = monthDate.toLocaleDateString('hr-HR', { 
         month: 'short', 
         year: 'numeric' 
       });
       
       const monthData = monthlyRevenue.find(month => {
-        const monthStart = new Date(month.issueDate.getFullYear(), month.issueDate.getMonth(), 1);
-        return monthStart.getTime() === monthDate.getTime();
+        try {
+          const monthStart = new Date(month.issueDate.getFullYear(), month.issueDate.getMonth(), 1);
+          return monthStart.getTime() === monthDate.getTime();
+        } catch (error) {
+          console.error('Error processing month data:', error);
+          return false;
+        }
       });
 
       revenueData.push({

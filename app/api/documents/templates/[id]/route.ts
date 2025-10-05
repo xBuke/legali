@@ -63,8 +63,8 @@ export async function GET(
       isPublic: template.isPublic,
       createdAt: template.createdAt.toISOString(),
       updatedAt: template.updatedAt.toISOString(),
-      author: template.author,
-      usageCount: template._count.documents,
+      author: (template as any).author,
+      usageCount: (template as any)._count?.documents || 0,
     };
 
     return NextResponse.json(templateWithUsage);
@@ -137,7 +137,7 @@ export async function PATCH(
         category: category || 'Ostalo',
         caseType: caseType || 'Ostalo',
         content,
-        variables,
+        variables: variables ? JSON.stringify(variables) : null,
         isPublic: isPublic || false,
         updatedAt: new Date(),
       },
@@ -169,8 +169,8 @@ export async function PATCH(
       isPublic: template.isPublic,
       createdAt: template.createdAt.toISOString(),
       updatedAt: template.updatedAt.toISOString(),
-      author: template.author,
-      usageCount: template._count.documents,
+      author: (template as any).author,
+      usageCount: (template as any)._count?.documents || 0,
     };
 
     return NextResponse.json(templateWithUsage);

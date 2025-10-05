@@ -26,8 +26,7 @@ import {
   AlertCircle,
   File,
   Image,
-  FileSpreadsheet,
-  FilePdf
+  FileSpreadsheet
 } from 'lucide-react'
 
 interface CaseDocument {
@@ -183,7 +182,7 @@ export function CaseDocumentManagement({ caseId, caseNumber }: CaseDocumentManag
   const [isTemplateOpen, setIsTemplateOpen] = useState(false)
 
   const getFileIcon = (mimeType: string) => {
-    if (mimeType.includes('pdf')) return <FilePdf className="h-5 w-5 text-red-500" />
+    if (mimeType.includes('pdf')) return <FileText className="h-5 w-5 text-red-500" />
     if (mimeType.includes('word') || mimeType.includes('document')) return <FileText className="h-5 w-5 text-blue-500" />
     if (mimeType.includes('image')) return <Image className="h-5 w-5 text-green-500" />
     if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return <FileSpreadsheet className="h-5 w-5 text-green-600" />

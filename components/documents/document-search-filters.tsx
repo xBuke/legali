@@ -131,7 +131,7 @@ export function DocumentSearchFilters({ filters, onFiltersChange, documents }: D
   const activeFiltersCount = getActiveFiltersCount()
 
   // Get unique categories and file types from documents
-  const categories = Array.from(new Set(documents.map(doc => doc.category).filter(Boolean)))
+  const categories = Array.from(new Set(documents.map(doc => doc.category).filter((cat): cat is string => Boolean(cat))))
   const fileTypes = Array.from(new Set(documents.map(doc => doc.mimeType.split('/')[1] || doc.mimeType.split('/')[0])))
 
   const getClientName = (client: any) => {

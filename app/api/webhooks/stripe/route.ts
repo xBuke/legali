@@ -6,25 +6,31 @@ import { db } from '@/lib/db'
 import { SUBSCRIPTION_PLANS, type SubscriptionTier } from '@/lib/subscription'
 
 export async function POST(req: Request) {
-  const body = await req.text()
-  const signature = (await headers()).get('Stripe-Signature') as string
-
-  if (!stripe) {
-    return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
-  }
-
-  let event: Stripe.Event
-
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    )
-  } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message)
-    return NextResponse.json({ error: 'Webhook error' }, { status: 400 })
-  }
+    const body = await req.text()
+    const signature = (await headers()).get('Stripe-Signature') as string
+
+    if (!stripe) {
+      return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
+    }
+
+    if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      console.error('STRIPE_WEBHOOK_SECRET environment variable is not set')
+      return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 })
+    }
+
+    let event: Stripe.Event
+
+    try {
+      event = stripe.webhooks.constructEvent(
+        body,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET
+      )
+    } catch (err: any) {
+      console.error('Webhook signature verification failed:', err.message)
+      return NextResponse.json({ error: 'Webhook error' }, { status: 400 })
+    }
 
   try {
     switch (event.type) {
@@ -124,6 +130,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true })
   } catch (err: any) {
     console.error('Error processing webhook:', err)
+    return NextResponse.json(
+      { error: 'Webhook handler failed' },
+      { status: 500 }
+    )
+  }
+  } catch (err: any) {
+    console.error('Error in webhook handler:', err)
     return NextResponse.json(
       { error: 'Webhook handler failed' },
       { status: 500 }

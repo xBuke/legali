@@ -28,6 +28,9 @@ export async function GET(request: NextRequest) {
         status: 'SENT',
         dueDate: { lt: new Date() },
       },
+    }).catch((error) => {
+      console.error('Error fetching overdue invoices:', error);
+      return 0;
     });
 
     // Get cases approaching deadlines
@@ -43,6 +46,9 @@ export async function GET(request: NextRequest) {
           status: { in: ['OPEN', 'IN_PROGRESS'] },
         },
       },
+    }).catch((error) => {
+      console.error('Error fetching upcoming deadlines:', error);
+      return 0;
     });
 
     // Get low client satisfaction cases
@@ -53,6 +59,10 @@ export async function GET(request: NextRequest) {
         updatedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }, // Last 30 days
         // Add satisfaction rating filter when available
       },
+      take: 1000, // Limit to prevent timeout
+    }).catch((error) => {
+      console.error('Error fetching low satisfaction cases:', error);
+      return 0;
     });
 
     const alerts = [];
@@ -89,6 +99,9 @@ export async function GET(request: NextRequest) {
         status: 'PAID',
       },
       _sum: { total: true },
+    }).catch((error) => {
+      console.error('Error fetching current month revenue:', error);
+      return { _sum: { total: 0 } };
     });
 
     const previousMonthRevenue = await db.invoice.aggregate({
@@ -101,6 +114,9 @@ export async function GET(request: NextRequest) {
         status: 'PAID',
       },
       _sum: { total: true },
+    }).catch((error) => {
+      console.error('Error fetching previous month revenue:', error);
+      return { _sum: { total: 0 } };
     });
 
     const currentRevenue = currentMonthRevenue._sum.total || 0;

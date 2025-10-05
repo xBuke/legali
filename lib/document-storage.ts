@@ -40,7 +40,7 @@ export function generateEncryptionIV(): string {
  * Encrypt file data using AES-256-CBC
  */
 export function encryptFile(fileBuffer: Buffer, key: string, iv: string): Buffer {
-  const cipher = crypto.createCipher('aes-256-cbc', key);
+  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'));
   cipher.setAutoPadding(true);
   
   let encrypted = cipher.update(fileBuffer);
@@ -53,7 +53,7 @@ export function encryptFile(fileBuffer: Buffer, key: string, iv: string): Buffer
  * Decrypt file data using AES-256-CBC
  */
 export function decryptFile(encryptedBuffer: Buffer, key: string, iv: string): Buffer {
-  const decipher = crypto.createDecipher('aes-256-cbc', key);
+  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'));
   decipher.setAutoPadding(true);
   
   let decrypted = decipher.update(encryptedBuffer);
@@ -107,7 +107,7 @@ export async function uploadEncryptedDocument(
     
     // Upload to Vercel Blob
     const blob = await put(fileName, encryptedBuffer, {
-      access: 'private',
+      access: 'public',
       contentType: file.type,
       addRandomSuffix: false
     });

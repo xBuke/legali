@@ -96,6 +96,7 @@ const mockComments: CaseComment[] = [
     author: mockTeamMembers[0],
     content: 'Početna analiza predmeta je završena. Potrebno je pripremiti tužbu do kraja tjedna.',
     createdAt: new Date('2024-01-20T10:30:00'),
+    isEdited: false,
     mentions: ['ana.novak@ilegal.hr']
   },
   {
@@ -104,6 +105,7 @@ const mockComments: CaseComment[] = [
     author: mockTeamMembers[1],
     content: 'Tužba je pripremljena i poslana na pregled. @marko.kovac@ilegal.hr možeš li pregledati?',
     createdAt: new Date('2024-01-22T14:15:00'),
+    isEdited: false,
     mentions: ['marko.kovac@ilegal.hr']
   },
   {
@@ -111,7 +113,8 @@ const mockComments: CaseComment[] = [
     caseId: 'case-1',
     author: mockTeamMembers[0],
     content: 'Odličan rad! Tužba je odobrena i može se podnijeti.',
-    createdAt: new Date('2024-01-23T09:45:00')
+    createdAt: new Date('2024-01-23T09:45:00'),
+    isEdited: false
   }
 ]
 
@@ -165,7 +168,8 @@ export function CaseCollaboration({ caseId, currentUser }: CaseCollaborationProp
       caseId,
       author: currentUser,
       content: newComment,
-      createdAt: new Date()
+      createdAt: new Date(),
+      isEdited: false
     }
 
     setComments(prev => [comment, ...prev])

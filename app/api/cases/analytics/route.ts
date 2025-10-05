@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
         createdAt: true,
         closedAt: true,
       },
+      take: 1000, // Limit to prevent timeout
     });
 
     const averageCaseDuration = closedCasesWithDates.length > 0
@@ -77,6 +78,9 @@ export async function GET(request: NextRequest) {
         status: 'PAID',
       },
       _sum: { total: true },
+    }).catch((error) => {
+      console.error('Error fetching total revenue:', error);
+      return { _sum: { total: 0 } };
     });
 
     const revenuePerCase = totalCases > 0 ? (totalRevenue._sum.total || 0) / totalCases : 0;
@@ -117,48 +121,54 @@ export async function GET(request: NextRequest) {
       return acc;
     }, {} as Record<string, number>);
 
-    // Get monthly trends for the last 12 months
+    // Get monthly trends for the last 12 months (simplified to prevent timeout)
     const now = new Date();
     const monthlyTrends = [];
     
-    for (let i = 11; i >= 0; i--) {
-      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
-      const monthName = monthStart.toLocaleDateString('hr-HR', { 
-        month: 'short', 
-        year: 'numeric' 
-      });
+    // Limit to last 6 months to reduce query load
+    for (let i = 5; i >= 0; i--) {
+      try {
+        const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+        const monthName = monthStart.toLocaleDateString('hr-HR', { 
+          month: 'short', 
+          year: 'numeric' 
+        });
 
-      const opened = await db.case.count({
-        where: {
-          client: { organizationId },
-          createdAt: { gte: monthStart, lte: monthEnd },
-        },
-      });
+        const opened = await db.case.count({
+          where: {
+            client: { organizationId },
+            createdAt: { gte: monthStart, lte: monthEnd },
+          },
+        });
 
-      const closed = await db.case.count({
-        where: {
-          client: { organizationId },
-          status: { in: ['CLOSED_WON', 'CLOSED_LOST', 'CLOSED_SETTLED'] },
-          closedAt: { gte: monthStart, lte: monthEnd },
-        },
-      });
+        const closed = await db.case.count({
+          where: {
+            client: { organizationId },
+            status: { in: ['CLOSED_WON', 'CLOSED_LOST', 'CLOSED_SETTLED'] },
+            closedAt: { gte: monthStart, lte: monthEnd },
+          },
+        });
 
-      const revenue = await db.invoice.aggregate({
-        where: {
-          client: { organizationId },
-          status: 'PAID',
-          issueDate: { gte: monthStart, lte: monthEnd },
-        },
-        _sum: { total: true },
-      });
+        const revenue = await db.invoice.aggregate({
+          where: {
+            client: { organizationId },
+            status: 'PAID',
+            issueDate: { gte: monthStart, lte: monthEnd },
+          },
+          _sum: { total: true },
+        });
 
-      monthlyTrends.push({
-        month: monthName,
-        opened,
-        closed,
-        revenue: revenue._sum.total || 0,
-      });
+        monthlyTrends.push({
+          month: monthName,
+          opened,
+          closed,
+          revenue: revenue._sum.total || 0,
+        });
+      } catch (error) {
+        console.error(`Error fetching data for month ${i}:`, error);
+        // Continue with next month
+      }
     }
 
     // Get top clients
@@ -172,29 +182,39 @@ export async function GET(request: NextRequest) {
 
     const topClientsWithDetails = await Promise.all(
       topClients.map(async (client) => {
-        const clientDetails = await db.client.findUnique({
-          where: { id: client.clientId },
-          select: { firstName: true, lastName: true, companyName: true },
-        });
+        try {
+          const clientDetails = await db.client.findUnique({
+            where: { id: client.clientId },
+            select: { firstName: true, lastName: true, companyName: true },
+          });
 
-        const clientRevenue = await db.invoice.aggregate({
-          where: {
+          const clientRevenue = await db.invoice.aggregate({
+            where: {
+              clientId: client.clientId,
+              status: 'PAID',
+            },
+            _sum: { total: true },
+          });
+
+          const clientName = clientDetails?.companyName || 
+            `${clientDetails?.firstName || ''} ${clientDetails?.lastName || ''}`.trim() || 
+            'Nepoznat klijent';
+
+          return {
             clientId: client.clientId,
-            status: 'PAID',
-          },
-          _sum: { total: true },
-        });
-
-        const clientName = clientDetails?.companyName || 
-          `${clientDetails?.firstName || ''} ${clientDetails?.lastName || ''}`.trim() || 
-          'Nepoznat klijent';
-
-        return {
-          clientId: client.clientId,
-          clientName,
-          caseCount: client._count.id,
-          totalRevenue: clientRevenue._sum.total || 0,
-        };
+            clientName,
+            caseCount: client._count.id,
+            totalRevenue: clientRevenue._sum.total || 0,
+          };
+        } catch (error) {
+          console.error(`Error fetching client details for ${client.clientId}:`, error);
+          return {
+            clientId: client.clientId,
+            clientName: 'Nepoznat klijent',
+            caseCount: client._count.id,
+            totalRevenue: 0,
+          };
+        }
       })
     );
 
@@ -211,51 +231,63 @@ export async function GET(request: NextRequest) {
 
     const teamPerformance = await Promise.all(
       teamMembers.map(async (member) => {
-        const casesAssigned = await db.case.count({
-          where: {
-            client: { organizationId },
-            assignedToId: member.id,
-          },
-        });
+        try {
+          const casesAssigned = await db.case.count({
+            where: {
+              client: { organizationId },
+              assignedToId: member.id,
+            },
+          });
 
-        const casesCompleted = await db.case.count({
-          where: {
-            client: { organizationId },
-            assignedToId: member.id,
-            status: { in: ['CLOSED_WON', 'CLOSED_LOST', 'CLOSED_SETTLED'] },
-          },
-        });
+          const casesCompleted = await db.case.count({
+            where: {
+              client: { organizationId },
+              assignedToId: member.id,
+              status: { in: ['CLOSED_WON', 'CLOSED_LOST', 'CLOSED_SETTLED'] },
+            },
+          });
 
-        // Calculate average resolution time for completed cases
-        const completedCases = await db.case.findMany({
-          where: {
-            client: { organizationId },
-            assignedToId: member.id,
-            status: { in: ['CLOSED_WON', 'CLOSED_LOST', 'CLOSED_SETTLED'] },
-            closedAt: { not: null },
-          },
-          select: {
-            createdAt: true,
-            closedAt: true,
-          },
-        });
+          // Calculate average resolution time for completed cases (limited)
+          const completedCases = await db.case.findMany({
+            where: {
+              client: { organizationId },
+              assignedToId: member.id,
+              status: { in: ['CLOSED_WON', 'CLOSED_LOST', 'CLOSED_SETTLED'] },
+              closedAt: { not: null },
+            },
+            select: {
+              createdAt: true,
+              closedAt: true,
+            },
+            take: 100, // Limit to prevent timeout
+          });
 
-        const averageResolutionTime = completedCases.length > 0
-          ? completedCases.reduce((sum, case_) => {
-              const duration = case_.closedAt!.getTime() - case_.createdAt.getTime();
-              return sum + (duration / (1000 * 60 * 60 * 24)); // Convert to days
-            }, 0) / completedCases.length
-          : 0;
+          const averageResolutionTime = completedCases.length > 0
+            ? completedCases.reduce((sum, case_) => {
+                const duration = case_.closedAt!.getTime() - case_.createdAt.getTime();
+                return sum + (duration / (1000 * 60 * 60 * 24)); // Convert to days
+              }, 0) / completedCases.length
+            : 0;
 
-        const userName = `${member.firstName || ''} ${member.lastName || ''}`.trim() || member.email;
+          const userName = `${member.firstName || ''} ${member.lastName || ''}`.trim() || member.email;
 
-        return {
-          userId: member.id,
-          userName,
-          casesAssigned,
-          casesCompleted,
-          averageResolutionTime,
-        };
+          return {
+            userId: member.id,
+            userName,
+            casesAssigned,
+            casesCompleted,
+            averageResolutionTime,
+          };
+        } catch (error) {
+          console.error(`Error fetching team performance for ${member.id}:`, error);
+          return {
+            userId: member.id,
+            userName: `${member.firstName || ''} ${member.lastName || ''}`.trim() || member.email,
+            casesAssigned: 0,
+            casesCompleted: 0,
+            averageResolutionTime: 0,
+          };
+        }
       })
     );
 

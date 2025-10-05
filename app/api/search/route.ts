@@ -52,7 +52,8 @@ export async function GET(request: NextRequest) {
           address: true,
           city: true,
           status: true,
-        }
+        },
+        take: 100, // Limit to prevent timeout
       });
 
       const clientFuse = new Fuse(clients, {
@@ -103,7 +104,8 @@ export async function GET(request: NextRequest) {
               companyName: true,
             }
           }
-        }
+        },
+        take: 100, // Limit to prevent timeout
       });
 
       const caseFuse = new Fuse(cases, {
@@ -159,7 +161,8 @@ export async function GET(request: NextRequest) {
               companyName: true,
             }
           }
-        }
+        },
+        take: 100, // Limit to prevent timeout
       });
 
       const documentFuse = new Fuse(documents, {
@@ -214,7 +217,8 @@ export async function GET(request: NextRequest) {
               lastName: true,
             }
           }
-        }
+        },
+        take: 100, // Limit to prevent timeout
       });
 
       const timeEntryFuse = new Fuse(timeEntries, {
@@ -261,7 +265,8 @@ export async function GET(request: NextRequest) {
               companyName: true,
             }
           }
-        }
+        },
+        take: 100, // Limit to prevent timeout
       });
 
       const invoiceFuse = new Fuse(invoices, {

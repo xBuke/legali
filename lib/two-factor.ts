@@ -24,7 +24,6 @@ export interface TwoFactorVerification {
 export function generateTwoFactorSecret(userEmail: string, organizationName: string): string {
   return speakeasy.generateSecret({
     name: `iLegal (${organizationName})`,
-    account: userEmail,
     issuer: 'iLegal',
     length: 32
   }).base32;

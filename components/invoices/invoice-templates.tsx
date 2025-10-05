@@ -49,7 +49,7 @@ export function InvoiceTemplates({ onTemplateSelect, showSelectButton = true }: 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    templateType: 'standard' as const,
+    templateType: 'standard' as 'standard' | 'hourly' | 'fixed' | 'retainer',
     terms: '',
     notes: '',
     isDefault: false,

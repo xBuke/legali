@@ -22,8 +22,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
-    const { tier } = body
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      );
+    }
+    
+    const { tier } = body;
 
     // Validate subscription tier
     if (!tier || !['BASIC', 'PRO', 'ENTERPRISE'].includes(tier)) {
@@ -83,8 +92,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?success=true&tier=${subscriptionTier}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?canceled=true`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/settings?success=true&tier=${subscriptionTier}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/settings?canceled=true`,
       metadata: {
         organizationId: organization.id,
         userId: user.id,

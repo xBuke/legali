@@ -341,8 +341,6 @@ export default function CaseDetailPage() {
       {/* Case Timeline */}
       <CaseTimeline 
         caseId={caseData.id} 
-        caseNumber={caseData.caseNumber} 
-        caseTitle={caseData.title} 
       />
 
 

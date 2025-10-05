@@ -32,13 +32,32 @@ export async function POST(request: NextRequest) {
     const hasTimeFields = fields.some((f: any) => f.id.includes('time'));
     const hasDocumentFields = fields.some((f: any) => f.id.includes('document'));
 
-    // Build date filter
-    const dateFilter: any = {};
-    if (dateRange.from) {
-      dateFilter.gte = new Date(dateRange.from);
+    // Validate fields array
+    if (!Array.isArray(fields) || fields.length === 0) {
+      return NextResponse.json({ error: 'No fields selected' }, { status: 400 });
     }
-    if (dateRange.to) {
-      dateFilter.lte = new Date(dateRange.to);
+
+    // Build date filter with proper validation
+    const dateFilter: any = {};
+    if (dateRange?.from) {
+      try {
+        dateFilter.gte = new Date(dateRange.from);
+        if (isNaN(dateFilter.gte.getTime())) {
+          return NextResponse.json({ error: 'Invalid from date' }, { status: 400 });
+        }
+      } catch (error) {
+        return NextResponse.json({ error: 'Invalid from date format' }, { status: 400 });
+      }
+    }
+    if (dateRange?.to) {
+      try {
+        dateFilter.lte = new Date(dateRange.to);
+        if (isNaN(dateFilter.lte.getTime())) {
+          return NextResponse.json({ error: 'Invalid to date' }, { status: 400 });
+        }
+      } catch (error) {
+        return NextResponse.json({ error: 'Invalid to date format' }, { status: 400 });
+      }
     }
 
     // Get cases with related data
@@ -51,10 +70,10 @@ export async function POST(request: NextRequest) {
         include: {
           client: true,
           assignedTo: true,
-          documents: hasDocumentFields,
-          timeEntries: hasTimeFields,
-          invoices: hasInvoiceFields,
+          ...(hasDocumentFields && { documents: true }),
+          ...(hasTimeFields && { timeEntries: true }),
         },
+        take: 1000, // Limit to prevent timeout
       });
 
       for (const case_ of cases) {
@@ -88,8 +107,8 @@ export async function POST(request: NextRequest) {
 
         // Map client fields
         if (fields.some((f: any) => f.id === 'client_name')) {
-          row.client_name = case_.client.companyName || 
-            `${case_.client.firstName || ''} ${case_.client.lastName || ''}`.trim();
+          row.client_name = (case_.client as any).companyName || 
+            `${(case_.client as any).firstName || ''} ${(case_.client as any).lastName || ''}`.trim();
         }
 
         // Map document fields
@@ -99,23 +118,47 @@ export async function POST(request: NextRequest) {
 
         // Map time fields
         if (fields.some((f: any) => f.id === 'time_duration')) {
-          const totalDuration = case_.timeEntries?.reduce((sum, entry) => sum + entry.duration, 0) || 0;
+          let totalDuration = 0;
+          if (case_.timeEntries) {
+            for (const entry of case_.timeEntries) {
+              totalDuration += (entry as any).duration || 0;
+            }
+          }
           row.time_duration = Math.round(totalDuration / 60); // Convert to hours
         }
         if (fields.some((f: any) => f.id === 'time_billable')) {
-          const billableDuration = case_.timeEntries?.filter(entry => entry.isBillable)
-            .reduce((sum, entry) => sum + entry.duration, 0) || 0;
+          let billableDuration = 0;
+          if (case_.timeEntries) {
+            for (const entry of case_.timeEntries) {
+              if ((entry as any).isBillable) {
+                billableDuration += (entry as any).duration || 0;
+              }
+            }
+          }
           row.time_billable = Math.round(billableDuration / 60); // Convert to hours
         }
 
-        // Map invoice fields
-        if (fields.some((f: any) => f.id === 'invoice_amount')) {
-          const totalAmount = case_.invoices?.reduce((sum, invoice) => sum + invoice.total, 0) || 0;
-          row.invoice_amount = totalAmount;
-        }
-        if (fields.some((f: any) => f.id === 'invoice_status')) {
-          const statuses = case_.invoices?.map(invoice => invoice.status) || [];
-          row.invoice_status = statuses.join(', ') || 'Nema računa';
+        // Map invoice fields - invoices are related to clients, not cases
+        if (fields.some((f: any) => f.id === 'invoice_amount') || fields.some((f: any) => f.id === 'invoice_status')) {
+          try {
+            const clientInvoices = await db.invoice.findMany({
+              where: { clientId: case_.clientId },
+              select: { total: true, status: true }
+            });
+            
+            if (fields.some((f: any) => f.id === 'invoice_amount')) {
+              const totalAmount = clientInvoices.reduce((sum: number, invoice: any) => sum + (invoice.total || 0), 0);
+              row.invoice_amount = totalAmount;
+            }
+            if (fields.some((f: any) => f.id === 'invoice_status')) {
+              const statuses = clientInvoices.map((invoice: any) => invoice.status);
+              row.invoice_status = statuses.join(', ') || 'Nema računa';
+            }
+          } catch (error) {
+            console.error('Error fetching client invoices:', error);
+            row.invoice_amount = 0;
+            row.invoice_status = 'Greška';
+          }
         }
 
         reportData.push(row);
@@ -132,6 +175,7 @@ export async function POST(request: NextRequest) {
         include: {
           client: true,
         },
+        take: 1000, // Limit to prevent timeout
       });
 
       for (const invoice of invoices) {
@@ -170,6 +214,7 @@ export async function POST(request: NextRequest) {
             },
           },
         },
+        take: 1000, // Limit to prevent timeout
       });
 
       for (const entry of timeEntries) {

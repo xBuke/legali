@@ -42,15 +42,6 @@ export async function GET(
             taxId: true,
           }
         },
-        expenses: {
-          select: {
-            id: true,
-            date: true,
-            description: true,
-            category: true,
-            amount: true,
-          }
-        }
       }
     });
 
@@ -136,15 +127,6 @@ export async function PATCH(
             taxId: true,
           }
         },
-        expenses: {
-          select: {
-            id: true,
-            date: true,
-            description: true,
-            category: true,
-            amount: true,
-          }
-        }
       }
     });
 
@@ -198,14 +180,7 @@ export async function DELETE(
       );
     }
 
-    // Mark expenses as unbilled
-    await db.expense.updateMany({
-      where: { invoiceId: params.id },
-      data: { 
-        isBilled: false,
-        invoiceId: null 
-      }
-    });
+    // Note: Expense model not implemented yet
 
     // Delete the invoice
     await db.invoice.delete({

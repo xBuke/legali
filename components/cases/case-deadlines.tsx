@@ -72,8 +72,8 @@ export function CaseDeadlines({ caseId, users }: CaseDeadlinesProps) {
     title: '',
     description: '',
     dueDate: '',
-    type: 'custom' as const,
-    priority: 'medium' as const,
+    type: 'custom' as 'hearing' | 'filing' | 'response' | 'custom',
+    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
     assignedToId: '',
   })
 

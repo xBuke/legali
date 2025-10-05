@@ -290,7 +290,13 @@ export function CaseManagementSuite({
           <LazyCaseDetails caseId={caseId}>
             <CaseCollaboration 
               caseId={caseId}
-              currentUser={currentUser}
+              currentUser={{
+                ...currentUser,
+                permissions: currentUser.role === 'owner' ? ['read', 'write', 'delete', 'admin'] : 
+                           currentUser.role === 'admin' ? ['read', 'write'] : 
+                           currentUser.role === 'member' ? ['read', 'write'] : ['read'],
+                joinedAt: new Date()
+              }}
             />
           </LazyCaseDetails>
         </TabsContent>

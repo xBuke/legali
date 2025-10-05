@@ -72,9 +72,8 @@ export async function POST(request: NextRequest) {
         entityId: user.id,
         userId: user.id,
         organizationId: user.organizationId,
-        ipAddress: request.ip || request.headers.get('x-forwarded-for') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown',
-        changes: JSON.stringify({ code: code.substring(0, 2) + '****' })
+        changes: JSON.stringify({ code: code.substring(0, 2) + '****' }),
+        request
       });
 
       return NextResponse.json(
@@ -101,8 +100,7 @@ export async function POST(request: NextRequest) {
       entityId: user.id,
       userId: user.id,
       organizationId: user.organizationId,
-      ipAddress: request.ip || request.headers.get('x-forwarded-for') || 'unknown',
-      userAgent: request.headers.get('user-agent') || 'unknown'
+      request
     });
 
     return NextResponse.json({
