@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { signIn } from 'next-auth/react';
 import { db } from '@/lib/db';
 import { logAuthActivity } from '@/lib/activity-logger';
 

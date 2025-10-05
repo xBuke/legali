@@ -34,7 +34,27 @@ export const authConfig: NextAuthConfig = {
           },
         })
 
-        if (!user || !user.password) {
+        if (!user) {
+          throw new Error('Neispravni podaci za prijavu')
+        }
+
+        // Handle 2FA verified login
+        if (credentials.password === '2fa-verified') {
+          if (!user.isActive) {
+            throw new Error('Vaš račun je deaktiviran')
+          }
+          
+          return {
+            id: user.id,
+            email: user.email,
+            name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+            organizationId: user.organizationId,
+            role: user.role,
+          }
+        }
+
+        // Regular password verification
+        if (!user.password) {
           throw new Error('Neispravni podaci za prijavu')
         }
 

@@ -77,10 +77,10 @@ export default function Verify2FAPage() {
         const completeLoginData = await completeLoginResponse.json();
 
         if (completeLoginResponse.ok && completeLoginData.success) {
-          // Now create NextAuth session
+          // 2FA completed successfully - create NextAuth session
           const signInResult = await signIn('credentials', {
             email: email,
-            password: '', // Password already verified in custom login
+            password: '2fa-verified', // Special password for 2FA flow
             redirect: false,
           });
 
