@@ -101,3 +101,7 @@ export const authConfig: NextAuthConfig = {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)
+
+// Export for backward compatibility
+export const authOptions = authConfig
+export { auth as getServerSession }
