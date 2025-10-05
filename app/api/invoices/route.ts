@@ -118,8 +118,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate totals (no expenses, just time entries)
-    const subtotal = 0; // Will be calculated from time entries
+    // Calculate totals from time entries
+    const timeEntries = await db.timeEntry.findMany({
+      where: {
+        clientId: clientId,
+        organizationId: user.organizationId,
+        invoiceId: null, // Only unbilled time entries
+      }
+    });
+
+    const subtotal = timeEntries.reduce((sum, entry) => sum + (entry.amount || 0), 0);
     const taxRate = 25.00; // Croatian PDV
     const taxAmount = (subtotal * taxRate) / 100;
     const total = subtotal + taxAmount;
@@ -149,6 +157,18 @@ export async function POST(request: NextRequest) {
         organizationId: user.organizationId,
       }
     });
+
+    // Link time entries to the invoice
+    if (timeEntries.length > 0) {
+      await db.timeEntry.updateMany({
+        where: {
+          id: { in: timeEntries.map(entry => entry.id) }
+        },
+        data: {
+          invoiceId: invoice.id
+        }
+      });
+    }
 
 
     // Return invoice with related data

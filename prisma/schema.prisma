@@ -49,6 +49,7 @@ model Organization {
   apiKeys           ApiKey[]
   caseTimeline      CaseTimeline[]
   caseDeadlines     CaseDeadline[]
+  invoiceTemplates  InvoiceTemplate[]
   
   @@index([stripeCustomerId])
   @@map("organizations")
@@ -99,6 +100,7 @@ model User {
   caseDeadlinesAssigned CaseDeadline[] @relation("DeadlineAssignedTo")
   caseDeadlinesCreated  CaseDeadline[] @relation("DeadlineCreatedBy")
   documentTemplates DocumentTemplate[] @relation("TemplateAuthor")
+  invoiceTemplates  InvoiceTemplate[]
   
   @@index([organizationId])
   @@map("users")
@@ -595,4 +597,27 @@ model ApiKey {
   
   @@index([organizationId])
   @@map("api_keys")
+}
+
+model InvoiceTemplate {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  templateType      String   @default("standard") // standard, hourly, fixed, retainer
+  items             String   // JSON string of template items
+  terms             String?
+  notes             String?
+  isDefault         Boolean  @default(false)
+  
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  createdBy         String
+  createdByUser     User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([organizationId])
+  @@map("invoice_templates")
 }

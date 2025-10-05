@@ -141,19 +141,24 @@ iLegal is a comprehensive legal practice management platform designed for Croati
 
 ---
 
-### Option 2: Lemon Squeezy
-**Why it's good**:
-- ✅ **Merchant of Record**: They handle ALL tax compliance (VAT, sales tax) automatically
-- ✅ **Simplified Setup**: No business verification needed initially, faster to launch
-- ✅ **Global Coverage**: Supports 135+ currencies including HRK, EUR
-- ✅ **All-Inclusive Pricing**: 5% + payment processor fees, but includes tax handling
-- ✅ **Fraud Protection**: Built-in fraud prevention
-- ✅ **No Monthly Fees**: Pay only on transactions
-- ✅ **Great for Solo Founders**: Handles complex EU VAT regulations automatically
-- ⚠️ **Higher Fees**: ~3.5% + processor fees total (more expensive than Stripe)
-- ⚠️ **Less Control**: Limited customization compared to Stripe
+### Option 2: Stripe (Recommended)
+**Why it's the best choice**:
+- ✅ **Low Fees**: 1.4% + €0.25 per transaction (much lower than alternatives)
+- ✅ **Full Control**: Complete control over payment flows and customization
+- ✅ **EU Support**: Excellent support for European businesses and regulations
+- ✅ **Advanced Features**: Comprehensive subscription management, analytics, reporting
+- ✅ **Developer Experience**: Excellent API, documentation, and tooling
+- ✅ **Scalability**: Handles growth from startup to enterprise
+- ✅ **Integration**: Works seamlessly with Next.js and modern web apps
+- ✅ **Tax Tools**: Provides tools and integrations for VAT compliance
+- ✅ **Fraud Protection**: Advanced fraud detection and prevention
 
-**Best For**: MVP/early stage, solo founders, or if you want to avoid VAT compliance complexity
+**Considerations**:
+- ⚠️ **Business Setup**: Requires Croatian business entity (but this is beneficial long-term)
+- ⚠️ **Tax Handling**: Need to handle VAT compliance (but Stripe provides tools)
+- ⚠️ **Initial Setup**: Slightly more complex initial setup than alternatives
+
+**Best For**: All stages - MVP, growth, and enterprise. The best long-term choice.
 
 ---
 
@@ -177,11 +182,11 @@ iLegal is a comprehensive legal practice management platform designed for Croati
 
 | Stage | Recommended | Reasoning |
 |-------|-------------|-----------|
-| **MVP Launch** | Lemon Squeezy or Stripe | Lemon Squeezy for speed (no VAT hassle), Stripe if you have business setup |
+| **MVP Launch** | Stripe | Best choice for all stages - low fees, full control, excellent features |
 | **Growth Phase** | Stripe | Best balance of features, cost, and control |
-| **Enterprise Focus** | Paddle or Stripe | Advanced B2B features, mature subscription management |
+| **Enterprise Focus** | Stripe | Advanced B2B features, mature subscription management, excellent scalability |
 
-**My Top Pick**: Start with **Stripe** if you have or can quickly set up a Croatian business entity. The lower fees (1.4% vs 5%) will save significant money as you scale, and Croatian banks work well with Stripe. If you want to launch in 2-3 weeks without business setup, use **Lemon Squeezy** for MVP, then migrate to Stripe later.
+**My Top Pick**: **Stripe** is the clear winner for all stages. The lower fees (1.4% vs 5%+ for alternatives) will save significant money as you scale, Croatian banks work excellently with Stripe, and you get full control over your payment flows. The initial setup complexity is worth it for the long-term benefits.
 
 ---
 

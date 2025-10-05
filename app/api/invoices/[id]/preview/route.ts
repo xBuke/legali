@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { format } from 'date-fns';
 
-// GET /api/invoices/[id]/pdf - Generate PDF for an invoice
+// GET /api/invoices/[id]/preview - Preview PDF for an invoice in browser
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -292,17 +292,20 @@ export async function GET(
     // Generate PDF bytes
     const pdfBytes = await pdfDoc.save();
 
-    // Return PDF as response
+    // Return PDF as response for preview (inline display)
     return new NextResponse(pdfBytes as any, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="racun-${invoice.invoiceNumber}.pdf"`,
+        'Content-Disposition': `inline; filename="racun-${invoice.invoiceNumber}.pdf"`,
         'Content-Length': pdfBytes.length.toString(),
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
       },
     });
 
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    console.error('Error generating PDF preview:', error);
     console.error('Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined,
@@ -310,7 +313,7 @@ export async function GET(
     });
     return NextResponse.json(
       { 
-        error: 'Greška pri generiranju PDF-a',
+        error: 'Greška pri generiranju PDF pregleda',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }

@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { hr } from 'date-fns/locale';
+import { PaymentForm } from './payment-form';
 
 interface Payment {
   id: string;
@@ -299,6 +300,3 @@ export function PaymentList({ invoiceId, invoiceNumber, invoiceTotal, onPayments
     </div>
   );
 }
-
-// Import the PaymentForm component
-import { PaymentForm } from './payment-form';

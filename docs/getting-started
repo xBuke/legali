@@ -279,8 +279,8 @@ What makes iLegal special:
 - [ ] Test thoroughly with beta users
 
 ### Payment Processors:
-**Recommended**: Stripe (1.4% fees, best for EU)
-**Alternative**: Lemon Squeezy (5% fees, handles VAT automatically)
+**Recommended**: Stripe (1.4% fees, best for EU, full control)
+**Features**: Advanced subscription management, analytics, fraud protection
 
 See **PRODUCT_PLAN.md** Section 3 for detailed comparison.
 

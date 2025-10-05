@@ -375,7 +375,7 @@ Production:
 | **Prisma** | Best DX, great migrations, type-safe | Drizzle, raw SQL |
 | **PostgreSQL** | ACID compliance, JSON support, proven | MongoDB, MySQL |
 | **Clerk** | Best auth UX, built-in 2FA, org management | NextAuth, Auth0 |
-| **Stripe** | Industry standard, excellent EU support | Paddle, Lemon Squeezy |
+| **Stripe** | Industry standard, excellent EU support, low fees | Paddle, PayPal |
 | **Vercel** | Zero-config deployment, Edge Network | AWS, Railway |
 | **Tailwind CSS** | Rapid development, consistent design | CSS Modules, Styled Components |
 | **shadcn/ui** | High-quality components, customizable | Material UI, Chakra UI |

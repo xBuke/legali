@@ -164,10 +164,11 @@ Stripe (Payments)
 - ✅ Supports SEPA, Croatian cards
 - ✅ Built-in subscription management
 
-**Alternative for faster MVP**: **Lemon Squeezy**
-- ✅ Handles VAT automatically
-- ✅ No business registration needed initially
-- ⚠️ Higher fees (5%)
+**Payment Processing**: **Stripe**
+- ✅ Low fees (1.4% vs 5%+ for alternatives)
+- ✅ Full control and customization
+- ✅ Excellent EU support and Croatian bank integration
+- ✅ Advanced subscription management and analytics
 
 ---
 

@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/use-permissions';
 import { PermissionGuard } from '@/components/permission-guard';
 import { PERMISSIONS } from '@/lib/permissions';
-import { Plus, FileText, Download, Edit, Trash2, Eye, Calendar, Euro, CreditCard } from 'lucide-react';
+import { Plus, FileText, Download, Edit, Trash2, Eye, Calendar, Euro, CreditCard, FileSearch } from 'lucide-react';
 import { PaymentList } from '@/components/payments/payment-list';
 import { InvoiceTemplates } from '@/components/invoices/invoice-templates';
 import { InvoiceSearchFilters } from '@/components/invoices/invoice-search-filters';
@@ -311,6 +311,26 @@ export default function InvoicesPage() {
     }
   };
 
+  const handlePreviewPDF = (invoiceId: string, invoiceNumber: string) => {
+    try {
+      // Open PDF in new tab for preview
+      const previewUrl = `/api/invoices/${invoiceId}/preview`;
+      window.open(previewUrl, '_blank');
+      
+      toast({
+        title: 'Uspjeh',
+        description: 'PDF račun je otvoren za pregled',
+      });
+    } catch (error) {
+      console.error('Error previewing PDF:', error);
+      toast({
+        title: 'Greška',
+        description: 'Greška pri otvaranju PDF pregleda',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       clientId: '',
@@ -369,6 +389,28 @@ export default function InvoicesPage() {
     setIsDialogOpen(true);
   };
 
+  const handleTemplateSelect = (template: any) => {
+    // When a template is selected, open the create invoice dialog with template data
+    setFormData({
+      clientId: '',
+      dueDate: '',
+      notes: template.notes || '',
+      terms: template.terms || '',
+    });
+    setIsDialogOpen(true);
+    setShowTemplates(false); // Hide templates section after selection
+    
+    toast({
+      title: 'Predložak odabran',
+      description: `Predložak "${template.name}" je odabran. Možete dodati klijenta i stvoriti račun.`,
+    });
+  };
+
+  const handleViewInvoice = (invoice: Invoice) => {
+    setEditingInvoice(invoice);
+    setIsDialogOpen(true);
+  };
+
 
   const totalAmount = invoices.reduce((sum, invoice) => sum + invoice.total, 0);
   const paidAmount = invoices.reduce((sum, invoice) => sum + invoice.amountPaid, 0);
@@ -413,12 +455,93 @@ export default function InvoicesPage() {
               </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Novi račun</DialogTitle>
+              <DialogTitle>
+                {editingInvoice ? `Pregled računa ${editingInvoice.invoiceNumber}` : 'Novi račun'}
+              </DialogTitle>
               <DialogDescription>
-                Stvorite novi račun odabiranjem klijenta
+                {editingInvoice 
+                  ? `Pregled računa za ${getClientName(editingInvoice.client)}`
+                  : 'Stvorite novi račun odabiranjem klijenta'
+                }
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {editingInvoice ? (
+              <div className="space-y-6">
+                {/* Invoice Details */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Broj računa</Label>
+                    <Input value={editingInvoice.invoiceNumber} disabled />
+                  </div>
+                  <div>
+                    <Label>Status</Label>
+                    <div className="mt-2">{getStatusBadge(editingInvoice.status)}</div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Klijent</Label>
+                    <Input value={getClientName(editingInvoice.client)} disabled />
+                  </div>
+                  <div>
+                    <Label>Datum dospijeća</Label>
+                    <Input value={formatDate(editingInvoice.dueDate)} disabled />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label>Ukupno</Label>
+                    <Input value={`${editingInvoice.total.toFixed(2)} EUR`} disabled />
+                  </div>
+                  <div>
+                    <Label>Plaćeno</Label>
+                    <Input value={`${editingInvoice.amountPaid.toFixed(2)} EUR`} disabled />
+                  </div>
+                  <div>
+                    <Label>Preostalo</Label>
+                    <Input value={`${(editingInvoice.total - editingInvoice.amountPaid).toFixed(2)} EUR`} disabled />
+                  </div>
+                </div>
+
+                {editingInvoice.notes && (
+                  <div>
+                    <Label>Napomene</Label>
+                    <Textarea value={editingInvoice.notes} disabled rows={3} />
+                  </div>
+                )}
+
+                {editingInvoice.terms && (
+                  <div>
+                    <Label>Uvjeti plaćanja</Label>
+                    <Textarea value={editingInvoice.terms} disabled rows={3} />
+                  </div>
+                )}
+
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Zatvori
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => handlePreviewPDF(editingInvoice.id, editingInvoice.invoiceNumber)}
+                  >
+                    <FileSearch className="h-4 w-4 mr-2" />
+                    Pregledaj PDF
+                  </Button>
+                  <Button 
+                    type="button" 
+                    onClick={() => handleDownloadPDF(editingInvoice.id, editingInvoice.invoiceNumber)}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Preuzmi PDF
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="clientId">Klijent</Label>
@@ -468,15 +591,16 @@ export default function InvoicesPage() {
               </div>
 
 
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Odustani
-                </Button>
-                <Button type="submit">
-                  Stvori račun
-                </Button>
-              </div>
-            </form>
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Odustani
+                  </Button>
+                  <Button type="submit">
+                    Stvori račun
+                  </Button>
+                </div>
+              </form>
+            )}
           </DialogContent>
         </Dialog>
         </PermissionGuard>
@@ -493,7 +617,7 @@ export default function InvoicesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <InvoiceTemplates />
+            <InvoiceTemplates onTemplateSelect={handleTemplateSelect} />
           </CardContent>
         </Card>
       )}
@@ -606,9 +730,19 @@ export default function InvoicesPage() {
                         <Button 
                           size="icon" 
                           variant="outline"
+                          onClick={() => handleViewInvoice(invoice)}
                           className="min-h-[44px] min-w-[44px]"
                         >
                           <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="icon" 
+                          variant="outline"
+                          onClick={() => handlePreviewPDF(invoice.id, invoice.invoiceNumber)}
+                          title="Pregledaj PDF račun"
+                          className="min-h-[44px] min-w-[44px]"
+                        >
+                          <FileSearch className="h-4 w-4" />
                         </Button>
                         <Button 
                           size="icon" 
@@ -692,8 +826,20 @@ export default function InvoicesPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleViewInvoice(invoice)}
+                            >
                               <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handlePreviewPDF(invoice.id, invoice.invoiceNumber)}
+                              title="Pregledaj PDF račun"
+                            >
+                              <FileSearch className="h-4 w-4" />
                             </Button>
                             <Button 
                               size="sm" 
