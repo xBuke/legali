@@ -11,12 +11,12 @@
 |---------|--------|------------|-------|
 | **Invoice PDF Generation** | ⚠️ Partial | 70% | API endpoint exists but PDF generation fails with 500 error |
 | **Payment Tracking System** | ✅ Complete | 100% | Fully functional with UI and API |
-| **Expense Tracking System** | ✅ Complete | 100% | Fully functional with categorization and filtering |
 | **Case Timeline & Activity Log** | ✅ Complete | 100% | Activity logging system implemented |
 | **Global Search Functionality** | ✅ Complete | 100% | Search bar and functionality working |
-| **Time Tracking** | ✅ Complete | 100% | Added as bonus feature, fully functional |
+| **Time Tracking** | ✅ Complete | 100% | Case-based time tracking fully functional |
+| **Expense Tracking** | ❌ Removed | 0% | Feature completely removed per user request |
 
-**Overall Completion**: **~95%** (PDF generation partially fixed, needs deeper investigation)
+**Overall Completion**: **~95%** (PDF generation partially fixed, expenses removed)
 
 ---
 
@@ -106,47 +106,24 @@
 
 ---
 
-## ✅ **Task 3: Expense Tracking System** - 100% Complete
+## ❌ **Task 3: Expense Tracking System** - REMOVED
 
-### **What's Working:**
-- ✅ Expense management page (`/dashboard/expenses`)
-- ✅ Expense creation and editing
-- ✅ Expense categorization (Vještačenje, etc.)
-- ✅ Case linking for expenses
-- ✅ Billable/non-billable tracking
-- ✅ Billed status tracking
-- ✅ Expense filtering by:
-  - Category
-  - Billable status
-  - Billed status
-- ✅ Statistics dashboard showing:
-  - Total expenses: 1
-  - Total amount: 12,312.00 EUR
-  - Billable amount: 12,312.00 EUR
-  - Billed amount: 0.00 EUR
+**Status**: Feature completely removed per user request
 
-### **Test Results:**
-```
-✅ Expense page loads correctly
-✅ Existing expense found:
-   - Description: "asd"
-   - Category: Vještačenje
-   - Amount: 12,312.00 EUR
-   - Case: CASE-000001 - Ana Novak
-   - Status: Naplativo
-✅ Filter controls present and functional
-✅ Create/Edit buttons visible
-```
+**Removal Details:**
+- ✅ Removed expense navigation menu item
+- ✅ Deleted expense page (`/dashboard/expenses`)
+- ✅ Deleted expense API endpoints (`/api/expenses`)
+- ✅ Removed Expense model from database schema
+- ✅ Removed expense relations from other models
+- ✅ Updated invoice system to remove expense dependencies
+- ✅ Applied database migration to drop expenses table
 
-### **API Endpoints Verified:**
-- ✅ `GET /api/expenses` - List expenses with filtering
-- ✅ `POST /api/expenses` - Create expense
-- ✅ `PATCH /api/expenses/[id]` - Update expense
-- ✅ `DELETE /api/expenses/[id]` - Delete expense
+**Reason**: User requested removal of expenses feature to simplify the application
 
 ---
 
-## ✅ **Task 4: Case Timeline & Activity Log** - 100% Complete
+## ✅ **Task 3: Case Timeline & Activity Log** - 100% Complete
 
 ### **What's Working:**
 - ✅ Activity logging system implemented
@@ -171,7 +148,7 @@
 
 ---
 
-## ✅ **Task 5: Global Search Functionality** - 100% Complete
+## ✅ **Task 4: Global Search Functionality** - 100% Complete
 
 ### **What's Working:**
 - ✅ Global search bar in navigation
@@ -202,7 +179,7 @@
 
 ---
 
-## 🎁 **BONUS: Time Tracking Feature** - 100% Complete
+## ✅ **Task 5: Time Tracking Enhancement** - 100% Complete
 
 ### **What's Working:**
 - ✅ Time tracking page (`/dashboard/time-tracking`)

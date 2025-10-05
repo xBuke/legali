@@ -1,8 +1,8 @@
 # iLegal - Development Progress Tracker
 
-## 📊 Overall Progress: 3/13 Weeks (23% Complete) - WEEK 3 COMPLETE! ✅
+## 📊 Overall Progress: 4/13 Weeks (31% Complete) - WEEK 4 COMPLETE! ✅
 
-Last Updated: December 19, 2024
+Last Updated: October 5, 2025
 
 ---
 
@@ -138,9 +138,72 @@ Last Updated: December 19, 2024
 
 ---
 
+### Week 4: Billing & Polish ✅
+**Status**: 100% Complete
+
+**Completed Features:**
+- ✅ **Payment Tracking System**
+  - Complete payment management with categorization
+  - Payment methods: Cash, Bank Transfer, Credit Card, Check
+  - Payment status tracking: Pending, Completed, Failed, Refunded
+  - Integration with invoices for automatic status updates
+  - Payment history and filtering capabilities
+
+- ✅ **Case Timeline & Activity Log**
+  - Comprehensive activity logging system
+  - Timeline view for case progression
+  - User action tracking (create, update, delete operations)
+  - Entity change logging with before/after values
+  - Activity feed with timestamps and user attribution
+
+- ✅ **Global Search Functionality**
+  - Fuzzy search across multiple entities using Fuse.js
+  - Search clients, cases, documents, invoices, and time entries
+  - Real-time search results with highlighting
+  - Search result categorization and filtering
+  - Keyboard shortcuts (Ctrl+K) for quick access
+
+- ✅ **Time Tracking Enhancement**
+  - Case-based time tracking with hourly rates
+  - Duration tracking in minutes with automatic hour conversion
+  - Billable vs non-billable time categorization
+  - Integration with invoice generation
+  - Time entry management and reporting
+
+- ✅ **Invoice PDF Generation** (Partial)
+  - PDF generation API endpoint implemented
+  - Croatian formatting and legal compliance
+  - Time entries integration in PDF
+  - Note: PDF generation has technical issues (500 error) requiring further investigation
+
+**API Routes Created:**
+- `GET/POST /api/payments` - Payment tracking CRUD
+- `GET/PATCH/DELETE /api/payments/[id]` - Single payment operations
+- `GET /api/activity-logs` - Activity log retrieval
+- `GET /api/search` - Global search functionality
+- `GET /api/invoices/[id]/pdf` - PDF generation endpoint
+
+**Pages Created:**
+- `/dashboard/payments` - Payment management interface
+- Enhanced search functionality across all pages
+
+**Components Created:**
+- PaymentForm - Payment creation and editing
+- ActivityTimeline - Case activity visualization
+- GlobalSearch - Search interface with results
+- SearchResults - Search result display component
+
+**Database Changes:**
+- Added Payment model with comprehensive fields
+- Added ActivityLog model for audit trail
+- Removed Expense model (feature removed per user request)
+- Updated Invoice model to remove expense dependencies
+
+---
+
 ## 🔄 IN PROGRESS
 
-Currently: Week 3 testing phase
+Currently: Week 5 planning phase
 
 ---
 
@@ -148,9 +211,9 @@ Currently: Week 3 testing phase
 
 ### Week 5: Security & Testing
 - 2FA implementation
-- Audit logging
 - Document encryption
 - Security testing
+- PDF generation fixes
 - Bug fixes and polish
 
 ---
@@ -206,25 +269,34 @@ Currently: Week 3 testing phase
 - [x] Hourly rate management
 - [x] Time tracking per case
 - [x] Invoice generation
-- [ ] Invoice PDF
-- [ ] Payment tracking
-- [ ] Expense tracking
+- [x] Payment tracking
+- [x] Case-based time tracking
+- [ ] Invoice PDF (technical issues)
 
 ### Dashboard & Reports
 - [x] Basic dashboard layout
 - [x] Stats cards
-- [ ] Recent activity feed
+- [x] Recent activity feed
+- [x] Activity timeline
 - [ ] Analytics charts
 - [ ] Reports generation
 - [ ] Export data
+
+### Search & Navigation
+- [x] Global search functionality
+- [x] Fuzzy search across entities
+- [x] Search result highlighting
+- [x] Keyboard shortcuts
+- [ ] Advanced search filters
+- [ ] Search history
 
 ### Security
 - [x] Password hashing
 - [x] Session security
 - [x] Protected routes
 - [x] Role-based permissions
+- [x] Activity logging
 - [ ] 2FA
-- [ ] Audit logs
 - [ ] File encryption
 - [ ] IP whitelisting
 

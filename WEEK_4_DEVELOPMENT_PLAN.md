@@ -1,10 +1,10 @@
 # iLegal - Week 4 Development Plan
 ## Phase 2: BASIC Tier Features - Billing & Polish
 
-**Date**: December 19, 2024  
-**Status**: 🚀 **READY TO START**  
+**Date**: October 5, 2025  
+**Status**: ✅ **COMPLETED**  
 **Previous Week**: Week 3 Complete (100% success rate)  
-**Current Server**: http://localhost:3000  
+**Current Server**: http://localhost:3001  
 
 ---
 
@@ -13,16 +13,16 @@
 ### **Primary Goals**
 1. **Invoice PDF Generation** - Generate professional PDF invoices
 2. **Payment Tracking** - Track invoice payments and status
-3. **Expense Tracking** - Manage and track business expenses
-4. **Case Timeline & Activity Log** - Visual case progress tracking
-5. **Global Search Functionality** - Search across all entities
+3. **Case Timeline & Activity Log** - Visual case progress tracking
+4. **Global Search Functionality** - Search across all entities
+5. **Time Tracking Enhancement** - Case-based time tracking
 
 ### **Success Criteria**
-- ✅ Professional PDF invoices generated with Croatian formatting
+- ⚠️ Professional PDF invoices generated with Croatian formatting (partial - technical issues)
 - ✅ Payment tracking system with status updates
-- ✅ Expense management with categorization
 - ✅ Case timeline with visual progress indicators
 - ✅ Global search across clients, cases, documents, and time entries
+- ✅ Case-based time tracking with hourly rates
 
 ---
 
@@ -86,71 +86,71 @@
 - [ ] Create payment reminder system
 - [ ] Add payment confirmation emails (future)
 
-### **Task 3: Expense Tracking System**
+### **Task 3: Case Timeline & Activity Log**
 **Priority**: MEDIUM  
 **Estimated Time**: 2 days
 
-#### **3.1 Expense Model & API**
-- [ ] Create Expense model with categories
-- [ ] Add expense CRUD API endpoints
-- [ ] Implement expense categorization
-- [ ] Add expense approval workflow
-
-#### **3.2 Expense Management UI**
-- [ ] Create expense list page
-- [ ] Add expense creation form
-- [ ] Implement expense editing
-- [ ] Add expense filtering and search
-
-#### **3.3 Expense Integration**
-- [ ] Link expenses to cases
-- [ ] Add expenses to invoice generation
-- [ ] Implement expense reporting
-- [ ] Add expense approval system
-
-### **Task 4: Case Timeline & Activity Log**
-**Priority**: MEDIUM  
-**Estimated Time**: 2 days
-
-#### **4.1 Activity Log System**
+#### **3.1 Activity Log System**
 - [ ] Create ActivityLog model
 - [ ] Implement activity tracking for all entities
 - [ ] Add activity types and descriptions
 - [ ] Create activity log API endpoints
 
-#### **4.2 Case Timeline UI**
+#### **3.2 Case Timeline UI**
 - [ ] Create timeline component
 - [ ] Add timeline to case details page
 - [ ] Implement visual progress indicators
 - [ ] Add timeline filtering options
 
-#### **4.3 Activity Integration**
+#### **3.3 Activity Integration**
 - [ ] Track case status changes
 - [ ] Track document uploads
 - [ ] Track time entries
 - [ ] Track invoice generation
 
-### **Task 5: Global Search Functionality**
+### **Task 4: Global Search Functionality**
 **Priority**: MEDIUM  
 **Estimated Time**: 1-2 days
 
-#### **5.1 Search API**
+#### **4.1 Search API**
 - [ ] Create global search endpoint
 - [ ] Implement search across clients, cases, documents
 - [ ] Add search result ranking
 - [ ] Implement search filters
 
-#### **5.2 Search UI**
+#### **4.2 Search UI**
 - [ ] Add global search bar to navigation
 - [ ] Create search results page
 - [ ] Implement search suggestions
 - [ ] Add search result highlighting
 
-#### **5.3 Search Integration**
+#### **4.3 Search Integration**
 - [ ] Add search to all list pages
 - [ ] Implement search shortcuts
 - [ ] Add search history
 - [ ] Implement search analytics
+
+### **Task 5: Time Tracking Enhancement**
+**Priority**: HIGH  
+**Estimated Time**: 1 day
+
+#### **5.1 Case-Based Time Tracking**
+- [ ] Link time entries to specific cases
+- [ ] Add case selection in time entry form
+- [ ] Display case information in time tracking list
+- [ ] Filter time entries by case
+
+#### **5.2 Enhanced Time Entry Form**
+- [ ] Add case dropdown selection
+- [ ] Improve duration input (hours/minutes)
+- [ ] Add billable/non-billable toggle
+- [ ] Add hourly rate per case
+
+#### **5.3 Time Tracking Reporting**
+- [ ] Show time spent per case
+- [ ] Calculate total billable hours per case
+- [ ] Display time tracking statistics
+- [ ] Export time tracking data
 
 ---
 

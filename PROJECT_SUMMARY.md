@@ -39,9 +39,9 @@
 ```
 Next.js 14 (Frontend + API)
     ↓
-Clerk (Authentication + 2FA)
+NextAuth.js v5 (Authentication)
     ↓
-PostgreSQL (Multi-tenant data)
+SQLite/PostgreSQL (Multi-tenant data)
     ↓
 Vercel Blob (Encrypted documents)
     ↓
@@ -103,9 +103,9 @@ Stripe (Payments)
 ### Week 4: Billing & Polish
 - 4.1 Invoice PDF generation
 - 4.2 Payment tracking
-- 4.3 Expense tracking
-- 4.4 Case timeline and activity log
-- 4.5 Search functionality
+- 4.3 Case timeline and activity log
+- 4.4 Search functionality
+- 4.5 Time tracking per case
 
 ### Week 5: Security & Testing
 - 5.1 2FA implementation
@@ -198,7 +198,7 @@ Stripe (Payments)
 - Clients (individuals or companies)
 - Cases (with court info, deadlines)
 - Documents (encrypted, versioned)
-- Time Entries & Expenses
+- Time Entries (per case tracking)
 - Invoices (with Croatian PDV/VAT)
 - Tasks & Notes
 - Audit Logs & API Keys
