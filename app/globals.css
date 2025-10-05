@@ -57,3 +57,103 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Prevent container overflow and ensure proper grid behavior */
+  .container-overflow-fix {
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  
+  /* Ensure main content area doesn't overflow */
+  .main-content-fix {
+    max-width: calc(100vw - 256px); /* Account for sidebar width */
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  
+  @media (max-width: 768px) {
+    .main-content-fix {
+      max-width: 100vw;
+    }
+  }
+  
+  /* Ensure grid items don't overflow */
+  .grid-overflow-fix {
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  /* Responsive text truncation */
+  .text-responsive-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  /* Better responsive grid behavior */
+  .responsive-grid {
+    display: grid;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  
+  .responsive-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .responsive-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Ultra-wide screens (1920px+) - 4 columns */
+  @media (min-width: 1920px) {
+    .responsive-grid-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  
+  /* Large screens (1440px-1919px) - 4 columns */
+  @media (min-width: 1440px) and (max-width: 1919px) {
+    .responsive-grid-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  
+  /* Medium-large screens (1200px-1439px) - 3 columns */
+  @media (min-width: 1200px) and (max-width: 1439px) {
+    .responsive-grid-4 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  /* Medium screens (1024px-1199px) - 2 columns */
+  @media (min-width: 1024px) and (max-width: 1199px) {
+    .responsive-grid-4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  /* Small screens (below 1024px) - 2 columns */
+  @media (max-width: 1023px) {
+    .responsive-grid-4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  /* Ultra-wide screen optimizations */
+  @media (min-width: 1920px) {
+    .responsive-grid {
+      gap: 1rem;
+      max-width: 1600px; /* Limit max width for better readability */
+      margin: 0 auto;
+    }
+    
+    .main-content-fix {
+      max-width: calc(1600px - 256px);
+    }
+  }
+}

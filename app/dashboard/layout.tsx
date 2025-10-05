@@ -29,7 +29,7 @@ export default function DashboardLayout({
 }) {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const { canAccessRoute } = usePermissions()
 
@@ -63,11 +63,23 @@ export default function DashboardLayout({
 
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar */}
       <aside
         className={`${
-          sidebarOpen ? 'w-64' : 'w-20'
-        } bg-card border-r border-border transition-all duration-300 flex flex-col`}
+          sidebarOpen 
+            ? 'w-64' 
+            : 'w-0 md:w-20'
+        } bg-card border-r border-border transition-all duration-300 flex flex-col fixed md:relative z-50 md:z-auto h-full overflow-hidden ${
+          !sidebarOpen ? 'hidden md:flex' : 'flex'
+        }`}
       >
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-border">
@@ -81,7 +93,7 @@ export default function DashboardLayout({
             variant="ghost"
             size="icon"
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className={!sidebarOpen ? 'mx-auto' : ''}
+            className={`${!sidebarOpen ? 'mx-auto' : ''} min-h-[44px] min-w-[44px]`}
           >
             <Menu className="h-5 w-5" />
           </Button>
@@ -95,10 +107,16 @@ export default function DashboardLayout({
               <Link
                 key={item.name}
                 href={item.href}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+                className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-accent transition-colors min-h-[44px]"
+                onClick={() => {
+                  // Close sidebar on mobile when navigating
+                  if (window.innerWidth < 768) {
+                    setSidebarOpen(false)
+                  }
+                }}
               >
                 <Icon className="h-5 w-5 flex-shrink-0" />
-                {sidebarOpen && <span>{item.name}</span>}
+                {sidebarOpen && <span className="text-sm md:text-base">{item.name}</span>}
               </Link>
             )
           })}
@@ -108,40 +126,56 @@ export default function DashboardLayout({
         <div className="p-4 border-t border-border space-y-2">
           <Link
             href="/dashboard/settings"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors"
+            className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-accent transition-colors min-h-[44px]"
+            onClick={() => {
+              // Close sidebar on mobile when navigating
+              if (window.innerWidth < 768) {
+                setSidebarOpen(false)
+              }
+            }}
           >
             <Settings className="h-5 w-5 flex-shrink-0" />
-            {sidebarOpen && <span>Postavke</span>}
+            {sidebarOpen && <span className="text-sm md:text-base">Postavke</span>}
           </Link>
           <Button
             variant="ghost"
             onClick={() => signOut({ callbackUrl: '/sign-in' })}
-            className="w-full justify-start"
+            className="w-full justify-start min-h-[44px]"
           >
             <LogOut className="h-5 w-5 flex-shrink-0" />
-            {sidebarOpen && <span className="ml-3">Odjava</span>}
+            {sidebarOpen && <span className="ml-3 text-sm md:text-base">Odjava</span>}
           </Button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Header */}
-        <header className="h-16 border-b border-border flex items-center justify-between px-6">
-          <div>
-            <h2 className="text-lg font-semibold">
-              {session?.user?.name || session?.user?.email}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {session?.user?.role}
-            </p>
+        <header className="h-16 border-b border-border flex items-center justify-between px-4 md:px-6 flex-shrink-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden min-h-[44px] min-w-[44px] flex-shrink-0"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base md:text-lg font-semibold truncate">
+                {session?.user?.name || session?.user?.email}
+              </h2>
+              <p className="text-xs md:text-sm text-muted-foreground truncate">
+                {session?.user?.role}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 min-h-[44px]"
             >
               <Search className="h-4 w-4" />
               <span className="hidden sm:inline">Pretraži</span>
@@ -151,8 +185,10 @@ export default function DashboardLayout({
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6 bg-background">
-          {children}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-background min-h-0 w-full main-content-fix">
+          <div className="w-full max-w-full overflow-hidden">
+            {children}
+          </div>
         </main>
       </div>
 

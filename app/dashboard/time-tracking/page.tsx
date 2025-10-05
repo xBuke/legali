@@ -298,16 +298,19 @@ export default function TimeTrackingPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Pratnja vremena</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold">Pratnja vremena</h1>
+          <p className="text-muted-foreground text-sm md:text-base">
             Upravljajte unosima vremena i satnicom
           </p>
         </div>
         <PermissionGuard permission={PERMISSIONS.TIME_ENTRIES_CREATE}>
-          <Button onClick={openCreateDialog}>
+          <Button 
+            onClick={openCreateDialog}
+            className="w-full sm:w-auto min-h-[44px]"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Novi unos vremena
           </Button>
@@ -352,71 +355,63 @@ export default function TimeTrackingPage() {
           <CardDescription>Pregled svih unosa vremena</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Datum</TableHead>
-                <TableHead>Opis</TableHead>
-                <TableHead>Predmet</TableHead>
-                <TableHead>Trajanje</TableHead>
-                <TableHead>Satnica</TableHead>
-                <TableHead>Iznos</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Akcije</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {timeEntries.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
-                    Nema unosa vremena
-                  </TableCell>
-                </TableRow>
-              ) : (
-                timeEntries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell>{formatDate(entry.date)}</TableCell>
-                    <TableCell>
-                      <div className="font-medium">{entry.description}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {entry.user.firstName} {entry.user.lastName}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {entry.case ? (
-                        <div>
-                          <div className="font-medium">{entry.case.caseNumber}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {getClientName(entry.case.client)}
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">Bez predmeta</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{formatDuration(entry.duration)}</TableCell>
-                    <TableCell>{entry.hourlyRate.toFixed(2)} EUR/h</TableCell>
-                    <TableCell>{entry.amount.toFixed(2)} EUR</TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <Badge variant={entry.isBillable ? 'default' : 'secondary'}>
-                          {entry.isBillable ? 'Naplativo' : 'Nenaplativo'}
-                        </Badge>
-                        {entry.isBilled && (
-                          <Badge variant="outline">
-                            Naplaćeno
+          {timeEntries.length === 0 ? (
+            <div className="text-center py-8">
+              <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground">Nema unosa vremena</p>
+            </div>
+          ) : (
+            <>
+              {/* Mobile Card Layout */}
+              <div className="block md:hidden space-y-3">
+                {timeEntries.map((entry) => (
+                  <Card key={entry.id} className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base truncate">
+                          {entry.description}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {entry.user.firstName} {entry.user.lastName}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge variant={entry.isBillable ? 'default' : 'secondary'} className="text-xs">
+                            {entry.isBillable ? 'Naplativo' : 'Nenaplativo'}
                           </Badge>
-                        )}
+                          {entry.isBilled && (
+                            <Badge variant="outline" className="text-xs">
+                              Naplaćeno
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="mt-2 space-y-1">
+                          <div className="text-sm text-muted-foreground">
+                            Datum: {formatDate(entry.date)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Trajanje: {formatDuration(entry.duration)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Satnica: {entry.hourlyRate.toFixed(2)} EUR/h
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Iznos: {entry.amount.toFixed(2)} EUR
+                          </div>
+                          {entry.case && (
+                            <div className="text-sm text-muted-foreground">
+                              Predmet: {entry.case.caseNumber} - {getClientName(entry.case.client)}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
+                      <div className="flex gap-2 ml-3">
                         <PermissionGuard permission={PERMISSIONS.TIME_ENTRIES_UPDATE}>
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
                             onClick={() => handleEdit(entry)}
                             disabled={entry.isBilled}
+                            className="min-h-[44px] min-w-[44px]"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -424,27 +419,110 @@ export default function TimeTrackingPage() {
                         <PermissionGuard permission={PERMISSIONS.TIME_ENTRIES_DELETE}>
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
                             onClick={() => handleDelete(entry.id)}
                             disabled={entry.isBilled}
+                            className="min-h-[44px] min-w-[44px]"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
                         </PermissionGuard>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop Table Layout */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Datum</TableHead>
+                      <TableHead>Opis</TableHead>
+                      <TableHead>Predmet</TableHead>
+                      <TableHead>Trajanje</TableHead>
+                      <TableHead>Satnica</TableHead>
+                      <TableHead>Iznos</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Akcije</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {timeEntries.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell>{formatDate(entry.date)}</TableCell>
+                        <TableCell>
+                          <div className="font-medium">{entry.description}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {entry.user.firstName} {entry.user.lastName}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {entry.case ? (
+                            <div>
+                              <div className="font-medium">{entry.case.caseNumber}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {getClientName(entry.case.client)}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">Bez predmeta</span>
+                          )}
+                        </TableCell>
+                        <TableCell>{formatDuration(entry.duration)}</TableCell>
+                        <TableCell>{entry.hourlyRate.toFixed(2)} EUR/h</TableCell>
+                        <TableCell>{entry.amount.toFixed(2)} EUR</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <Badge variant={entry.isBillable ? 'default' : 'secondary'}>
+                              {entry.isBillable ? 'Naplativo' : 'Nenaplativo'}
+                            </Badge>
+                            {entry.isBilled && (
+                              <Badge variant="outline">
+                                Naplaćeno
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <PermissionGuard permission={PERMISSIONS.TIME_ENTRIES_UPDATE}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(entry)}
+                                disabled={entry.isBilled}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </PermissionGuard>
+                            <PermissionGuard permission={PERMISSIONS.TIME_ENTRIES_DELETE}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(entry.id)}
+                                disabled={entry.isBilled}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </PermissionGuard>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
       {/* Create/Edit Dialog */}
       <PermissionGuard permission={PERMISSIONS.TIME_ENTRIES_CREATE}>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl mx-4 md:mx-0">
             <DialogHeader>
               <DialogTitle>
                 {editingEntry ? 'Uredi unos vremena' : 'Novi unos vremena'}

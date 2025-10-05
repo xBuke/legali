@@ -70,6 +70,12 @@ model User {
   lastLoginAt       DateTime?
   emailVerified     DateTime?
   
+  // 2FA (Two-Factor Authentication)
+  twoFactorSecret   String?  // TOTP secret
+  twoFactorEnabled  Boolean  @default(false)
+  backupCodes       String?  // JSON array of backup codes
+  twoFactorVerifiedAt DateTime?
+  
   organizationId    String
   organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   
@@ -227,6 +233,8 @@ model Document {
   
   // Encryption
   encryptionIv      String?  // Initialization vector for AES
+  encryptionKey     String?  // Per-document encryption key
+  fileHash          String?  // SHA-256 hash for integrity checking
   isEncrypted       Boolean  @default(true)
   
   // Metadata

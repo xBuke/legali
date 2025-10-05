@@ -3,7 +3,6 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { format } from 'date-fns';
-import { hr } from 'date-fns/locale';
 
 // GET /api/invoices/[id]/pdf - Generate PDF for an invoice
 export async function GET(
@@ -97,8 +96,8 @@ export async function GET(
     drawText('RAČUN', 50, height - 50, { size: 24, font: boldFont });
     drawText(`Broj: ${invoice.invoiceNumber}`, 50, height - 80, { size: 12, font: boldFont });
     
-    const issueDate = format(new Date(invoice.issueDate), 'dd.MM.yyyy', { locale: hr });
-    const dueDate = format(new Date(invoice.dueDate), 'dd.MM.yyyy', { locale: hr });
+    const issueDate = format(new Date(invoice.issueDate), 'dd.MM.yyyy');
+    const dueDate = format(new Date(invoice.dueDate), 'dd.MM.yyyy');
     
     drawText(`Datum izdavanja: ${issueDate}`, 50, height - 100, { size: 10 });
     drawText(`Datum dospijeća: ${dueDate}`, 50, height - 115, { size: 10 });

@@ -324,23 +324,26 @@ export default function InvoicesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Računi</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold">Računi</h1>
+          <p className="text-muted-foreground text-sm md:text-base">
             Upravljajte računima i naplatom
           </p>
         </div>
         <PermissionGuard permission={PERMISSIONS.INVOICES_CREATE}>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={openCreateDialog}>
+              <Button 
+                onClick={openCreateDialog}
+                className="w-full sm:w-auto min-h-[44px]"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Novi račun
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto mx-4 md:mx-0">
             <DialogHeader>
               <DialogTitle>Novi račun</DialogTitle>
               <DialogDescription>
@@ -460,91 +463,175 @@ export default function InvoicesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Broj računa</TableHead>
-                <TableHead>Klijent</TableHead>
-                <TableHead>Datum izdavanja</TableHead>
-                <TableHead>Datum dospijeća</TableHead>
-                <TableHead>Iznos</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Akcije</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoices.map((invoice) => (
-                <TableRow key={invoice.id}>
-                  <TableCell className="font-medium">
-                    {invoice.invoiceNumber}
-                  </TableCell>
-                  <TableCell>
-                    {getClientName(invoice.client)}
-                  </TableCell>
-                  <TableCell>
-                    {formatDate(invoice.issueDate)}
-                  </TableCell>
-                  <TableCell>
-                    {formatDate(invoice.dueDate)}
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{invoice.total.toFixed(2)} EUR</div>
-                      {invoice.amountPaid > 0 && (
-                        <div className="text-sm text-muted-foreground">
-                          Plaćeno: {invoice.amountPaid.toFixed(2)} EUR
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {getStatusBadge(invoice.status)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleDownloadPDF(invoice.id, invoice.invoiceNumber)}
-                        title="Preuzmi PDF račun"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <PermissionGuard permission={PERMISSIONS.INVOICES_UPDATE}>
-                        {invoice.status !== 'PAID' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleMarkAsPaid(invoice.id)}
-                          >
-                            <Euro className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </PermissionGuard>
-                      <PermissionGuard permission={PERMISSIONS.INVOICES_DELETE}>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDelete(invoice.id)}
-                          disabled={invoice.status === 'PAID'}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </PermissionGuard>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          
-          {invoices.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              Nema računa
+          {invoices.length === 0 ? (
+            <div className="text-center py-8">
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground">Nema računa</p>
             </div>
+          ) : (
+            <>
+              {/* Mobile Card Layout */}
+              <div className="block md:hidden space-y-3">
+                {invoices.map((invoice) => (
+                  <Card key={invoice.id} className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base truncate">
+                          {invoice.invoiceNumber}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1 truncate">
+                          {getClientName(invoice.client)}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          {getStatusBadge(invoice.status)}
+                        </div>
+                        <div className="mt-2 space-y-1">
+                          <div className="text-sm text-muted-foreground">
+                            Datum izdavanja: {formatDate(invoice.issueDate)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Datum dospijeća: {formatDate(invoice.dueDate)}
+                          </div>
+                          <div className="text-sm font-medium">
+                            Iznos: {invoice.total.toFixed(2)} EUR
+                          </div>
+                          {invoice.amountPaid > 0 && (
+                            <div className="text-sm text-muted-foreground">
+                              Plaćeno: {invoice.amountPaid.toFixed(2)} EUR
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-3">
+                        <Button 
+                          size="icon" 
+                          variant="outline"
+                          className="min-h-[44px] min-w-[44px]"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="icon" 
+                          variant="outline"
+                          onClick={() => handleDownloadPDF(invoice.id, invoice.invoiceNumber)}
+                          title="Preuzmi PDF račun"
+                          className="min-h-[44px] min-w-[44px]"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <PermissionGuard permission={PERMISSIONS.INVOICES_UPDATE}>
+                          {invoice.status !== 'PAID' && (
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              onClick={() => handleMarkAsPaid(invoice.id)}
+                              className="min-h-[44px] min-w-[44px]"
+                            >
+                              <Euro className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </PermissionGuard>
+                        <PermissionGuard permission={PERMISSIONS.INVOICES_DELETE}>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            onClick={() => handleDelete(invoice.id)}
+                            disabled={invoice.status === 'PAID'}
+                            className="min-h-[44px] min-w-[44px]"
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </PermissionGuard>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop Table Layout */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Broj računa</TableHead>
+                      <TableHead>Klijent</TableHead>
+                      <TableHead>Datum izdavanja</TableHead>
+                      <TableHead>Datum dospijeća</TableHead>
+                      <TableHead>Iznos</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Akcije</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {invoices.map((invoice) => (
+                      <TableRow key={invoice.id}>
+                        <TableCell className="font-medium">
+                          {invoice.invoiceNumber}
+                        </TableCell>
+                        <TableCell>
+                          {getClientName(invoice.client)}
+                        </TableCell>
+                        <TableCell>
+                          {formatDate(invoice.issueDate)}
+                        </TableCell>
+                        <TableCell>
+                          {formatDate(invoice.dueDate)}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{invoice.total.toFixed(2)} EUR</div>
+                            {invoice.amountPaid > 0 && (
+                              <div className="text-sm text-muted-foreground">
+                                Plaćeno: {invoice.amountPaid.toFixed(2)} EUR
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(invoice.status)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button size="sm" variant="outline">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleDownloadPDF(invoice.id, invoice.invoiceNumber)}
+                              title="Preuzmi PDF račun"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <PermissionGuard permission={PERMISSIONS.INVOICES_UPDATE}>
+                              {invoice.status !== 'PAID' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleMarkAsPaid(invoice.id)}
+                                >
+                                  <Euro className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </PermissionGuard>
+                            <PermissionGuard permission={PERMISSIONS.INVOICES_DELETE}>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDelete(invoice.id)}
+                                disabled={invoice.status === 'PAID'}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </PermissionGuard>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

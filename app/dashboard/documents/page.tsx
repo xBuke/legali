@@ -284,15 +284,18 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Dokumenti</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold">Dokumenti</h1>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">
             Upravljajte svojim dokumentima
           </p>
         </div>
-        <Button onClick={() => { resetForm(); setDialogOpen(true) }}>
+        <Button 
+          onClick={() => { resetForm(); setDialogOpen(true) }}
+          className="w-full sm:w-auto min-h-[44px]"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Dodaj dokument
         </Button>
@@ -320,75 +323,52 @@ export default function DocumentsPage() {
               </Button>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Naziv</TableHead>
-                  <TableHead>Kategorija</TableHead>
-                  <TableHead>Predmet</TableHead>
-                  <TableHead>Klijent</TableHead>
-                  <TableHead>Veličina</TableHead>
-                  <TableHead>Datum</TableHead>
-                  <TableHead className="text-right">Akcije</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile Card Layout */}
+              <div className="block md:hidden space-y-3">
                 {documents.map((document) => (
-                  <TableRow key={document.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{document.title || document.originalName}</div>
-                        <div className="text-sm text-muted-foreground">
+                  <Card key={document.id} className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base truncate">
+                          {document.title || document.originalName}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1">
                           {document.mimeType}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          {document.category && (
+                            <Badge variant="outline" className="text-xs">
+                              {document.category}
+                            </Badge>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {formatFileSize(document.fileSize)}
+                          </span>
+                        </div>
+                        <div className="mt-2 space-y-1">
+                          {document.case && (
+                            <div className="text-sm text-muted-foreground">
+                              Predmet: <Link href={`/dashboard/cases/${document.case.id}`} className="text-primary hover:underline">{document.case.caseNumber}</Link>
+                            </div>
+                          )}
+                          {document.client && (
+                            <div className="text-sm text-muted-foreground">
+                              Klijent: <Link href={`/dashboard/clients/${document.client.id}`} className="text-primary hover:underline">{getClientName(document.client)}</Link>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Calendar className="h-3 w-3 flex-shrink-0" />
+                            <span>{format(new Date(document.createdAt), 'dd.MM.yyyy')}</span>
+                          </div>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      {document.category && (
-                        <Badge variant="outline">
-                          {document.category}
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {document.case ? (
-                        <Link 
-                          href={`/dashboard/cases/${document.case.id}`}
-                          className="text-primary hover:underline"
-                        >
-                          {document.case.caseNumber}
-                        </Link>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {document.client ? (
-                        <Link 
-                          href={`/dashboard/clients/${document.client.id}`}
-                          className="text-primary hover:underline"
-                        >
-                          {getClientName(document.client)}
-                        </Link>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {formatFileSize(document.fileSize)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1 text-sm">
-                        <Calendar className="h-3 w-3" />
-                        {format(new Date(document.createdAt), 'dd.MM.yyyy')}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex gap-2 ml-3">
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => setViewingDocument(document)}
+                          className="min-h-[44px] min-w-[44px]"
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -396,6 +376,7 @@ export default function DocumentsPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => window.open(document.fileUrl, '_blank')}
+                          className="min-h-[44px] min-w-[44px]"
                         >
                           <Download className="h-4 w-4" />
                         </Button>
@@ -403,6 +384,7 @@ export default function DocumentsPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => openEditDialog(document)}
+                          className="min-h-[44px] min-w-[44px]"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -410,22 +392,126 @@ export default function DocumentsPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(document.id)}
+                          className="min-h-[44px] min-w-[44px]"
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop Table Layout */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Naziv</TableHead>
+                      <TableHead>Kategorija</TableHead>
+                      <TableHead>Predmet</TableHead>
+                      <TableHead>Klijent</TableHead>
+                      <TableHead>Veličina</TableHead>
+                      <TableHead>Datum</TableHead>
+                      <TableHead className="text-right">Akcije</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {documents.map((document) => (
+                      <TableRow key={document.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{document.title || document.originalName}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {document.mimeType}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {document.category && (
+                            <Badge variant="outline">
+                              {document.category}
+                            </Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {document.case ? (
+                            <Link 
+                              href={`/dashboard/cases/${document.case.id}`}
+                              className="text-primary hover:underline"
+                            >
+                              {document.case.caseNumber}
+                            </Link>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {document.client ? (
+                            <Link 
+                              href={`/dashboard/clients/${document.client.id}`}
+                              className="text-primary hover:underline"
+                            >
+                              {getClientName(document.client)}
+                            </Link>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {formatFileSize(document.fileSize)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1 text-sm">
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(document.createdAt), 'dd.MM.yyyy')}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setViewingDocument(document)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => window.open(document.fileUrl, '_blank')}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditDialog(document)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(document.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-4 md:mx-0">
           <DialogHeader>
             <DialogTitle>
               {editingDocument ? 'Uredi dokument' : 'Dodaj novi dokument'}

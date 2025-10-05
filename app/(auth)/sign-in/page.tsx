@@ -25,19 +25,49 @@ export default function SignInPage() {
     setError('')
 
     try {
-      const result = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
+      // First, try custom login to check for 2FA
+      const loginResponse = await fetch('/api/auth/custom-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
       })
 
-      if (result?.error) {
-        setError(result.error)
-      } else if (result?.ok) {
-        router.push('/dashboard')
-        router.refresh()
+      const loginData = await loginResponse.json()
+
+      if (loginResponse.ok) {
+        if (loginData.requires2FA) {
+          // User has 2FA enabled - redirect to 2FA verification
+          const params = new URLSearchParams({
+            email: formData.email,
+            sessionId: loginData.sessionId,
+          })
+          router.push(`/verify-2fa?${params.toString()}`)
+          return
+        } else if (loginData.success) {
+          // No 2FA required - proceed with NextAuth sign-in
+          const result = await signIn('credentials', {
+            email: formData.email,
+            password: formData.password,
+            redirect: false,
+          })
+
+          if (result?.error) {
+            setError(result.error)
+          } else if (result?.ok) {
+            router.push('/dashboard')
+            router.refresh()
+          }
+        }
+      } else {
+        setError(loginData.error || 'Greška pri prijavi')
       }
     } catch (error) {
+      console.error('Login error:', error)
       setError('Došlo je do greške pri prijavi')
     } finally {
       setLoading(false)

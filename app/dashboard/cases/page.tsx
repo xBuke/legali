@@ -276,15 +276,18 @@ export default function CasesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Predmeti</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold">Predmeti</h1>
+          <p className="text-muted-foreground mt-1 text-sm md:text-base">
             Upravljajte svojim pravnim predmetima
           </p>
         </div>
-        <Button onClick={() => { resetForm(); setDialogOpen(true) }}>
+        <Button 
+          onClick={() => { resetForm(); setDialogOpen(true) }}
+          className="w-full sm:w-auto min-h-[44px]"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Dodaj predmet
         </Button>
@@ -312,72 +315,48 @@ export default function CasesPage() {
               </Button>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Broj predmeta</TableHead>
-                  <TableHead>Naziv</TableHead>
-                  <TableHead>Klijent</TableHead>
-                  <TableHead>Tip</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Prioritet</TableHead>
-                  <TableHead>Sljedeće ročište</TableHead>
-                  <TableHead className="text-right">Akcije</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile Card Layout */}
+              <div className="block md:hidden space-y-3">
                 {cases.map((caseData) => (
-                  <TableRow key={caseData.id}>
-                    <TableCell className="font-medium">
-                      {caseData.caseNumber}
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{caseData.title}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {caseData.caseType}
+                  <Card key={caseData.id} className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base truncate">
+                          {caseData.caseNumber}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mt-1 truncate">
+                          {caseData.title}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge variant="outline" className="text-xs">
+                            {caseData.caseType}
+                          </Badge>
+                          <Badge className={`text-xs ${statusColors[caseData.status as keyof typeof statusColors]}`}>
+                            {caseData.status.replace('_', ' ')}
+                          </Badge>
+                          <Badge className={`text-xs ${priorityColors[caseData.priority as keyof typeof priorityColors]}`}>
+                            {caseData.priority}
+                          </Badge>
+                        </div>
+                        <div className="mt-2 space-y-1">
+                          <div className="text-sm text-muted-foreground">
+                            Klijent: <Link href={`/dashboard/clients/${caseData.client.id}`} className="text-primary hover:underline">{getClientName(caseData.client)}</Link>
+                          </div>
+                          {caseData.nextHearingDate && (
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <Calendar className="h-3 w-3 flex-shrink-0" />
+                              <span>Sljedeće ročište: {format(new Date(caseData.nextHearingDate), 'dd.MM.yyyy')}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <Link 
-                        href={`/dashboard/clients/${caseData.client.id}`}
-                        className="text-primary hover:underline"
-                      >
-                        {getClientName(caseData.client)}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {caseData.caseType}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={statusColors[caseData.status as keyof typeof statusColors]}>
-                        {caseData.status.replace('_', ' ')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={priorityColors[caseData.priority as keyof typeof priorityColors]}>
-                        {caseData.priority}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {caseData.nextHearingDate ? (
-                        <div className="flex items-center gap-1 text-sm">
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(caseData.nextHearingDate), 'dd.MM.yyyy')}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex gap-2 ml-3">
                         <Button
                           variant="ghost"
                           size="icon"
                           asChild
+                          className="min-h-[44px] min-w-[44px]"
                         >
                           <Link href={`/dashboard/cases/${caseData.id}`}>
                             <Eye className="h-4 w-4" />
@@ -387,6 +366,7 @@ export default function CasesPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => openEditDialog(caseData)}
+                          className="min-h-[44px] min-w-[44px]"
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -394,22 +374,118 @@ export default function CasesPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(caseData.id)}
+                          className="min-h-[44px] min-w-[44px]"
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop Table Layout */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Broj predmeta</TableHead>
+                      <TableHead>Naziv</TableHead>
+                      <TableHead>Klijent</TableHead>
+                      <TableHead>Tip</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Prioritet</TableHead>
+                      <TableHead>Sljedeće ročište</TableHead>
+                      <TableHead className="text-right">Akcije</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {cases.map((caseData) => (
+                      <TableRow key={caseData.id}>
+                        <TableCell className="font-medium">
+                          {caseData.caseNumber}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{caseData.title}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {caseData.caseType}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Link 
+                            href={`/dashboard/clients/${caseData.client.id}`}
+                            className="text-primary hover:underline"
+                          >
+                            {getClientName(caseData.client)}
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {caseData.caseType}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={statusColors[caseData.status as keyof typeof statusColors]}>
+                            {caseData.status.replace('_', ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={priorityColors[caseData.priority as keyof typeof priorityColors]}>
+                            {caseData.priority}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {caseData.nextHearingDate ? (
+                            <div className="flex items-center gap-1 text-sm">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(caseData.nextHearingDate), 'dd.MM.yyyy')}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              asChild
+                            >
+                              <Link href={`/dashboard/cases/${caseData.id}`}>
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEditDialog(caseData)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(caseData.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto mx-4 md:mx-0">
           <DialogHeader>
             <DialogTitle>
               {editingCase ? 'Uredi predmet' : 'Dodaj novi predmet'}

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { getDocumentMetadata, deleteDocument } from '@/lib/document-storage'
 
 // GET /api/documents/[id] - Get document details
 export async function GET(
@@ -14,23 +15,16 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const document = await db.document.findFirst({
-      where: {
-        id: params.id,
-        organizationId: session.user.organizationId,
-        deletedAt: null,
-      },
-      include: {
-        case: true,
-        client: true,
-      },
-    })
+    const result = await getDocumentMetadata(params.id, session.user.organizationId)
 
-    if (!document) {
-      return NextResponse.json({ error: 'Dokument nije pronađen' }, { status: 404 })
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error || 'Dokument nije pronađen' },
+        { status: 404 }
+      )
     }
 
-    return NextResponse.json(document)
+    return NextResponse.json(result.document)
   } catch (error) {
     console.error('Error fetching document:', error)
     return NextResponse.json(
@@ -76,7 +70,7 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/documents/[id] - Soft delete document
+// DELETE /api/documents/[id] - Delete document
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
@@ -88,15 +82,18 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    await db.document.update({
-      where: {
-        id: params.id,
-        organizationId: session.user.organizationId,
-      },
-      data: {
-        deletedAt: new Date(),
-      },
-    })
+    const result = await deleteDocument(
+      params.id,
+      session.user.id,
+      session.user.organizationId
+    )
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error || 'Greška pri brisanju dokumenta' },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {
