@@ -1,0 +1,483 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Plus, Users, Building2, Mail, Phone, Pencil, Trash2, Eye } from 'lucide-react'
+import Link from 'next/link'
+import { useToast } from '@/hooks/use-toast'
+
+type Client = {
+  id: string
+  clientType: string
+  firstName?: string
+  lastName?: string
+  companyName?: string
+  email?: string
+  phone?: string
+  status: string
+  createdAt: string
+  _count: {
+    cases: number
+    documents: number
+  }
+}
+
+export default function ClientsPage() {
+  const [clients, setClients] = useState<Client[]>([])
+  const [loading, setLoading] = useState(true)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingClient, setEditingClient] = useState<Client | null>(null)
+  const { toast } = useToast()
+
+  const [formData, setFormData] = useState({
+    clientType: 'INDIVIDUAL',
+    firstName: '',
+    lastName: '',
+    companyName: '',
+    email: '',
+    phone: '',
+    mobile: '',
+    address: '',
+    city: '',
+    postalCode: '',
+    country: 'Croatia',
+    personalId: '',
+    taxId: '',
+    notes: '',
+    status: 'ACTIVE',
+  })
+
+  useEffect(() => {
+    fetchClients()
+  }, [])
+
+  async function fetchClients() {
+    try {
+      const response = await fetch('/api/clients')
+      if (response.ok) {
+        const data = await response.json()
+        setClients(data)
+      }
+    } catch (error) {
+      toast({
+        title: 'Greška',
+        description: 'Nije moguće dohvatiti klijente',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const url = editingClient ? `/api/clients/${editingClient.id}` : '/api/clients'
+      const method = editingClient ? 'PATCH' : 'POST'
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        toast({
+          title: 'Uspjeh',
+          description: editingClient
+            ? 'Klijent uspješno ažuriran'
+            : 'Klijent uspješno kreiran',
+        })
+        setDialogOpen(false)
+        resetForm()
+        fetchClients()
+      } else {
+        throw new Error()
+      }
+    } catch (error) {
+      toast({
+        title: 'Greška',
+        description: 'Nije moguće spremiti klijenta',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('Jeste li sigurni da želite obrisati ovog klijenta?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/clients/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        toast({
+          title: 'Uspjeh',
+          description: 'Klijent uspješno obrisan',
+        })
+        fetchClients()
+      } else {
+        throw new Error()
+      }
+    } catch (error) {
+      toast({
+        title: 'Greška',
+        description: 'Nije moguće obrisati klijenta',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  function openEditDialog(client: Client) {
+    setEditingClient(client)
+    setFormData({
+      clientType: client.clientType,
+      firstName: client.firstName || '',
+      lastName: client.lastName || '',
+      companyName: client.companyName || '',
+      email: client.email || '',
+      phone: client.phone || '',
+      mobile: '',
+      address: '',
+      city: '',
+      postalCode: '',
+      country: 'Croatia',
+      personalId: '',
+      taxId: '',
+      notes: '',
+      status: client.status,
+    })
+    setDialogOpen(true)
+  }
+
+  function resetForm() {
+    setEditingClient(null)
+    setFormData({
+      clientType: 'INDIVIDUAL',
+      firstName: '',
+      lastName: '',
+      companyName: '',
+      email: '',
+      phone: '',
+      mobile: '',
+      address: '',
+      city: '',
+      postalCode: '',
+      country: 'Croatia',
+      personalId: '',
+      taxId: '',
+      notes: '',
+      status: 'ACTIVE',
+    })
+  }
+
+  function getClientName(client: Client) {
+    if (client.clientType === 'COMPANY') {
+      return client.companyName || 'Bez naziva'
+    }
+    return `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Bez imena'
+  }
+
+  const statusColors = {
+    ACTIVE: 'bg-green-500/10 text-green-500',
+    INACTIVE: 'bg-gray-500/10 text-gray-500',
+    POTENTIAL: 'bg-blue-500/10 text-blue-500',
+  }
+
+  if (loading && clients.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p className="text-muted-foreground">Učitavanje...</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Klijenti</h1>
+          <p className="text-muted-foreground mt-1">
+            Upravljajte svojim klijentima
+          </p>
+        </div>
+        <Button onClick={() => { resetForm(); setDialogOpen(true) }}>
+          <Plus className="h-4 w-4 mr-2" />
+          Dodaj klijenta
+        </Button>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Svi klijenti</CardTitle>
+          <CardDescription>
+            Pregled svih vaših klijenata
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {clients.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground">Još nema klijenata</p>
+              <Button
+                onClick={() => { resetForm(); setDialogOpen(true) }}
+                variant="outline"
+                className="mt-4"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Dodaj prvog klijenta
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Naziv / Ime</TableHead>
+                  <TableHead>Tip</TableHead>
+                  <TableHead>Kontakt</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Predmeti</TableHead>
+                  <TableHead className="text-right">Akcije</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {clients.map((client) => (
+                  <TableRow key={client.id}>
+                    <TableCell className="font-medium">
+                      {getClientName(client)}
+                    </TableCell>
+                    <TableCell>
+                      {client.clientType === 'COMPANY' ? (
+                        <Badge variant="outline">
+                          <Building2 className="h-3 w-3 mr-1" />
+                          Tvrtka
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">
+                          <Users className="h-3 w-3 mr-1" />
+                          Pojedinac
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {client.email && (
+                          <div className="flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            {client.email}
+                          </div>
+                        )}
+                        {client.phone && (
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Phone className="h-3 w-3" />
+                            {client.phone}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={statusColors[client.status as keyof typeof statusColors]}>
+                        {client.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {client._count.cases} predmeta
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          asChild
+                        >
+                          <Link href={`/dashboard/clients/${client.id}`}>
+                            <Eye className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openEditDialog(client)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(client.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Create/Edit Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingClient ? 'Uredi klijenta' : 'Dodaj novog klijenta'}
+            </DialogTitle>
+            <DialogDescription>
+              Unesite podatke o klijentu
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Tip klijenta</Label>
+              <div className="flex gap-4">
+                <Button
+                  type="button"
+                  variant={formData.clientType === 'INDIVIDUAL' ? 'default' : 'outline'}
+                  onClick={() => setFormData({ ...formData, clientType: 'INDIVIDUAL' })}
+                  className="flex-1"
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Pojedinac
+                </Button>
+                <Button
+                  type="button"
+                  variant={formData.clientType === 'COMPANY' ? 'default' : 'outline'}
+                  onClick={() => setFormData({ ...formData, clientType: 'COMPANY' })}
+                  className="flex-1"
+                >
+                  <Building2 className="h-4 w-4 mr-2" />
+                  Tvrtka
+                </Button>
+              </div>
+            </div>
+
+            {formData.clientType === 'INDIVIDUAL' ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">Ime *</Label>
+                  <Input
+                    id="firstName"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Prezime *</Label>
+                  <Input
+                    id="lastName"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="companyName">Naziv tvrtke *</Label>
+                <Input
+                  id="companyName"
+                  value={formData.companyName}
+                  onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                  required
+                />
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefon</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address">Adresa</Label>
+              <Input
+                id="address"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">Grad</Label>
+                <Input
+                  id="city"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="postalCode">Poštanski broj</Label>
+                <Input
+                  id="postalCode"
+                  value={formData.postalCode}
+                  onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {setDialogOpen(false); resetForm()}}
+              >
+                Odustani
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Spremanje...' : editingClient ? 'Spremi' : 'Dodaj klijenta'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}

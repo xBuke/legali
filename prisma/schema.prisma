@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -22,9 +22,9 @@ model Organization {
   taxId             String?  // OIB in Croatia
   logo              String?
   
-  // Subscription
-  subscriptionTier  SubscriptionTier @default(BASIC)
-  subscriptionStatus SubscriptionStatus @default(TRIAL)
+  // Subscription (using String instead of enum for SQLite)
+  subscriptionTier  String @default("BASIC") // BASIC, PRO, ENTERPRISE
+  subscriptionStatus String @default("TRIAL") // TRIAL, ACTIVE, PAST_DUE, CANCELLED
   stripeCustomerId  String?  @unique
   stripeSubscriptionId String? @unique
   trialEndsAt       DateTime?
@@ -32,7 +32,7 @@ model Organization {
   
   // Storage limits
   storageUsed       BigInt   @default(0) // in bytes
-  storageLimit      BigInt   // in bytes based on tier
+  storageLimit      BigInt   @default(53687091200) // 50GB in bytes
   
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -52,36 +52,23 @@ model Organization {
   @@map("organizations")
 }
 
-enum SubscriptionTier {
-  BASIC
-  PRO
-  ENTERPRISE
-}
-
-enum SubscriptionStatus {
-  TRIAL
-  ACTIVE
-  PAST_DUE
-  CANCELLED
-  INCOMPLETE
-}
-
 model User {
   id                String   @id @default(cuid())
-  clerkUserId       String   @unique
   email             String   @unique
+  password          String   // Hashed password
   firstName         String?
   lastName          String?
   avatar            String?
-  role              UserRole @default(LAWYER)
+  role              String   @default("LAWYER") // ADMIN, LAWYER, PARALEGAL, ACCOUNTANT, VIEWER
   
   // Billing settings
-  hourlyRate        Decimal? @db.Decimal(10, 2)
+  hourlyRate        Float?
   currency          String   @default("EUR")
   
   // Status
   isActive          Boolean  @default(true)
   lastLoginAt       DateTime?
+  emailVerified     DateTime?
   
   organizationId    String
   organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -95,18 +82,22 @@ model User {
   notes             Note[]
   tasks             Task[]
   auditLogs         AuditLog[]
+  sessions          Session[]
   
   @@index([organizationId])
-  @@index([clerkUserId])
   @@map("users")
 }
 
-enum UserRole {
-  ADMIN           // Full access
-  LAWYER          // Can manage own cases
-  PARALEGAL       // Limited access
-  ACCOUNTANT      // Billing only
-  VIEWER          // Read-only
+// NextAuth Session
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("sessions")
 }
 
 // ============================================
@@ -116,8 +107,8 @@ enum UserRole {
 model Client {
   id                String   @id @default(cuid())
   
-  // Type
-  clientType        ClientType @default(INDIVIDUAL)
+  // Type: INDIVIDUAL or COMPANY
+  clientType        String @default("INDIVIDUAL")
   
   // Individual fields
   firstName         String?
@@ -140,8 +131,8 @@ model Client {
   country           String   @default("Croatia")
   
   // Additional info
-  notes             String?  @db.Text
-  status            ClientStatus @default(ACTIVE)
+  notes             String?
+  status            String @default("ACTIVE") // ACTIVE, INACTIVE, POTENTIAL
   
   // Portal access
   portalAccessEnabled Boolean @default(false)
@@ -164,17 +155,6 @@ model Client {
   @@map("clients")
 }
 
-enum ClientType {
-  INDIVIDUAL
-  COMPANY
-}
-
-enum ClientStatus {
-  ACTIVE
-  INACTIVE
-  POTENTIAL
-}
-
 // ============================================
 // CASES
 // ============================================
@@ -183,12 +163,12 @@ model Case {
   id                String   @id @default(cuid())
   caseNumber        String   // Auto-generated or custom
   title             String
-  description       String?  @db.Text
+  description       String?
   
   // Case details
   caseType          String   // e.g., "Civil", "Criminal", "Corporate"
-  status            CaseStatus @default(OPEN)
-  priority          Priority @default(MEDIUM)
+  status            String @default("OPEN") // OPEN, IN_PROGRESS, ON_HOLD, CLOSED_WON, etc.
+  priority          String @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
   
   // Court information
   courtName         String?
@@ -203,8 +183,8 @@ model Case {
   statuteOfLimitations DateTime?
   
   // Financial
-  estimatedValue    Decimal? @db.Decimal(15, 2)
-  contingencyFee    Decimal? @db.Decimal(5, 2) // percentage
+  estimatedValue    Float?
+  contingencyFee    Float? // percentage
   
   clientId          String
   client            Client   @relation(fields: [clientId], references: [id], onDelete: Restrict)
@@ -233,23 +213,6 @@ model Case {
   @@map("cases")
 }
 
-enum CaseStatus {
-  OPEN
-  IN_PROGRESS
-  ON_HOLD
-  CLOSED_WON
-  CLOSED_LOST
-  CLOSED_SETTLED
-  ARCHIVED
-}
-
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
 // ============================================
 // DOCUMENTS
 // ============================================
@@ -258,7 +221,7 @@ model Document {
   id                String   @id @default(cuid())
   fileName          String
   originalName      String
-  fileSize          BigInt
+  fileSize          Int
   mimeType          String
   fileUrl           String   // Vercel Blob or S3 URL
   
@@ -268,9 +231,9 @@ model Document {
   
   // Metadata
   title             String?
-  description       String?  @db.Text
+  description       String?
   category          String?
-  tags              String[]
+  tags              String?  // Comma-separated tags
   
   // Version control
   version           Int      @default(1)
@@ -278,13 +241,13 @@ model Document {
   parentDocument    Document? @relation("DocumentVersions", fields: [parentDocumentId], references: [id], onDelete: SetNull)
   versions          Document[] @relation("DocumentVersions")
   
-  // AI Analysis (PRO/ENTERPRISE)
-  analysisStatus    AnalysisStatus @default(PENDING)
+  // AI Analysis (PRO/ENTERPRISE) - stored as JSON strings
+  analysisStatus    String @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
   analyzedAt        DateTime?
-  extractedText     String?  @db.Text
-  summary           String?  @db.Text
-  entities          Json?    // Extracted entities (names, dates, amounts)
-  keyPhrases        Json?    // Important clauses and phrases
+  extractedText     String?
+  summary           String?
+  entities          String?  // JSON string of extracted entities
+  keyPhrases        String?  // JSON string of important clauses
   riskScore         Float?   // 0-100 risk assessment
   
   // Associations
@@ -309,13 +272,6 @@ model Document {
   @@map("documents")
 }
 
-enum AnalysisStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-}
-
 // ============================================
 // TIME TRACKING & BILLING
 // ============================================
@@ -325,11 +281,11 @@ model TimeEntry {
   
   date              DateTime @default(now())
   duration          Int      // in minutes
-  description       String   @db.Text
+  description       String
   
   // Billing
-  hourlyRate        Decimal  @db.Decimal(10, 2)
-  amount            Decimal  @db.Decimal(10, 2)
+  hourlyRate        Float
+  amount            Float
   isBillable        Boolean  @default(true)
   isBilled          Boolean  @default(false)
   
@@ -361,7 +317,7 @@ model Expense {
   date              DateTime @default(now())
   description       String
   category          String   // e.g., "Court Fees", "Travel", "Filing"
-  amount            Decimal  @db.Decimal(10, 2)
+  amount            Float
   
   // Receipt
   receiptUrl        String?
@@ -390,8 +346,8 @@ model Invoice {
   id                String   @id @default(cuid())
   invoiceNumber     String
   
-  // Status
-  status            InvoiceStatus @default(DRAFT)
+  // Status: DRAFT, SENT, PAID, OVERDUE, CANCELLED
+  status            String @default("DRAFT")
   
   // Dates
   issueDate         DateTime @default(now())
@@ -399,15 +355,15 @@ model Invoice {
   paidDate          DateTime?
   
   // Amounts
-  subtotal          Decimal  @db.Decimal(15, 2)
-  taxRate           Decimal  @db.Decimal(5, 2) @default(25.00) // Croatian PDV
-  taxAmount         Decimal  @db.Decimal(15, 2)
-  total             Decimal  @db.Decimal(15, 2)
-  amountPaid        Decimal  @db.Decimal(15, 2) @default(0)
+  subtotal          Float
+  taxRate           Float  @default(25.00) // Croatian PDV
+  taxAmount         Float
+  total             Float
+  amountPaid        Float  @default(0)
   
   // Notes
-  notes             String?  @db.Text
-  terms             String?  @db.Text
+  notes             String?
+  terms             String?
   
   // PDF
   pdfUrl            String?
@@ -432,14 +388,6 @@ model Invoice {
   @@map("invoices")
 }
 
-enum InvoiceStatus {
-  DRAFT
-  SENT
-  PAID
-  OVERDUE
-  CANCELLED
-}
-
 // ============================================
 // TASKS & NOTES
 // ============================================
@@ -447,9 +395,9 @@ enum InvoiceStatus {
 model Task {
   id                String   @id @default(cuid())
   title             String
-  description       String?  @db.Text
-  status            TaskStatus @default(TODO)
-  priority          Priority @default(MEDIUM)
+  description       String?
+  status            String @default("TODO") // TODO, IN_PROGRESS, COMPLETED, CANCELLED
+  priority          String @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
   dueDate           DateTime?
   completedAt       DateTime?
   
@@ -468,16 +416,9 @@ model Task {
   @@map("tasks")
 }
 
-enum TaskStatus {
-  TODO
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
 model Note {
   id                String   @id @default(cuid())
-  content           String   @db.Text
+  content           String
   
   caseId            String?
   case              Case?    @relation(fields: [caseId], references: [id], onDelete: Cascade)
@@ -503,7 +444,7 @@ model AuditLog {
   entity            String   // e.g., "Case", "Document", "Client"
   entityId          String
   
-  changes           Json?    // What changed
+  changes           String?  // JSON string of what changed
   ipAddress         String?
   userAgent         String?
   
