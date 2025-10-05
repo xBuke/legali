@@ -16,7 +16,6 @@ import {
   Settings,
   LogOut,
   Menu,
-  Euro,
   Search,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -57,7 +56,6 @@ export default function DashboardLayout({
     { name: 'Dokumenti', href: '/dashboard/documents', icon: FileText },
     { name: 'Pratnja vremena', href: '/dashboard/time-tracking', icon: Clock },
     { name: 'Računi', href: '/dashboard/invoices', icon: Receipt },
-    { name: 'Troškovi', href: '/dashboard/expenses', icon: Euro },
   ]
 
   // Filter navigation based on user permissions

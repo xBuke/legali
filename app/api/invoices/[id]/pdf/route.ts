@@ -63,15 +63,6 @@ export async function GET(
             }
           }
         },
-        expenses: {
-          select: {
-            id: true,
-            date: true,
-            description: true,
-            category: true,
-            amount: true,
-          }
-        }
       }
     });
 

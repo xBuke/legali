@@ -44,7 +44,6 @@ model Organization {
   documents         Document[]
   invoices          Invoice[]
   timeEntries       TimeEntry[]
-  expenses          Expense[]
   payments          Payment[]
   auditLogs         AuditLog[]
   apiKeys           ApiKey[]
@@ -204,7 +203,6 @@ model Case {
   // Relations
   documents         Document[]
   timeEntries       TimeEntry[]
-  expenses          Expense[]
   tasks             Task[]
   notes             Note[]
   
@@ -313,36 +311,6 @@ model TimeEntry {
   @@map("time_entries")
 }
 
-model Expense {
-  id                String   @id @default(cuid())
-  
-  date              DateTime @default(now())
-  description       String
-  category          String   // e.g., "Court Fees", "Travel", "Filing"
-  amount            Float
-  
-  // Receipt
-  receiptUrl        String?
-  
-  isBillable        Boolean  @default(true)
-  isBilled          Boolean  @default(false)
-  
-  caseId            String?
-  case              Case?    @relation(fields: [caseId], references: [id], onDelete: SetNull)
-  
-  invoiceId         String?
-  invoice           Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
-  
-  organizationId    String
-  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  @@index([organizationId])
-  @@index([caseId])
-  @@map("expenses")
-}
 
 model Invoice {
   id                String   @id @default(cuid())
@@ -381,7 +349,6 @@ model Invoice {
   
   // Relations
   timeEntries       TimeEntry[]
-  expenses          Expense[]
   payments          Payment[]
   
   @@unique([organizationId, invoiceNumber])

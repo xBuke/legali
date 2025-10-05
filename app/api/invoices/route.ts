@@ -53,15 +53,6 @@ export async function GET(request: NextRequest) {
             country: true,
           }
         },
-        expenses: {
-          select: {
-            id: true,
-            date: true,
-            description: true,
-            category: true,
-            amount: true,
-          }
-        }
       },
       orderBy: {
         issueDate: 'desc'
@@ -92,7 +83,6 @@ export async function POST(request: NextRequest) {
       dueDate,
       notes,
       terms,
-      expenseIds = [],
     } = body;
 
     // Validation
@@ -128,19 +118,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get expenses
-    const expenses = await db.expense.findMany({
-      where: {
-        id: { in: expenseIds },
-        organizationId: user.organizationId,
-        isBillable: true,
-        isBilled: false,
-      }
-    });
-
-    // Calculate totals
-    const expensesTotal = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const subtotal = expensesTotal;
+    // Calculate totals (no expenses, just time entries)
+    const subtotal = 0; // Will be calculated from time entries
     const taxRate = 25.00; // Croatian PDV
     const taxAmount = (subtotal * taxRate) / 100;
     const total = subtotal + taxAmount;
@@ -171,16 +150,6 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Update expenses to mark them as billed
-    if (expenses.length > 0) {
-      await db.expense.updateMany({
-        where: { id: { in: expenseIds } },
-        data: { 
-          isBilled: true,
-          invoiceId: invoice.id 
-        }
-      });
-    }
 
     // Return invoice with related data
     const createdInvoice = await db.invoice.findUnique({
@@ -199,15 +168,6 @@ export async function POST(request: NextRequest) {
             country: true,
           }
         },
-        expenses: {
-          select: {
-            id: true,
-            date: true,
-            description: true,
-            category: true,
-            amount: true,
-          }
-        }
       }
     });
 

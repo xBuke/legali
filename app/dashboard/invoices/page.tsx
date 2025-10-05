@@ -39,13 +39,6 @@ interface Invoice {
     companyName: string | null;
     email: string | null;
   };
-  expenses: Array<{
-    id: string;
-    date: string;
-    description: string;
-    category: string;
-    amount: number;
-  }>;
 }
 
 interface Client {
