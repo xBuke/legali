@@ -31,13 +31,16 @@ export async function GET(request: NextRequest) {
     });
 
     // Get cases approaching deadlines
-    const upcomingDeadlines = await db.case.count({
+    const upcomingDeadlines = await db.caseDeadline.count({
       where: {
-        client: { organizationId },
-        status: { in: ['OPEN', 'IN_PROGRESS'] },
+        organizationId,
+        status: 'pending',
         dueDate: {
           gte: new Date(),
           lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Next 7 days
+        },
+        case: {
+          status: { in: ['OPEN', 'IN_PROGRESS'] },
         },
       },
     });

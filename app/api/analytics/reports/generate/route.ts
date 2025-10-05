@@ -74,7 +74,16 @@ export async function POST(request: NextRequest) {
           row.created_date = case_.createdAt.toISOString().split('T')[0];
         }
         if (fields.some((f: any) => f.id === 'due_date')) {
-          row.due_date = case_.dueDate?.toISOString().split('T')[0] || '';
+          // Get the next upcoming deadline for this case
+          const nextDeadline = await db.caseDeadline.findFirst({
+            where: {
+              caseId: case_.id,
+              status: 'pending',
+              dueDate: { gte: new Date() },
+            },
+            orderBy: { dueDate: 'asc' },
+          });
+          row.due_date = nextDeadline?.dueDate.toISOString().split('T')[0] || '';
         }
 
         // Map client fields
