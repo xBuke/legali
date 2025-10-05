@@ -78,6 +78,9 @@ model User {
   backupCodes       String?  // JSON array of backup codes
   twoFactorVerifiedAt DateTime?
   
+  // Notification settings
+  notificationSettings String? // JSON object with email and push notification preferences
+  
   organizationId    String
   organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   
@@ -95,6 +98,7 @@ model User {
   caseTimeline      CaseTimeline[]
   caseDeadlinesAssigned CaseDeadline[] @relation("DeadlineAssignedTo")
   caseDeadlinesCreated  CaseDeadline[] @relation("DeadlineCreatedBy")
+  documentTemplates DocumentTemplate[] @relation("TemplateAuthor")
   
   @@index([organizationId])
   @@map("users")
@@ -277,6 +281,10 @@ model Document {
   
   uploadedById      String
   
+  // Template relation
+  templateId        String?
+  template          DocumentTemplate? @relation("TemplateDocuments", fields: [templateId], references: [id], onDelete: SetNull)
+  
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   deletedAt         DateTime? // Soft delete
@@ -285,6 +293,33 @@ model Document {
   @@index([caseId])
   @@index([clientId])
   @@map("documents")
+}
+
+model DocumentTemplate {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  category          String
+  caseType          String
+  content           String   // Template content with variables
+  variables         String?  // JSON string of variable names like ["CLIENT_NAME", "CASE_NUMBER"]
+  isPublic          Boolean  @default(false)
+  
+  // Author
+  authorId          String
+  author            User     @relation("TemplateAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  
+  // Usage tracking
+  documents         Document[] @relation("TemplateDocuments")
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([authorId])
+  @@index([category])
+  @@index([caseType])
+  @@index([isPublic])
+  @@map("document_templates")
 }
 
 // ============================================

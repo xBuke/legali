@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
           }
         },
         _sum: {
-          totalAmount: true
+          total: true
         }
       })
     ])
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
           }
         },
         _sum: {
-          totalAmount: true
+          total: true
         }
       })
     ])
@@ -141,8 +141,8 @@ export async function GET(request: NextRequest) {
     const openCasesTrend = calculateTrend(openCases, previousOpenCases)
     const documentsTrend = calculateTrend(totalDocuments, previousTotalDocuments)
     const revenueTrend = calculateTrend(
-      monthlyRevenue._sum.totalAmount || 0, 
-      previousMonthlyRevenue._sum.totalAmount || 0
+      monthlyRevenue._sum.total || 0, 
+      previousMonthlyRevenue._sum.total || 0
     )
 
     const stats = {
@@ -162,8 +162,8 @@ export async function GET(request: NextRequest) {
         ...documentsTrend
       },
       monthlyRevenue: {
-        current: monthlyRevenue._sum.totalAmount || 0,
-        previous: previousMonthlyRevenue._sum.totalAmount || 0,
+        current: monthlyRevenue._sum.total || 0,
+        previous: previousMonthlyRevenue._sum.total || 0,
         ...revenueTrend
       }
     }

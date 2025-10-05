@@ -232,34 +232,44 @@ export function DocumentTemplates({ caseId, caseType, onTemplateSelect, classNam
     if (onTemplateSelect) {
       onTemplateSelect(template);
     } else {
-      // Default behavior - create document from template
+      // Default behavior - show template content in a new window for copying
       try {
-        const response = await fetch('/api/documents', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: template.name,
-            content: template.content,
-            category: template.category,
-            caseId: caseId || '',
-            isTemplate: false,
-          }),
-        });
-
-        if (response.ok) {
-          toast({
-            title: 'Uspjeh',
-            description: 'Dokument je stvoren iz predloška',
-          });
-        } else {
-          throw new Error();
+        const newWindow = window.open('', '_blank');
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+              <head>
+                <title>${template.name}</title>
+                <style>
+                  body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+                  .header { background: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+                  .content { white-space: pre-wrap; background: #fafafa; padding: 15px; border-radius: 5px; }
+                  .instructions { background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+                </style>
+              </head>
+              <body>
+                <div class="header">
+                  <h1>${template.name}</h1>
+                  <p><strong>Kategorija:</strong> ${template.category}</p>
+                  <p><strong>Tip predmeta:</strong> ${template.caseType}</p>
+                </div>
+                <div class="instructions">
+                  <strong>Upute:</strong> Kopirajte sadržaj ispod i zamijenite varijable (npr. [CLIENT_NAME], [DATE]) s odgovarajućim podacima.
+                </div>
+                <div class="content">${template.content}</div>
+              </body>
+            </html>
+          `);
         }
+        
+        toast({
+          title: 'Uspjeh',
+          description: 'Predložak je otvoren u novom prozoru za kopiranje',
+        });
       } catch (error) {
         toast({
           title: 'Greška',
-          description: 'Greška pri stvaranju dokumenta',
+          description: 'Greška pri otvaranju predloška',
           variant: 'destructive',
         });
       }
@@ -286,10 +296,9 @@ export function DocumentTemplates({ caseId, caseType, onTemplateSelect, classNam
   const filteredTemplates = templates.filter(template => {
     const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          template.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || template.category === selectedCategory;
-    const matchesCaseType = !selectedCaseType || template.caseType === selectedCaseType;
+    const matchesCategory = !selectedCategory || selectedCategory === 'all' || template.category === selectedCategory;
     
-    return matchesSearch && matchesCategory && matchesCaseType;
+    return matchesSearch && matchesCategory;
   });
 
   if (loading) {
@@ -331,23 +340,10 @@ export function DocumentTemplates({ caseId, caseType, onTemplateSelect, classNam
                 <SelectValue placeholder="Kategorija" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Sve kategorije</SelectItem>
+                <SelectItem value="all">Sve kategorije</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={selectedCaseType} onValueChange={setSelectedCaseType}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Tip predmeta" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Svi tipovi</SelectItem>
-                {caseTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -577,11 +573,11 @@ export function DocumentTemplates({ caseId, caseType, onTemplateSelect, classNam
           <CardContent className="text-center py-12">
             <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p className="text-muted-foreground">
-              {searchQuery || selectedCategory || selectedCaseType 
+              {searchQuery || (selectedCategory && selectedCategory !== 'all')
                 ? 'Nema predložaka koji odgovaraju filtru' 
                 : 'Nema predložaka dokumenata'}
             </p>
-            {!searchQuery && !selectedCategory && !selectedCaseType && (
+            {!searchQuery && (!selectedCategory || selectedCategory === 'all') && (
               <Button
                 onClick={() => setShowCreateTemplate(true)}
                 variant="outline"

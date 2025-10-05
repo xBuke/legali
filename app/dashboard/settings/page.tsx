@@ -8,8 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Settings, User, Shield, Bell, Globe, Database, Eye, EyeOff, CreditCard, Check, X } from 'lucide-react';
+import { Settings, User, Shield, Globe, Database, Eye, EyeOff, CreditCard, Check, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
@@ -79,8 +78,6 @@ export default function SettingsPage() {
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [organizationModalOpen, setOrganizationModalOpen] = useState(false);
   const [teamModalOpen, setTeamModalOpen] = useState(false);
-  const [emailNotificationModalOpen, setEmailNotificationModalOpen] = useState(false);
-  const [pushNotificationModalOpen, setPushNotificationModalOpen] = useState(false);
   
   // Form states
   const [profileForm, setProfileForm] = useState({
@@ -95,23 +92,12 @@ export default function SettingsPage() {
   const [organizationForm, setOrganizationForm] = useState({
     name: 'Test Law Firm'
   });
-  const [emailNotificationForm, setEmailNotificationForm] = useState({
-    caseUpdates: true,
-    deadlineReminders: true,
-    newDocuments: true,
-    paymentReminders: true
-  });
-  const [pushNotificationForm, setPushNotificationForm] = useState({
-    caseUpdates: true,
-    deadlineReminders: true,
-    newDocuments: false,
-    paymentReminders: true
-  });
   
   // Password visibility states
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -317,18 +303,33 @@ export default function SettingsPage() {
 
     setSaving(true);
     try {
-      // Here you would implement password change API
-      toast({
-        title: 'Uspjeh',
-        description: 'Lozinka je uspješno promijenjena'
+      const response = await fetch('/api/auth/password', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        }),
       });
-      setPasswordModalOpen(false);
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+
+      if (response.ok) {
+        toast({
+          title: 'Uspjeh',
+          description: 'Lozinka je uspješno promijenjena'
+        });
+        setPasswordModalOpen(false);
+        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Greška pri promjeni lozinke');
+      }
     } catch (error) {
       console.error('Error changing password:', error);
       toast({
         title: 'Greška',
-        description: 'Greška pri promjeni lozinke',
+        description: error instanceof Error ? error.message : 'Greška pri promjeni lozinke',
         variant: 'destructive'
       });
     } finally {
@@ -340,17 +341,34 @@ export default function SettingsPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      // Here you would implement organization update API
-      toast({
-        title: 'Uspjeh',
-        description: 'Organizacija je uspješno ažurirana'
+      const response = await fetch('/api/organizations', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: organizationForm.name,
+        }),
       });
-      setOrganizationModalOpen(false);
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: 'Uspjeh',
+          description: 'Organizacija je uspješno ažurirana'
+        });
+        setOrganizationModalOpen(false);
+        // Optionally refresh subscription data to reflect changes
+        fetchUserData();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Greška pri ažuriranju organizacije');
+      }
     } catch (error) {
       console.error('Error updating organization:', error);
       toast({
         title: 'Greška',
-        description: 'Greška pri ažuriranju organizacije',
+        description: error instanceof Error ? error.message : 'Greška pri ažuriranju organizacije',
         variant: 'destructive'
       });
     } finally {
@@ -358,30 +376,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleNotificationUpdate = async (type: 'email' | 'push') => {
-    setSaving(true);
-    try {
-      // Here you would implement notification settings API
-      toast({
-        title: 'Uspjeh',
-        description: `${type === 'email' ? 'Email' : 'Push'} obavještenja su uspješno ažurirana`
-      });
-      if (type === 'email') {
-        setEmailNotificationModalOpen(false);
-      } else {
-        setPushNotificationModalOpen(false);
-      }
-    } catch (error) {
-      console.error('Error updating notifications:', error);
-      toast({
-        title: 'Greška',
-        description: 'Greška pri ažuriranju obavještenja',
-        variant: 'destructive'
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -889,153 +883,6 @@ export default function SettingsPage() {
           </Card>
         )}
 
-        {/* Notification Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Postavke obavještenja
-            </CardTitle>
-            <CardDescription>
-              Upravljajte kako i kada primate obavještenja
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium">Email obavještenja</h4>
-                  <p className="text-sm text-gray-600">
-                    Primajte obavještenja putem emaila
-                  </p>
-                </div>
-                <Dialog open={emailNotificationModalOpen} onOpenChange={setEmailNotificationModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      Konfiguriraj
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Email obavještenja</DialogTitle>
-                      <DialogDescription>
-                        Odaberite kada želite primati email obavještenja.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="email-case-updates"
-                          checked={emailNotificationForm.caseUpdates}
-                          onCheckedChange={(checked) => setEmailNotificationForm(prev => ({ ...prev, caseUpdates: !!checked }))}
-                        />
-                        <Label htmlFor="email-case-updates">Ažuriranja predmeta</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="email-deadline-reminders"
-                          checked={emailNotificationForm.deadlineReminders}
-                          onCheckedChange={(checked) => setEmailNotificationForm(prev => ({ ...prev, deadlineReminders: !!checked }))}
-                        />
-                        <Label htmlFor="email-deadline-reminders">Podsjetnici za rokove</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="email-new-documents"
-                          checked={emailNotificationForm.newDocuments}
-                          onCheckedChange={(checked) => setEmailNotificationForm(prev => ({ ...prev, newDocuments: !!checked }))}
-                        />
-                        <Label htmlFor="email-new-documents">Novi dokumenti</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="email-payment-reminders"
-                          checked={emailNotificationForm.paymentReminders}
-                          onCheckedChange={(checked) => setEmailNotificationForm(prev => ({ ...prev, paymentReminders: !!checked }))}
-                        />
-                        <Label htmlFor="email-payment-reminders">Podsjetnici za plaćanja</Label>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button type="button" variant="outline" onClick={() => setEmailNotificationModalOpen(false)}>
-                        Odustani
-                      </Button>
-                      <Button onClick={() => handleNotificationUpdate('email')} disabled={saving}>
-                        {saving ? 'Spremanje...' : 'Spremi postavke'}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium">Push obavještenja</h4>
-                  <p className="text-sm text-gray-600">
-                    Primajte obavještenja u aplikaciji
-                  </p>
-                </div>
-                <Dialog open={pushNotificationModalOpen} onOpenChange={setPushNotificationModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      Konfiguriraj
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Push obavještenja</DialogTitle>
-                      <DialogDescription>
-                        Odaberite kada želite primati push obavještenja u aplikaciji.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="push-case-updates"
-                          checked={pushNotificationForm.caseUpdates}
-                          onCheckedChange={(checked) => setPushNotificationForm(prev => ({ ...prev, caseUpdates: !!checked }))}
-                        />
-                        <Label htmlFor="push-case-updates">Ažuriranja predmeta</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="push-deadline-reminders"
-                          checked={pushNotificationForm.deadlineReminders}
-                          onCheckedChange={(checked) => setPushNotificationForm(prev => ({ ...prev, deadlineReminders: !!checked }))}
-                        />
-                        <Label htmlFor="push-deadline-reminders">Podsjetnici za rokove</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="push-new-documents"
-                          checked={pushNotificationForm.newDocuments}
-                          onCheckedChange={(checked) => setPushNotificationForm(prev => ({ ...prev, newDocuments: !!checked }))}
-                        />
-                        <Label htmlFor="push-new-documents">Novi dokumenti</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="push-payment-reminders"
-                          checked={pushNotificationForm.paymentReminders}
-                          onCheckedChange={(checked) => setPushNotificationForm(prev => ({ ...prev, paymentReminders: !!checked }))}
-                        />
-                        <Label htmlFor="push-payment-reminders">Podsjetnici za plaćanja</Label>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button type="button" variant="outline" onClick={() => setPushNotificationModalOpen(false)}>
-                        Odustani
-                      </Button>
-                      <Button onClick={() => handleNotificationUpdate('push')} disabled={saving}>
-                        {saving ? 'Spremanje...' : 'Spremi postavke'}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
