@@ -1,4 +1,4 @@
-// Role-based permissions system for LegalFlow
+// Role-based permissions system for iLegal
 
 export type UserRole = 'ADMIN' | 'LAWYER' | 'PARALEGAL' | 'ACCOUNTANT' | 'VIEWER';
 
@@ -30,10 +30,10 @@ export const PERMISSIONS = {
   DOCUMENTS_DOWNLOAD: { resource: 'documents', action: 'download' },
 
   // Time tracking
-  TIME_VIEW: { resource: 'time', action: 'view' },
-  TIME_CREATE: { resource: 'time', action: 'create' },
-  TIME_UPDATE: { resource: 'time', action: 'update' },
-  TIME_DELETE: { resource: 'time', action: 'delete' },
+  TIME_ENTRIES_VIEW: { resource: 'time_entries', action: 'view' },
+  TIME_ENTRIES_CREATE: { resource: 'time_entries', action: 'create' },
+  TIME_ENTRIES_UPDATE: { resource: 'time_entries', action: 'update' },
+  TIME_ENTRIES_DELETE: { resource: 'time_entries', action: 'delete' },
 
   // Billing and invoices
   INVOICES_VIEW: { resource: 'invoices', action: 'view' },
@@ -41,6 +41,12 @@ export const PERMISSIONS = {
   INVOICES_UPDATE: { resource: 'invoices', action: 'update' },
   INVOICES_DELETE: { resource: 'invoices', action: 'delete' },
   INVOICES_SEND: { resource: 'invoices', action: 'send' },
+
+  // Expense management
+  EXPENSES_VIEW: { resource: 'expenses', action: 'view' },
+  EXPENSES_CREATE: { resource: 'expenses', action: 'create' },
+  EXPENSES_UPDATE: { resource: 'expenses', action: 'update' },
+  EXPENSES_DELETE: { resource: 'expenses', action: 'delete' },
 
   // User management
   USERS_VIEW: { resource: 'users', action: 'view' },
@@ -88,15 +94,20 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     PERMISSIONS.DOCUMENTS_DELETE,
     PERMISSIONS.DOCUMENTS_DOWNLOAD,
     
-    PERMISSIONS.TIME_VIEW,
-    PERMISSIONS.TIME_CREATE,
-    PERMISSIONS.TIME_UPDATE,
-    PERMISSIONS.TIME_DELETE,
+    PERMISSIONS.TIME_ENTRIES_VIEW,
+    PERMISSIONS.TIME_ENTRIES_CREATE,
+    PERMISSIONS.TIME_ENTRIES_UPDATE,
+    PERMISSIONS.TIME_ENTRIES_DELETE,
     
     PERMISSIONS.INVOICES_VIEW,
     PERMISSIONS.INVOICES_CREATE,
     PERMISSIONS.INVOICES_UPDATE,
     PERMISSIONS.INVOICES_SEND,
+    
+    PERMISSIONS.EXPENSES_VIEW,
+    PERMISSIONS.EXPENSES_CREATE,
+    PERMISSIONS.EXPENSES_UPDATE,
+    PERMISSIONS.EXPENSES_DELETE,
     
     PERMISSIONS.REPORTS_VIEW,
     PERMISSIONS.REPORTS_EXPORT,
@@ -117,9 +128,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     PERMISSIONS.DOCUMENTS_UPDATE,
     PERMISSIONS.DOCUMENTS_DOWNLOAD,
     
-    PERMISSIONS.TIME_VIEW,
-    PERMISSIONS.TIME_CREATE,
-    PERMISSIONS.TIME_UPDATE,
+    PERMISSIONS.TIME_ENTRIES_VIEW,
+    PERMISSIONS.TIME_ENTRIES_CREATE,
+    PERMISSIONS.TIME_ENTRIES_UPDATE,
     
     PERMISSIONS.INVOICES_VIEW,
     PERMISSIONS.REPORTS_VIEW,
@@ -133,13 +144,18 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     PERMISSIONS.DOCUMENTS_VIEW,
     PERMISSIONS.DOCUMENTS_DOWNLOAD,
     
-    PERMISSIONS.TIME_VIEW,
+    PERMISSIONS.TIME_ENTRIES_VIEW,
     
     PERMISSIONS.INVOICES_VIEW,
     PERMISSIONS.INVOICES_CREATE,
     PERMISSIONS.INVOICES_UPDATE,
     PERMISSIONS.INVOICES_DELETE,
     PERMISSIONS.INVOICES_SEND,
+    
+    PERMISSIONS.EXPENSES_VIEW,
+    PERMISSIONS.EXPENSES_CREATE,
+    PERMISSIONS.EXPENSES_UPDATE,
+    PERMISSIONS.EXPENSES_DELETE,
     
     PERMISSIONS.REPORTS_VIEW,
     PERMISSIONS.REPORTS_EXPORT,
@@ -151,8 +167,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     PERMISSIONS.CASES_VIEW,
     PERMISSIONS.DOCUMENTS_VIEW,
     PERMISSIONS.DOCUMENTS_DOWNLOAD,
-    PERMISSIONS.TIME_VIEW,
+    PERMISSIONS.TIME_ENTRIES_VIEW,
     PERMISSIONS.INVOICES_VIEW,
+    PERMISSIONS.EXPENSES_VIEW,
     PERMISSIONS.REPORTS_VIEW,
   ],
 };
@@ -197,7 +214,7 @@ export function canAccessRoute(userRole: UserRole, route: string): boolean {
     '/dashboard/clients': [PERMISSIONS.CLIENTS_VIEW],
     '/dashboard/cases': [PERMISSIONS.CASES_VIEW],
     '/dashboard/documents': [PERMISSIONS.DOCUMENTS_VIEW],
-    '/dashboard/time-tracking': [PERMISSIONS.TIME_VIEW],
+    '/dashboard/time-tracking': [PERMISSIONS.TIME_ENTRIES_VIEW],
     '/dashboard/invoices': [PERMISSIONS.INVOICES_VIEW],
     '/dashboard/users': [PERMISSIONS.USERS_VIEW],
     '/dashboard/settings': [PERMISSIONS.ORGANIZATION_VIEW],
@@ -267,7 +284,7 @@ export function canDelete(userRole: UserRole, resource: string): boolean {
     clients: PERMISSIONS.CLIENTS_DELETE,
     cases: PERMISSIONS.CASES_DELETE,
     documents: PERMISSIONS.DOCUMENTS_DELETE,
-    time: PERMISSIONS.TIME_DELETE,
+    time_entries: PERMISSIONS.TIME_ENTRIES_DELETE,
     invoices: PERMISSIONS.INVOICES_DELETE,
     users: PERMISSIONS.USERS_DELETE,
   };

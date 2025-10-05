@@ -1,24 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
 
-// GET /api/time-entries - List all time entries for the organization
+// GET /api/time-entries - List time entries
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Neautoriziran pristup' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
     const caseId = searchParams.get('caseId');
-    const userId = searchParams.get('userId');
-    const dateFrom = searchParams.get('dateFrom');
-    const dateTo = searchParams.get('dateTo');
+    const isBillable = searchParams.get('isBillable');
+    const isBilled = searchParams.get('isBilled');
 
-    // Get user's organization
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id: session.user.id },
       include: { organization: true }
     });
@@ -27,7 +24,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Korisnik nije pronađen' }, { status: 404 });
     }
 
-    // Build where clause
     const where: any = {
       organizationId: user.organizationId,
     };
@@ -36,21 +32,15 @@ export async function GET(request: NextRequest) {
       where.caseId = caseId;
     }
 
-    if (userId) {
-      where.userId = userId;
+    if (isBillable !== null) {
+      where.isBillable = isBillable === 'true';
     }
 
-    if (dateFrom || dateTo) {
-      where.date = {};
-      if (dateFrom) {
-        where.date.gte = new Date(dateFrom);
-      }
-      if (dateTo) {
-        where.date.lte = new Date(dateTo);
-      }
+    if (isBilled !== null) {
+      where.isBilled = isBilled === 'true';
     }
 
-    const timeEntries = await prisma.timeEntry.findMany({
+    const timeEntries = await db.timeEntry.findMany({
       where,
       include: {
         user: {
@@ -102,25 +92,25 @@ export async function GET(request: NextRequest) {
 // POST /api/time-entries - Create a new time entry
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Neautoriziran pristup' }, { status: 401 });
     }
 
     const body = await request.json();
     const {
+      caseId,
       date,
       duration,
       description,
       hourlyRate,
       isBillable = true,
-      caseId,
     } = body;
 
     // Validation
-    if (!date || !duration || !description) {
+    if (!description || !duration || !hourlyRate) {
       return NextResponse.json(
-        { error: 'Datum, trajanje i opis su obavezni' },
+        { error: 'Opis, trajanje i satnica su obavezni' },
         { status: 400 }
       );
     }
@@ -132,8 +122,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user's organization and hourly rate
-    const user = await prisma.user.findUnique({
+    if (hourlyRate <= 0) {
+      return NextResponse.json(
+        { error: 'Satnica mora biti veća od 0' },
+        { status: 400 }
+      );
+    }
+
+    // Get user's organization
+    const user = await db.user.findUnique({
       where: { id: session.user.id },
       include: { organization: true }
     });
@@ -142,13 +139,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Korisnik nije pronađen' }, { status: 404 });
     }
 
-    // Use provided hourly rate or user's default rate
-    const rate = hourlyRate || user.hourlyRate || 0;
-    const amount = (duration / 60) * rate; // Convert minutes to hours
-
     // Verify case belongs to organization if provided
     if (caseId) {
-      const caseExists = await prisma.case.findFirst({
+      const caseExists = await db.case.findFirst({
         where: {
           id: caseId,
           organizationId: user.organizationId,
@@ -163,15 +156,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const timeEntry = await prisma.timeEntry.create({
+    // Calculate amount
+    const amount = (duration / 60) * hourlyRate;
+
+    // Create time entry
+    const timeEntry = await db.timeEntry.create({
       data: {
-        date: new Date(date),
-        duration: parseInt(duration),
+        caseId: caseId || null,
+        date: date ? new Date(date) : new Date(),
+        duration,
         description,
-        hourlyRate: rate,
+        hourlyRate,
         amount,
         isBillable,
-        caseId: caseId || null,
         userId: session.user.id,
         organizationId: user.organizationId,
       },

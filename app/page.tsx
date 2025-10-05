@@ -14,7 +14,7 @@ export default function HomePage() {
 
         <div className="space-y-4">
           <h1 className="text-5xl font-bold tracking-tight">
-            LegalFlow
+            iLegal
           </h1>
           <p className="text-xl text-muted-foreground">
             Sveobuhvatna platforma za upravljanje odvjetničkom praksom

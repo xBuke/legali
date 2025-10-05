@@ -1,4 +1,4 @@
-# LegalFlow - Legal Practice Management SaaS
+# iLegal - Legal Practice Management SaaS
 
 A comprehensive legal practice management platform built for Croatian and Balkan region law firms. Manage cases, clients, documents, and billing with AI-powered features and enterprise-grade security.
 
@@ -61,8 +61,8 @@ A comprehensive legal practice management platform built for Croatian and Balkan
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/legalflow.git
-cd legalflow
+git clone https://github.com/yourusername/ilegal.git
+cd ilegal
 ```
 
 2. **Install dependencies**
@@ -103,7 +103,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 🗂️ Project Structure
 
 ```
-legalflow/
+ilegal/
 ├── app/                    # Next.js app directory
 │   ├── (auth)/            # Authentication pages
 │   ├── (dashboard)/       # Main application pages
@@ -205,9 +205,9 @@ Proprietary - All rights reserved.
 
 ## 🆘 Support
 
-- **Email**: support@legalflow.app
-- **Documentation**: [docs.legalflow.app](https://docs.legalflow.app) (to be created)
-- **Status Page**: [status.legalflow.app](https://status.legalflow.app) (to be created)
+- **Email**: support@ilegal.app
+- **Documentation**: [docs.ilegal.app](https://docs.ilegal.app) (to be created)
+- **Status Page**: [status.ilegal.app](https://status.ilegal.app) (to be created)
 
 ## 🗺️ Roadmap
 

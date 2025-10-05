@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Briefcase, Calendar, User, FileText, Clock, CheckSquare, AlertCircle, Building2 } from 'lucide-react'
+import { CaseTimeline } from '@/components/timeline/case-timeline'
 import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
@@ -315,24 +316,12 @@ export default function CaseDetailPage() {
         </Card>
       </div>
 
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Nedavna aktivnost</CardTitle>
-          <CardDescription>
-            Pregled nedavnih događaja na ovom predmetu
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12 text-muted-foreground">
-            <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Još nema aktivnosti</p>
-            <p className="text-sm mt-2">
-              Aktivnosti će se prikazivati ovdje kako radite na predmetu
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Case Timeline */}
+      <CaseTimeline 
+        caseId={caseData.id} 
+        caseNumber={caseData.caseNumber} 
+        caseTitle={caseData.title} 
+      />
     </div>
   )
 }

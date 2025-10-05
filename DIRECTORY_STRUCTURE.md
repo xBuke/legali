@@ -1,4 +1,4 @@
-# LegalFlow - Complete Directory Structure
+# iLegal - Complete Directory Structure
 
 This document shows the complete file structure: what's been created (✅) and what needs to be built (📝).
 
@@ -234,7 +234,7 @@ ilegalclaude/
 │               └── route.ts         ✅ Stripe webhook handler
 │
 ├── 📂 public/ (📝 To Add)
-│   ├── logo.svg                     📝 LegalFlow logo
+│   ├── logo.svg                     📝 iLegal logo
 │   ├── favicon.ico                  📝 Favicon
 │   └── images/                      📝 Marketing images
 │

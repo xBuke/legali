@@ -11,12 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/use-permissions';
 import { PermissionGuard } from '@/components/permission-guard';
 import { PERMISSIONS } from '@/lib/permissions';
-import { Plus, FileText, Download, Edit, Trash2, Eye, Calendar, Euro } from 'lucide-react';
+import { Plus, FileText, Download, Edit, Trash2, Eye, Calendar, Euro, CreditCard } from 'lucide-react';
+import { PaymentList } from '@/components/payments/payment-list';
 
 interface Invoice {
   id: string;
@@ -39,18 +39,6 @@ interface Invoice {
     companyName: string | null;
     email: string | null;
   };
-  timeEntries: Array<{
-    id: string;
-    date: string;
-    duration: number;
-    description: string;
-    hourlyRate: number;
-    amount: number;
-    user: {
-      firstName: string | null;
-      lastName: string | null;
-    };
-  }>;
   expenses: Array<{
     id: string;
     date: string;
@@ -67,27 +55,6 @@ interface Client {
   companyName: string | null;
 }
 
-interface TimeEntry {
-  id: string;
-  date: string;
-  duration: number;
-  description: string;
-  hourlyRate: number;
-  amount: number;
-  isBillable: boolean;
-  isBilled: boolean;
-  case: {
-    id: string;
-    caseNumber: string;
-    title: string;
-    client: {
-      id: string;
-      firstName: string | null;
-      lastName: string | null;
-      companyName: string | null;
-    };
-  } | null;
-}
 
 export default function InvoicesPage() {
   const { data: session } = useSession();
@@ -96,7 +63,6 @@ export default function InvoicesPage() {
   
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
@@ -107,14 +73,12 @@ export default function InvoicesPage() {
     dueDate: '',
     notes: '',
     terms: '',
-    selectedTimeEntries: [] as string[],
   });
 
   // Load data
   useEffect(() => {
     loadInvoices();
     loadClients();
-    loadUnbilledTimeEntries();
   }, []);
 
   const loadInvoices = async () => {
@@ -154,18 +118,6 @@ export default function InvoicesPage() {
     }
   };
 
-  const loadUnbilledTimeEntries = async () => {
-    try {
-      const response = await fetch('/api/time-entries');
-      if (response.ok) {
-        const data = await response.json();
-        const unbilled = data.filter((entry: TimeEntry) => entry.isBillable && !entry.isBilled);
-        setTimeEntries(unbilled);
-      }
-    } catch (error) {
-      console.error('Error loading time entries:', error);
-    }
-  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -203,14 +155,6 @@ export default function InvoicesPage() {
       return;
     }
 
-    if (formData.selectedTimeEntries.length === 0) {
-      toast({
-        title: 'Greška',
-        description: 'Odaberite barem jedan unos vremena',
-        variant: 'destructive',
-      });
-      return;
-    }
 
     try {
       const response = await fetch('/api/invoices', {
@@ -220,7 +164,6 @@ export default function InvoicesPage() {
         },
         body: JSON.stringify({
           ...formData,
-          timeEntryIds: formData.selectedTimeEntries,
         }),
       });
 
@@ -230,7 +173,6 @@ export default function InvoicesPage() {
           description: 'Račun je uspješno stvoren',
         });
         loadInvoices();
-        loadUnbilledTimeEntries();
         setIsDialogOpen(false);
         resetForm();
       } else {
@@ -267,7 +209,6 @@ export default function InvoicesPage() {
           description: 'Račun je obrisan',
         });
         loadInvoices();
-        loadUnbilledTimeEntries();
       } else {
         const error = await response.json();
         toast({
@@ -324,13 +265,49 @@ export default function InvoicesPage() {
     }
   };
 
+  const handleDownloadPDF = async (invoiceId: string, invoiceNumber: string) => {
+    try {
+      const response = await fetch(`/api/invoices/${invoiceId}/pdf`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `racun-${invoiceNumber}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast({
+          title: 'Uspjeh',
+          description: 'PDF račun je preuzet',
+        });
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Greška',
+          description: error.error || 'Greška pri preuzimanju PDF-a',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast({
+        title: 'Greška',
+        description: 'Greška pri preuzimanju PDF-a',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       clientId: '',
       dueDate: '',
       notes: '',
       terms: '',
-      selectedTimeEntries: [],
     });
   };
 
@@ -340,21 +317,6 @@ export default function InvoicesPage() {
     setIsDialogOpen(true);
   };
 
-  const toggleTimeEntry = (entryId: string) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedTimeEntries: prev.selectedTimeEntries.includes(entryId)
-        ? prev.selectedTimeEntries.filter(id => id !== entryId)
-        : [...prev.selectedTimeEntries, entryId]
-    }));
-  };
-
-  const getSelectedTimeEntriesTotal = () => {
-    return formData.selectedTimeEntries.reduce((total, entryId) => {
-      const entry = timeEntries.find(e => e.id === entryId);
-      return total + (entry?.amount || 0);
-    }, 0);
-  };
 
   const totalAmount = invoices.reduce((sum, invoice) => sum + invoice.total, 0);
   const paidAmount = invoices.reduce((sum, invoice) => sum + invoice.amountPaid, 0);
@@ -389,7 +351,7 @@ export default function InvoicesPage() {
             <DialogHeader>
               <DialogTitle>Novi račun</DialogTitle>
               <DialogDescription>
-                Stvorite novi račun odabiranjem klijenta i unosa vremena
+                Stvorite novi račun odabiranjem klijenta
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -441,48 +403,12 @@ export default function InvoicesPage() {
                 />
               </div>
 
-              <div>
-                <Label>Unosi vremena</Label>
-                <div className="border rounded-lg p-4 max-h-60 overflow-y-auto">
-                  {timeEntries.length === 0 ? (
-                    <p className="text-muted-foreground text-center py-4">
-                      Nema dostupnih unosa vremena za naplatu
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {timeEntries.map((entry) => (
-                        <div key={entry.id} className="flex items-center space-x-2 p-2 border rounded">
-                          <Checkbox
-                            id={entry.id}
-                            checked={formData.selectedTimeEntries.includes(entry.id)}
-                            onCheckedChange={() => toggleTimeEntry(entry.id)}
-                          />
-                          <div className="flex-1">
-                            <div className="font-medium">{entry.description}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {entry.case ? `${entry.case.caseNumber} - ${getClientName(entry.case.client)}` : 'Bez predmeta'} • 
-                              {formatDate(entry.date)} • 
-                              {entry.duration} min • 
-                              {entry.amount.toFixed(2)} EUR
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {formData.selectedTimeEntries.length > 0 && (
-                  <div className="mt-2 text-sm font-medium">
-                    Ukupno: {getSelectedTimeEntriesTotal().toFixed(2)} EUR
-                  </div>
-                )}
-              </div>
 
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Odustani
                 </Button>
-                <Button type="submit" disabled={formData.selectedTimeEntries.length === 0}>
+                <Button type="submit">
                   Stvori račun
                 </Button>
               </div>
@@ -586,7 +512,12 @@ export default function InvoicesPage() {
                       <Button size="sm" variant="outline">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleDownloadPDF(invoice.id, invoice.invoiceNumber)}
+                        title="Preuzmi PDF račun"
+                      >
                         <Download className="h-4 w-4" />
                       </Button>
                       <PermissionGuard permission={PERMISSIONS.INVOICES_UPDATE}>
@@ -624,6 +555,47 @@ export default function InvoicesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Payment Management Section */}
+      {invoices.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <CreditCard className="h-5 w-5 mr-2" />
+              Upravljanje plaćanjima
+            </CardTitle>
+            <CardDescription>
+              Pregled i upravljanje plaćanjima za račune
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {invoices.map((invoice) => (
+                <div key={invoice.id} className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-medium">{invoice.invoiceNumber}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {getClientName(invoice.client)} • {invoice.total.toFixed(2)} EUR
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-muted-foreground">Plaćeno</div>
+                      <div className="font-medium">{invoice.amountPaid.toFixed(2)} EUR</div>
+                    </div>
+                  </div>
+                  <PaymentList
+                    invoiceId={invoice.id}
+                    invoiceNumber={invoice.invoiceNumber}
+                    invoiceTotal={invoice.total}
+                    onPaymentsUpdated={loadInvoices}
+                  />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

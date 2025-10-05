@@ -1,6 +1,6 @@
-# LegalFlow Implementation Guide
+# iLegal Implementation Guide
 
-This guide will help you get LegalFlow up and running from scratch.
+This guide will help you get iLegal up and running from scratch.
 
 ## 🎯 Quick Start (15 minutes)
 
@@ -53,7 +53,7 @@ openssl rand -base64 32
 
 ```env
 # Database - Start with Vercel Postgres or local PostgreSQL
-DATABASE_URL="postgresql://user:password@localhost:5432/legalflow"
+DATABASE_URL="postgresql://user:password@localhost:5432/ilegal"
 
 # Clerk - Get from dashboard.clerk.dev
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
@@ -83,10 +83,10 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```bash
 # Install PostgreSQL locally
 # Then create database:
-createdb legalflow
+createdb ilegal
 
 # Update DATABASE_URL in .env
-DATABASE_URL="postgresql://postgres:password@localhost:5432/legalflow"
+DATABASE_URL="postgresql://postgres:password@localhost:5432/ilegal"
 
 # Push schema
 npm run db:push
@@ -134,15 +134,15 @@ vercel env pull .env.local
 ```bash
 # You'll create these in Stripe Dashboard → Products:
 
-Product 1: LegalFlow Basic
+Product 1: iLegal Basic
 - Price: €147/month
 - Copy price ID → Add to .env as STRIPE_BASIC_PRICE_ID
 
-Product 2: LegalFlow Pro
+Product 2: iLegal Pro
 - Price: €297/month
 - Copy price ID → Add to .env as STRIPE_PRO_PRICE_ID
 
-Product 3: LegalFlow Enterprise
+Product 3: iLegal Enterprise
 - Price: €497/month
 - Copy price ID → Add to .env as STRIPE_ENTERPRISE_PRICE_ID
 ```
@@ -442,4 +442,4 @@ npx @sentry/wizard@latest -i nextjs
 
 ---
 
-Good luck building LegalFlow! 🚀⚖️
+Good luck building iLegal! 🚀⚖️

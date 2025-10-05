@@ -1,4 +1,4 @@
-# 🧪 Test Credentials for LegalFlow
+# 🧪 Test Credentials for iLegal
 
 ## ✅ Test Account Created Successfully!
 

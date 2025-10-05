@@ -8,7 +8,7 @@ import { AuthProvider } from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'LegalFlow - Upravljanje odvjetničkom kancelarijom',
+  title: 'iLegal - Upravljanje odvjetničkom kancelarijom',
   description: 'Sveobuhvatna platforma za upravljanje odvjetničkom praksom',
 }
 
@@ -22,10 +22,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <ThemeProvider
-            attribute="class"
             defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
           >
             {children}
             <Toaster />

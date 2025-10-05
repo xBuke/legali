@@ -1,4 +1,4 @@
-# 👋 Welcome to LegalFlow!
+# 👋 Welcome to iLegal!
 
 ## 🎉 Your Legal Practice Management SaaS is Ready to Build!
 
@@ -257,7 +257,7 @@ vercel --prod            # Deploy to production
 
 ## 🌟 Unique Selling Points
 
-What makes LegalFlow special:
+What makes iLegal special:
 
 1. **Croatian-First**: Built specifically for Croatian legal system
 2. **AI-Powered**: First Croatian legal software with AI

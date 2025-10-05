@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
 
 // GET /api/invoices - List all invoices for the organization
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Neautoriziran pristup' }, { status: 401 });
     }
@@ -16,7 +15,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
 
     // Get user's organization
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id: session.user.id },
       include: { organization: true }
     });
@@ -38,7 +37,7 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
-    const invoices = await prisma.invoice.findMany({
+    const invoices = await db.invoice.findMany({
       where,
       include: {
         client: {
@@ -52,22 +51,6 @@ export async function GET(request: NextRequest) {
             city: true,
             postalCode: true,
             country: true,
-          }
-        },
-        timeEntries: {
-          select: {
-            id: true,
-            date: true,
-            duration: true,
-            description: true,
-            hourlyRate: true,
-            amount: true,
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              }
-            }
           }
         },
         expenses: {
@@ -98,7 +81,7 @@ export async function GET(request: NextRequest) {
 // POST /api/invoices - Create a new invoice
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Neautoriziran pristup' }, { status: 401 });
     }
@@ -109,7 +92,6 @@ export async function POST(request: NextRequest) {
       dueDate,
       notes,
       terms,
-      timeEntryIds = [],
       expenseIds = [],
     } = body;
 
@@ -122,7 +104,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's organization
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id: session.user.id },
       include: { organization: true }
     });
@@ -132,7 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify client belongs to organization
-    const client = await prisma.client.findFirst({
+    const client = await db.client.findFirst({
       where: {
         id: clientId,
         organizationId: user.organizationId,
@@ -146,17 +128,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get time entries and expenses
-    const timeEntries = await prisma.timeEntry.findMany({
-      where: {
-        id: { in: timeEntryIds },
-        organizationId: user.organizationId,
-        isBillable: true,
-        isBilled: false,
-      }
-    });
-
-    const expenses = await prisma.expense.findMany({
+    // Get expenses
+    const expenses = await db.expense.findMany({
       where: {
         id: { in: expenseIds },
         organizationId: user.organizationId,
@@ -166,15 +139,14 @@ export async function POST(request: NextRequest) {
     });
 
     // Calculate totals
-    const timeEntriesTotal = timeEntries.reduce((sum, entry) => sum + entry.amount, 0);
     const expensesTotal = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const subtotal = timeEntriesTotal + expensesTotal;
+    const subtotal = expensesTotal;
     const taxRate = 25.00; // Croatian PDV
     const taxAmount = (subtotal * taxRate) / 100;
     const total = subtotal + taxAmount;
 
     // Generate invoice number
-    const lastInvoice = await prisma.invoice.findFirst({
+    const lastInvoice = await db.invoice.findFirst({
       where: { organizationId: user.organizationId },
       orderBy: { createdAt: 'desc' }
     });
@@ -184,7 +156,7 @@ export async function POST(request: NextRequest) {
       : 'INV-000001';
 
     // Create invoice
-    const invoice = await prisma.invoice.create({
+    const invoice = await db.invoice.create({
       data: {
         invoiceNumber,
         dueDate: new Date(dueDate),
@@ -199,19 +171,9 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Update time entries and expenses to mark them as billed
-    if (timeEntries.length > 0) {
-      await prisma.timeEntry.updateMany({
-        where: { id: { in: timeEntryIds } },
-        data: { 
-          isBilled: true,
-          invoiceId: invoice.id 
-        }
-      });
-    }
-
+    // Update expenses to mark them as billed
     if (expenses.length > 0) {
-      await prisma.expense.updateMany({
+      await db.expense.updateMany({
         where: { id: { in: expenseIds } },
         data: { 
           isBilled: true,
@@ -221,7 +183,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Return invoice with related data
-    const createdInvoice = await prisma.invoice.findUnique({
+    const createdInvoice = await db.invoice.findUnique({
       where: { id: invoice.id },
       include: {
         client: {
@@ -235,22 +197,6 @@ export async function POST(request: NextRequest) {
             city: true,
             postalCode: true,
             country: true,
-          }
-        },
-        timeEntries: {
-          select: {
-            id: true,
-            date: true,
-            duration: true,
-            description: true,
-            hourlyRate: true,
-            amount: true,
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              }
-            }
           }
         },
         expenses: {

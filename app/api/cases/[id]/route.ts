@@ -36,18 +36,6 @@ export async function GET(
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
-        timeEntries: {
-          orderBy: { date: 'desc' },
-          take: 10,
-          include: {
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-        },
         tasks: {
           orderBy: { createdAt: 'desc' },
           take: 10,

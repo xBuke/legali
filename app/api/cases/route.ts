@@ -40,7 +40,6 @@ export async function GET(request: Request) {
         _count: {
           select: {
             documents: true,
-            timeEntries: true,
             tasks: true,
           },
         },

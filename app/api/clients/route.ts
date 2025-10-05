@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
+import { createActivityLog } from '@/lib/activity-logger'
 
 // GET /api/clients - List all clients
 export async function GET(request: Request) {
@@ -55,6 +56,15 @@ export async function POST(request: Request) {
         ...body,
         organizationId: session.user.organizationId,
       },
+    })
+
+    // Log activity
+    await createActivityLog({
+      action: 'CREATE',
+      entity: 'Client',
+      entityId: client.id,
+      userId: session.user.id,
+      organizationId: session.user.organizationId,
     })
 
     return NextResponse.json(client, { status: 201 })

@@ -158,8 +158,8 @@ export default function DocumentsPage() {
         title: formData.title,
         description: formData.description,
         category: formData.category,
-        caseId: formData.caseId || null,
-        clientId: formData.clientId || null,
+        caseId: formData.caseId === 'none' ? null : formData.caseId || null,
+        clientId: formData.clientId === 'none' ? null : formData.clientId || null,
       }
 
       const url = editingDocument ? `/api/documents/${editingDocument.id}` : '/api/documents'
@@ -490,7 +490,7 @@ export default function DocumentsPage() {
                     <SelectValue placeholder="Odaberite predmet" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Bez predmeta</SelectItem>
+                    <SelectItem value="none">Bez predmeta</SelectItem>
                     {cases.map((caseData) => (
                       <SelectItem key={caseData.id} value={caseData.id}>
                         {caseData.caseNumber} - {caseData.title}
@@ -511,7 +511,7 @@ export default function DocumentsPage() {
                   <SelectValue placeholder="Odaberite klijenta" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Bez klijenta</SelectItem>
+                  <SelectItem value="none">Bez klijenta</SelectItem>
                   {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
                       {client.clientType === 'COMPANY'

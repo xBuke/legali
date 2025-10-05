@@ -1,4 +1,4 @@
-# LegalFlow - System Architecture
+# iLegal - System Architecture
 
 ## 🏗️ High-Level Architecture
 
@@ -338,9 +338,9 @@ Vercel CI/CD
     └─> Deploy Serverless Functions
 
 Production URLs:
-├─> legalflow.app (main app)
-├─> api.legalflow.app (API only - optional)
-└─> docs.legalflow.app (documentation - optional)
+├─> ilegal.app (main app)
+├─> api.ilegal.app (API only - optional)
+└─> docs.ilegal.app (documentation - optional)
 ```
 
 ### Environment Configuration

@@ -1,4 +1,4 @@
-import { SubscriptionTier } from '@prisma/client'
+export type SubscriptionTier = 'BASIC' | 'PRO' | 'ENTERPRISE'
 
 export const SUBSCRIPTION_PLANS = {
   BASIC: {

@@ -1,4 +1,4 @@
-# 🚀 LegalFlow - Quick Start Guide
+# 🚀 iLegal - Quick Start Guide
 
 Get up and running in 15 minutes!
 
@@ -55,7 +55,7 @@ This will install:
 ### 2.1 Clerk (Authentication) - FREE
 1. Go to [clerk.dev](https://clerk.dev)
 2. Sign up / Log in
-3. Create new application: "LegalFlow"
+3. Create new application: "iLegal"
 4. Copy these keys:
    - **Publishable Key** (starts with `pk_test_`)
    - **Secret Key** (starts with `sk_test_`)
@@ -149,7 +149,7 @@ vercel login
 vercel link
 
 # Create database
-vercel postgres create legalflow-db
+vercel postgres create ilegal-db
 
 # This will give you a DATABASE_URL - copy it to .env
 
@@ -162,11 +162,11 @@ npm run db:push
 1. Install PostgreSQL from [postgresql.org](https://postgresql.org)
 2. Create database:
    ```bash
-   createdb legalflow
+   createdb ilegal
    ```
 3. Update `.env`:
    ```env
-   DATABASE_URL="postgresql://postgres:password@localhost:5432/legalflow"
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/ilegal"
    ```
 4. Push schema:
    ```bash
@@ -263,7 +263,7 @@ export default function OnboardingPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Dobrodošli u LegalFlow!</h1>
+          <h1 className="text-3xl font-bold">Dobrodošli u iLegal!</h1>
           <p className="mt-2 text-muted-foreground">
             Kreirajmo vašu odvjetničku kancelariju
           </p>
@@ -385,7 +385,7 @@ export default async function DashboardLayout({
       {/* Sidebar - We'll build this next */}
       <aside className="w-64 border-r bg-muted/40">
         <div className="p-6">
-          <h2 className="font-bold text-lg">LegalFlow</h2>
+          <h2 className="font-bold text-lg">iLegal</h2>
           <p className="text-sm text-muted-foreground">{user.organization.name}</p>
         </div>
         <nav className="space-y-1 px-3">

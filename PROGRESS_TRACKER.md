@@ -1,4 +1,4 @@
-# LegalFlow - Development Progress Tracker
+# iLegal - Development Progress Tracker
 
 ## 📊 Overall Progress: 3/13 Weeks (23% Complete) - WEEK 3 COMPLETE! ✅
 

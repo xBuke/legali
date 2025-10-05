@@ -8,6 +8,10 @@ export async function POST(req: Request) {
   const body = await req.text()
   const signature = (await headers()).get('Stripe-Signature') as string
 
+  if (!stripe) {
+    return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
+  }
+
   let event: Stripe.Event
 
   try {

@@ -72,7 +72,7 @@ export default function SignUpPage() {
           <div>
             <CardTitle className="text-2xl">Kreirajte svoj račun</CardTitle>
             <CardDescription>
-              Započnite s LegalFlow-om danas - 14 dana besplatno
+              Započnite s iLegal-om danas - 14 dana besplatno
             </CardDescription>
           </div>
         </CardHeader>

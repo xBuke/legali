@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/use-permissions';
 import { PermissionGuard } from '@/components/permission-guard';
 import { PERMISSIONS } from '@/lib/permissions';
-import { Plus, Clock, Play, Pause, Square, Edit, Trash2, Filter } from 'lucide-react';
+import { Plus, Clock, Edit, Trash2, Filter } from 'lucide-react';
 
 interface TimeEntry {
   id: string;
@@ -73,13 +73,6 @@ export default function TimeTrackingPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   
-  // Timer state
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [timerDuration, setTimerDuration] = useState(0);
-  const [timerStartTime, setTimerStartTime] = useState<Date | null>(null);
-  const [timerDescription, setTimerDescription] = useState('');
-  const [timerCaseId, setTimerCaseId] = useState<string>('');
-  
   // Form state
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -87,7 +80,7 @@ export default function TimeTrackingPage() {
     description: '',
     hourlyRate: '',
     isBillable: true,
-    caseId: '',
+    caseId: 'none',
   });
 
   // Load data
@@ -95,19 +88,6 @@ export default function TimeTrackingPage() {
     loadTimeEntries();
     loadCases();
   }, []);
-
-  // Timer effect
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isTimerRunning && timerStartTime) {
-      interval = setInterval(() => {
-        const now = new Date();
-        const diff = Math.floor((now.getTime() - timerStartTime.getTime()) / 1000);
-        setTimerDuration(diff);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isTimerRunning, timerStartTime]);
 
   const loadTimeEntries = async () => {
     try {
@@ -152,86 +132,45 @@ export default function TimeTrackingPage() {
     return `${hours}h ${mins}m`;
   };
 
-  const formatTimerDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('hr-HR');
   };
 
-  const startTimer = () => {
-    setIsTimerRunning(true);
-    setTimerStartTime(new Date());
-    setTimerDuration(0);
-  };
-
-  const pauseTimer = () => {
-    setIsTimerRunning(false);
-  };
-
-  const stopTimer = async () => {
-    if (timerDuration === 0) return;
-    
-    const minutes = Math.floor(timerDuration / 60);
-    if (minutes === 0) {
-      toast({
-        title: 'Greška',
-        description: 'Vrijeme mora biti veće od 0 minuta',
-        variant: 'destructive',
-      });
-      return;
+  const getClientName = (client: { firstName: string | null; lastName: string | null; companyName: string | null }) => {
+    if (client.companyName) {
+      return client.companyName;
     }
-
-    try {
-      const response = await fetch('/api/time-entries', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          date: new Date().toISOString().split('T')[0],
-          duration: minutes,
-          description: timerDescription || 'Timer unos',
-          caseId: timerCaseId || null,
-        }),
-      });
-
-      if (response.ok) {
-        toast({
-          title: 'Uspjeh',
-          description: 'Unos vremena je uspješno spremljen',
-        });
-        loadTimeEntries();
-        setTimerDescription('');
-        setTimerCaseId('');
-        setTimerDuration(0);
-        setIsTimerRunning(false);
-        setTimerStartTime(null);
-      } else {
-        const error = await response.json();
-        toast({
-          title: 'Greška',
-          description: error.error || 'Greška pri spremanju unosa vremena',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Error saving timer entry:', error);
-      toast({
-        title: 'Greška',
-        description: 'Greška pri spremanju unosa vremena',
-        variant: 'destructive',
-      });
-    }
+    return `${client.firstName || ''} ${client.lastName || ''}`.trim();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.duration || !formData.description) {
+    if (!formData.description || !formData.duration || !formData.hourlyRate) {
       toast({
         title: 'Greška',
-        description: 'Trajanje i opis su obavezni',
+        description: 'Opis, trajanje i satnica su obavezni',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const duration = parseInt(formData.duration);
+    const hourlyRate = parseFloat(formData.hourlyRate);
+
+    if (duration <= 0) {
+      toast({
+        title: 'Greška',
+        description: 'Trajanje mora biti veće od 0',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (hourlyRate <= 0) {
+      toast({
+        title: 'Greška',
+        description: 'Satnica mora biti veća od 0',
         variant: 'destructive',
       });
       return;
@@ -240,7 +179,7 @@ export default function TimeTrackingPage() {
     try {
       const url = editingEntry ? `/api/time-entries/${editingEntry.id}` : '/api/time-entries';
       const method = editingEntry ? 'PATCH' : 'POST';
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -248,9 +187,9 @@ export default function TimeTrackingPage() {
         },
         body: JSON.stringify({
           ...formData,
-          duration: parseInt(formData.duration),
-          hourlyRate: parseFloat(formData.hourlyRate) || undefined,
-          caseId: formData.caseId || null,
+          caseId: formData.caseId === 'none' ? '' : formData.caseId,
+          duration,
+          hourlyRate,
         }),
       });
 
@@ -261,7 +200,6 @@ export default function TimeTrackingPage() {
         });
         loadTimeEntries();
         setIsDialogOpen(false);
-        setEditingEntry(null);
         resetForm();
       } else {
         const error = await response.json();
@@ -284,12 +222,12 @@ export default function TimeTrackingPage() {
   const handleEdit = (entry: TimeEntry) => {
     setEditingEntry(entry);
     setFormData({
-      date: entry.date.split('T')[0],
+      date: new Date(entry.date).toISOString().split('T')[0],
       duration: entry.duration.toString(),
       description: entry.description,
       hourlyRate: entry.hourlyRate.toString(),
       isBillable: entry.isBillable,
-      caseId: entry.case?.id || '',
+      caseId: entry.case?.id || 'none',
     });
     setIsDialogOpen(true);
   };
@@ -335,28 +273,19 @@ export default function TimeTrackingPage() {
       description: '',
       hourlyRate: '',
       isBillable: true,
-      caseId: '',
+      caseId: 'none',
     });
+    setEditingEntry(null);
   };
 
   const openCreateDialog = () => {
-    setEditingEntry(null);
     resetForm();
     setIsDialogOpen(true);
   };
 
-  const getClientName = (client: any) => {
-    if (client.companyName) {
-      return client.companyName;
-    }
-    return `${client.firstName || ''} ${client.lastName || ''}`.trim();
-  };
-
-  const totalBillableTime = timeEntries
-    .filter(entry => entry.isBillable)
-    .reduce((sum, entry) => sum + entry.duration, 0);
-
-  const totalAmount = timeEntries
+  const totalHours = timeEntries.reduce((sum, entry) => sum + entry.duration, 0);
+  const totalAmount = timeEntries.reduce((sum, entry) => sum + entry.amount, 0);
+  const billableAmount = timeEntries
     .filter(entry => entry.isBillable)
     .reduce((sum, entry) => sum + entry.amount, 0);
 
@@ -372,19 +301,149 @@ export default function TimeTrackingPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Praćenje vremena</h1>
+          <h1 className="text-3xl font-bold">Pratnja vremena</h1>
           <p className="text-muted-foreground">
-            Upravljajte unosima vremena i generirajte račune
+            Upravljajte unosima vremena i satnicom
           </p>
         </div>
-        <PermissionGuard permission={PERMISSIONS.TIME_CREATE}>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={openCreateDialog}>
-                <Plus className="h-4 w-4 mr-2" />
-                Dodaj unos
-              </Button>
-            </DialogTrigger>
+        <PermissionGuard permission={PERMISSIONS.TIME_ENTRIES_CREATE}>
+          <Button onClick={openCreateDialog}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novi unos vremena
+          </Button>
+        </PermissionGuard>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Ukupno sati</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatDuration(totalHours)}</div>
+            <p className="text-xs text-muted-foreground">Svi unosi vremena</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Ukupni iznos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalAmount.toFixed(2)} EUR</div>
+            <p className="text-xs text-muted-foreground">Svi unosi vremena</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Naplativo</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{billableAmount.toFixed(2)} EUR</div>
+            <p className="text-xs text-muted-foreground">Naplativo klijentima</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Time Entries Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Unosi vremena</CardTitle>
+          <CardDescription>Pregled svih unosa vremena</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Datum</TableHead>
+                <TableHead>Opis</TableHead>
+                <TableHead>Predmet</TableHead>
+                <TableHead>Trajanje</TableHead>
+                <TableHead>Satnica</TableHead>
+                <TableHead>Iznos</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Akcije</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {timeEntries.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8">
+                    Nema unosa vremena
+                  </TableCell>
+                </TableRow>
+              ) : (
+                timeEntries.map((entry) => (
+                  <TableRow key={entry.id}>
+                    <TableCell>{formatDate(entry.date)}</TableCell>
+                    <TableCell>
+                      <div className="font-medium">{entry.description}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {entry.user.firstName} {entry.user.lastName}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {entry.case ? (
+                        <div>
+                          <div className="font-medium">{entry.case.caseNumber}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {getClientName(entry.case.client)}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">Bez predmeta</span>
+                      )}
+                    </TableCell>
+                    <TableCell>{formatDuration(entry.duration)}</TableCell>
+                    <TableCell>{entry.hourlyRate.toFixed(2)} EUR/h</TableCell>
+                    <TableCell>{entry.amount.toFixed(2)} EUR</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <Badge variant={entry.isBillable ? 'default' : 'secondary'}>
+                          {entry.isBillable ? 'Naplativo' : 'Nenaplativo'}
+                        </Badge>
+                        {entry.isBilled && (
+                          <Badge variant="outline">
+                            Naplaćeno
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <PermissionGuard permission={PERMISSIONS.TIME_ENTRIES_UPDATE}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(entry)}
+                            disabled={entry.isBilled}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </PermissionGuard>
+                        <PermissionGuard permission={PERMISSIONS.TIME_ENTRIES_DELETE}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDelete(entry.id)}
+                            disabled={entry.isBilled}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </PermissionGuard>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Create/Edit Dialog */}
+      <PermissionGuard permission={PERMISSIONS.TIME_ENTRIES_CREATE}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
@@ -407,50 +466,16 @@ export default function TimeTrackingPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="duration">Trajanje (minute)</Label>
-                  <Input
-                    id="duration"
-                    type="number"
-                    min="1"
-                    value={formData.duration}
-                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="description">Opis</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="hourlyRate">Satnica (EUR)</Label>
-                  <Input
-                    id="hourlyRate"
-                    type="number"
-                    step="0.01"
-                    value={formData.hourlyRate}
-                    onChange={(e) => setFormData({ ...formData, hourlyRate: e.target.value })}
-                  />
-                </div>
-                <div>
                   <Label htmlFor="caseId">Predmet</Label>
                   <Select value={formData.caseId} onValueChange={(value) => setFormData({ ...formData, caseId: value })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Odaberite predmet" />
+                      <SelectValue placeholder="Odaberite predmet (opcionalno)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Bez predmeta</SelectItem>
-                      {cases.map((case_) => (
-                        <SelectItem key={case_.id} value={case_.id}>
-                          {case_.caseNumber} - {case_.title}
+                      <SelectItem value="none">Bez predmeta</SelectItem>
+                      {cases.map((caseItem) => (
+                        <SelectItem key={caseItem.id} value={caseItem.id}>
+                          {caseItem.caseNumber} - {getClientName(caseItem.client)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -458,15 +483,43 @@ export default function TimeTrackingPage() {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="isBillable"
-                  checked={formData.isBillable}
-                  onChange={(e) => setFormData({ ...formData, isBillable: e.target.checked })}
-                  className="rounded"
+              <div>
+                <Label htmlFor="description">Opis rada</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Opisite što ste radili..."
+                  required
                 />
-                <Label htmlFor="isBillable">Naplativo</Label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="duration">Trajanje (minute)</Label>
+                  <Input
+                    id="duration"
+                    type="number"
+                    min="1"
+                    value={formData.duration}
+                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                    placeholder="60"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="hourlyRate">Satnica (EUR/h)</Label>
+                  <Input
+                    id="hourlyRate"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={formData.hourlyRate}
+                    onChange={(e) => setFormData({ ...formData, hourlyRate: e.target.value })}
+                    placeholder="100.00"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end space-x-2">
@@ -474,209 +527,13 @@ export default function TimeTrackingPage() {
                   Odustani
                 </Button>
                 <Button type="submit">
-                  {editingEntry ? 'Ažuriraj' : 'Spremi'}
+                  {editingEntry ? 'Ažuriraj' : 'Stvori'}
                 </Button>
               </div>
             </form>
           </DialogContent>
         </Dialog>
-        </PermissionGuard>
-      </div>
-
-      {/* Timer Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Clock className="h-5 w-5 mr-2" />
-            Timer
-          </CardTitle>
-          <CardDescription>
-            Pratite vrijeme u stvarnom vremenu
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="text-center">
-              <div className="text-4xl font-mono font-bold">
-                {formatTimerDuration(timerDuration)}
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="timerDescription">Opis</Label>
-              <Input
-                id="timerDescription"
-                value={timerDescription}
-                onChange={(e) => setTimerDescription(e.target.value)}
-                placeholder="Opis rada..."
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="timerCase">Predmet</Label>
-              <Select value={timerCaseId} onValueChange={setTimerCaseId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Odaberite predmet" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Bez predmeta</SelectItem>
-                  {cases.map((case_) => (
-                    <SelectItem key={case_.id} value={case_.id}>
-                      {case_.caseNumber} - {case_.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex justify-center space-x-2">
-              {!isTimerRunning ? (
-                <Button onClick={startTimer} className="flex items-center">
-                  <Play className="h-4 w-4 mr-2" />
-                  Pokreni
-                </Button>
-              ) : (
-                <>
-                  <Button onClick={pauseTimer} variant="outline" className="flex items-center">
-                    <Pause className="h-4 w-4 mr-2" />
-                    Pauza
-                  </Button>
-                  <Button onClick={stopTimer} variant="destructive" className="flex items-center">
-                    <Square className="h-4 w-4 mr-2" />
-                    Zaustavi
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Ukupno vremena</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatDuration(totalBillableTime)}</div>
-            <p className="text-xs text-muted-foreground">Naplativo vrijeme</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Ukupni iznos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalAmount.toFixed(2)} EUR</div>
-            <p className="text-xs text-muted-foreground">Naplativo</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Unosa vremena</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{timeEntries.length}</div>
-            <p className="text-xs text-muted-foreground">Ukupno</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Time Entries Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Unosi vremena</CardTitle>
-          <CardDescription>
-            Pregled svih unosa vremena
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Datum</TableHead>
-                <TableHead>Opis</TableHead>
-                <TableHead>Predmet</TableHead>
-                <TableHead>Trajanje</TableHead>
-                <TableHead>Satnica</TableHead>
-                <TableHead>Iznos</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Akcije</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {timeEntries.map((entry) => (
-                <TableRow key={entry.id}>
-                  <TableCell>
-                    {new Date(entry.date).toLocaleDateString('hr-HR')}
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {entry.description}
-                  </TableCell>
-                  <TableCell>
-                    {entry.case ? (
-                      <div>
-                        <div className="font-medium">{entry.case.caseNumber}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {getClientName(entry.case.client)}
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">Bez predmeta</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{formatDuration(entry.duration)}</TableCell>
-                  <TableCell>{entry.hourlyRate.toFixed(2)} EUR</TableCell>
-                  <TableCell>{entry.amount.toFixed(2)} EUR</TableCell>
-                  <TableCell>
-                    <div className="flex flex-col space-y-1">
-                      <Badge variant={entry.isBillable ? 'default' : 'secondary'}>
-                        {entry.isBillable ? 'Naplativo' : 'Nenaplativo'}
-                      </Badge>
-                      {entry.isBilled && (
-                        <Badge variant="outline">
-                          Naplaćeno
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <PermissionGuard permission={PERMISSIONS.TIME_UPDATE}>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEdit(entry)}
-                          disabled={entry.isBilled}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </PermissionGuard>
-                      <PermissionGuard permission={PERMISSIONS.TIME_DELETE}>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDelete(entry.id)}
-                          disabled={entry.isBilled}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </PermissionGuard>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          
-          {timeEntries.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              Nema unosa vremena
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      </PermissionGuard>
     </div>
   );
 }

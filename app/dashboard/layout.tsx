@@ -16,9 +16,12 @@ import {
   Settings,
   LogOut,
   Menu,
+  Euro,
+  Search,
 } from 'lucide-react'
 import { useState } from 'react'
 import { usePermissions } from '@/hooks/use-permissions'
+import { GlobalSearch } from '@/components/search/global-search'
 
 export default function DashboardLayout({
   children,
@@ -28,6 +31,7 @@ export default function DashboardLayout({
   const { data: session, status } = useSession()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [searchOpen, setSearchOpen] = useState(false)
   const { canAccessRoute } = usePermissions()
 
   if (status === 'loading') {
@@ -51,8 +55,9 @@ export default function DashboardLayout({
     { name: 'Klijenti', href: '/dashboard/clients', icon: Users },
     { name: 'Predmeti', href: '/dashboard/cases', icon: Briefcase },
     { name: 'Dokumenti', href: '/dashboard/documents', icon: FileText },
-    { name: 'Vrijeme i naplata', href: '/dashboard/time-tracking', icon: Clock },
+    { name: 'Pratnja vremena', href: '/dashboard/time-tracking', icon: Clock },
     { name: 'Računi', href: '/dashboard/invoices', icon: Receipt },
+    { name: 'Troškovi', href: '/dashboard/expenses', icon: Euro },
   ]
 
   // Filter navigation based on user permissions
@@ -71,7 +76,7 @@ export default function DashboardLayout({
           {sidebarOpen && (
             <Link href="/dashboard" className="flex items-center gap-2">
               <Scale className="h-6 w-6 text-primary" />
-              <span className="font-semibold text-lg">LegalFlow</span>
+              <span className="font-semibold text-lg">iLegal</span>
             </Link>
           )}
           <Button
@@ -134,6 +139,15 @@ export default function DashboardLayout({
             </p>
           </div>
           <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Search className="h-4 w-4" />
+              <span className="hidden sm:inline">Pretraži</span>
+            </Button>
             <ThemeToggle />
           </div>
         </header>
@@ -143,6 +157,12 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+
+      {/* Global Search */}
+      <GlobalSearch 
+        isOpen={searchOpen} 
+        onClose={() => setSearchOpen(false)} 
+      />
     </div>
   )
 }

@@ -54,7 +54,7 @@ export default function SignInPage() {
           <div>
             <CardTitle className="text-2xl">Dobrodošli nazad</CardTitle>
             <CardDescription>
-              Prijavite se u svoj LegalFlow račun
+              Prijavite se u svoj iLegal račun
             </CardDescription>
           </div>
         </CardHeader>

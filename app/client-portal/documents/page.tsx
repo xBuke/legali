@@ -177,10 +177,10 @@ export default function ClientDocumentsPage() {
     return new Date(dateString).toLocaleDateString('hr-HR');
   };
 
-  const handleDownload = (document: Document) => {
+  const handleDownload = (doc: Document) => {
     const link = document.createElement('a');
-    link.href = document.fileUrl;
-    link.download = document.originalName;
+    link.href = doc.fileUrl;
+    link.download = doc.originalName;
     link.click();
   };
 

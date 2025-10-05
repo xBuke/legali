@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
 
 // GET /api/invoices/[id] - Get a specific invoice
 export async function GET(
@@ -9,12 +8,12 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Neautoriziran pristup' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id: session.user.id },
       include: { organization: true }
     });
@@ -23,7 +22,7 @@ export async function GET(
       return NextResponse.json({ error: 'Korisnik nije pronađen' }, { status: 404 });
     }
 
-    const invoice = await prisma.invoice.findFirst({
+    const invoice = await db.invoice.findFirst({
       where: {
         id: params.id,
         organizationId: user.organizationId,
@@ -41,22 +40,6 @@ export async function GET(
             postalCode: true,
             country: true,
             taxId: true,
-          }
-        },
-        timeEntries: {
-          select: {
-            id: true,
-            date: true,
-            duration: true,
-            description: true,
-            hourlyRate: true,
-            amount: true,
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              }
-            }
           }
         },
         expenses: {
@@ -91,7 +74,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Neautoriziran pristup' }, { status: 401 });
     }
@@ -106,7 +89,7 @@ export async function PATCH(
       amountPaid,
     } = body;
 
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id: session.user.id },
       include: { organization: true }
     });
@@ -116,7 +99,7 @@ export async function PATCH(
     }
 
     // Check if invoice exists and belongs to organization
-    const existingInvoice = await prisma.invoice.findFirst({
+    const existingInvoice = await db.invoice.findFirst({
       where: {
         id: params.id,
         organizationId: user.organizationId,
@@ -135,7 +118,7 @@ export async function PATCH(
     if (paidDate !== undefined) updateData.paidDate = paidDate ? new Date(paidDate) : null;
     if (amountPaid !== undefined) updateData.amountPaid = amountPaid;
 
-    const invoice = await prisma.invoice.update({
+    const invoice = await db.invoice.update({
       where: { id: params.id },
       data: updateData,
       include: {
@@ -151,22 +134,6 @@ export async function PATCH(
             postalCode: true,
             country: true,
             taxId: true,
-          }
-        },
-        timeEntries: {
-          select: {
-            id: true,
-            date: true,
-            duration: true,
-            description: true,
-            hourlyRate: true,
-            amount: true,
-            user: {
-              select: {
-                firstName: true,
-                lastName: true,
-              }
-            }
           }
         },
         expenses: {
@@ -197,12 +164,12 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Neautoriziran pristup' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id: session.user.id },
       include: { organization: true }
     });
@@ -212,7 +179,7 @@ export async function DELETE(
     }
 
     // Check if invoice exists and belongs to organization
-    const invoice = await prisma.invoice.findFirst({
+    const invoice = await db.invoice.findFirst({
       where: {
         id: params.id,
         organizationId: user.organizationId,
@@ -231,16 +198,8 @@ export async function DELETE(
       );
     }
 
-    // Mark time entries and expenses as unbilled
-    await prisma.timeEntry.updateMany({
-      where: { invoiceId: params.id },
-      data: { 
-        isBilled: false,
-        invoiceId: null 
-      }
-    });
-
-    await prisma.expense.updateMany({
+    // Mark expenses as unbilled
+    await db.expense.updateMany({
       where: { invoiceId: params.id },
       data: { 
         isBilled: false,
@@ -249,7 +208,7 @@ export async function DELETE(
     });
 
     // Delete the invoice
-    await prisma.invoice.delete({
+    await db.invoice.delete({
       where: { id: params.id }
     });
 

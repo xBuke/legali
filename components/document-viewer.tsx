@@ -23,14 +23,14 @@ import {
 interface DocumentViewerProps {
   document: {
     id: string;
-    fileName: string;
+    fileName?: string;
     originalName: string;
     fileSize: number;
     mimeType: string;
     fileUrl: string;
-    title?: string;
-    description?: string;
-    category?: string;
+    title?: string | null;
+    description?: string | null;
+    category?: string | null;
     createdAt: string;
     case?: {
       id: string;
@@ -49,7 +49,7 @@ interface DocumentViewerProps {
   onClose: () => void;
 }
 
-export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProps) {
+export function DocumentViewer({ document: doc, isOpen, onClose }: DocumentViewerProps) {
   const [zoom, setZoom] = useState(100);
   const [rotation, setRotation] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -79,8 +79,8 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
 
   const handleDownload = () => {
     const link = document.createElement('a');
-    link.href = document.fileUrl;
-    link.download = document.originalName;
+    link.href = doc.fileUrl;
+    link.download = doc.originalName;
     link.click();
   };
 
@@ -100,8 +100,8 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
     return `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Bez imena';
   };
 
-  const isPDF = document.mimeType === 'application/pdf';
-  const isImage = document.mimeType.startsWith('image/');
+  const isPDF = doc.mimeType === 'application/pdf';
+  const isImage = doc.mimeType.startsWith('image/');
 
   const renderDocumentContent = () => {
     if (error) {
@@ -139,7 +139,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       return (
         <div className="w-full h-full">
           <iframe
-            src={`${document.fileUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=${zoom}`}
+            src={`${doc.fileUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=${zoom}`}
             className="w-full h-full border-0 rounded-lg"
             onLoad={() => setLoading(false)}
             onError={() => {
@@ -159,8 +159,8 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
       return (
         <div className="flex items-center justify-center h-full bg-muted rounded-lg overflow-hidden">
           <img
-            src={document.fileUrl}
-            alt={document.title || document.originalName}
+            src={doc.fileUrl}
+            alt={doc.title || doc.originalName}
             className="max-w-full max-h-full object-contain"
             style={{
               transform: `rotate(${rotation}deg) scale(${zoom / 100})`,
@@ -183,7 +183,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
           <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground mb-2">Pregled nije dostupan</p>
           <p className="text-sm text-muted-foreground mb-4">
-            Datoteka tipa {document.mimeType} se ne može prikazati u pregledniku
+            Datoteka tipa {doc.mimeType} se ne može prikazati u pregledniku
           </p>
           <Button onClick={handleDownload}>
             <Download className="h-4 w-4 mr-2" />
@@ -201,17 +201,17 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <DialogTitle className="text-lg font-semibold truncate">
-                {document.title || document.originalName}
+                {doc.title || doc.originalName}
               </DialogTitle>
               <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                <span>{formatFileSize(document.fileSize)}</span>
+                <span>{formatFileSize(doc.fileSize)}</span>
                 <span>•</span>
-                <span>{document.mimeType}</span>
-                {document.category && (
+                <span>{doc.mimeType}</span>
+                {doc.category && (
                   <>
                     <span>•</span>
                     <Badge variant="outline" className="text-xs">
-                      {document.category}
+                      {doc.category}
                     </Badge>
                   </>
                 )}
@@ -258,28 +258,28 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
                 <CardContent className="space-y-3">
                   <div>
                     <label className="text-xs font-medium text-muted-foreground">Naziv</label>
-                    <p className="text-sm">{document.title || document.originalName}</p>
+                    <p className="text-sm">{doc.title || doc.originalName}</p>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-muted-foreground">Veličina</label>
-                    <p className="text-sm">{formatFileSize(document.fileSize)}</p>
+                    <p className="text-sm">{formatFileSize(doc.fileSize)}</p>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-muted-foreground">Tip</label>
-                    <p className="text-sm">{document.mimeType}</p>
+                    <p className="text-sm">{doc.mimeType}</p>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-muted-foreground">Datum kreiranja</label>
                     <p className="text-sm flex items-center">
                       <Calendar className="h-3 w-3 mr-1" />
-                      {new Date(document.createdAt).toLocaleDateString('hr-HR')}
+                      {new Date(doc.createdAt).toLocaleDateString('hr-HR')}
                     </p>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Case Information */}
-              {document.case && (
+              {doc.case && (
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium flex items-center">
@@ -290,18 +290,18 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
                   <CardContent>
                     <div>
                       <label className="text-xs font-medium text-muted-foreground">Broj predmeta</label>
-                      <p className="text-sm font-medium">{document.case.caseNumber}</p>
+                      <p className="text-sm font-medium">{doc.case.caseNumber}</p>
                     </div>
                     <div className="mt-2">
                       <label className="text-xs font-medium text-muted-foreground">Naziv</label>
-                      <p className="text-sm">{document.case.title}</p>
+                      <p className="text-sm">{doc.case.title}</p>
                     </div>
                   </CardContent>
                 </Card>
               )}
 
               {/* Client Information */}
-              {document.client && (
+              {doc.client && (
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium flex items-center">
@@ -312,12 +312,12 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
                   <CardContent>
                     <div>
                       <label className="text-xs font-medium text-muted-foreground">Naziv</label>
-                      <p className="text-sm">{getClientName(document.client)}</p>
+                      <p className="text-sm">{getClientName(doc.client)}</p>
                     </div>
                     <div className="mt-2">
                       <label className="text-xs font-medium text-muted-foreground">Tip</label>
                       <p className="text-sm">
-                        {document.client.clientType === 'COMPANY' ? 'Tvrtka' : 'Fizička osoba'}
+                        {doc.client.clientType === 'COMPANY' ? 'Tvrtka' : 'Fizička osoba'}
                       </p>
                     </div>
                   </CardContent>
@@ -325,7 +325,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
               )}
 
               {/* Description */}
-              {document.description && (
+              {doc.description && (
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm font-medium flex items-center">
@@ -334,7 +334,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-muted-foreground">{document.description}</p>
+                    <p className="text-sm text-muted-foreground">{doc.description}</p>
                   </CardContent>
                 </Card>
               )}

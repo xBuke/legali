@@ -32,7 +32,7 @@ export default function ClientPortalLayout({
           {sidebarOpen && (
             <Link href="/client-portal" className="flex items-center gap-2">
               <Scale className="h-6 w-6 text-blue-600" />
-              <span className="font-semibold text-lg text-gray-900">LegalFlow</span>
+              <span className="font-semibold text-lg text-gray-900">iLegal</span>
             </Link>
           )}
           <Button

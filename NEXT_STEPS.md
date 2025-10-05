@@ -1,4 +1,4 @@
-# LegalFlow - Next Steps
+# iLegal - Next Steps
 
 This document outlines exactly what to build next to get to a working MVP.
 

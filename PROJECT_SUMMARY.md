@@ -1,8 +1,8 @@
-# LegalFlow - Project Summary
+# iLegal - Project Summary
 
 ## 📋 Executive Summary
 
-**LegalFlow** is a comprehensive legal practice management SaaS platform designed specifically for Croatian and Balkan region law firms. It provides case management, document handling, client relationship management, time tracking, billing, and AI-powered features with enterprise-grade security.
+**iLegal** is a comprehensive legal practice management SaaS platform designed specifically for Croatian and Balkan region law firms. It provides case management, document handling, client relationship management, time tracking, billing, and AI-powered features with enterprise-grade security.
 
 **Target Market**: Croatian law firms (solo practitioners to large firms)  
 **MVP Timeline**: 13 weeks  
@@ -296,7 +296,7 @@ vercel --prod
 
 ## 💡 Key Differentiators
 
-| Feature | LegalFlow | Traditional Software | Other SaaS |
+| Feature | iLegal | Traditional Software | Other SaaS |
 |---------|-----------|---------------------|------------|
 | **Croatian Focus** | ✅ Native | ❌ | ❌ |
 | **AI Features** | ✅ | ❌ | ⚠️ Basic |
@@ -498,7 +498,7 @@ vercel --prod
 
 ## 🎉 Final Thoughts
 
-You have everything you need to build LegalFlow:
+You have everything you need to build iLegal:
 - ✅ Complete technical foundation
 - ✅ Detailed product plan
 - ✅ Clear development roadmap
@@ -521,7 +521,7 @@ Start with NEXT_STEPS.md and work through Phase 1. Take it one step at a time, t
 4. **What to build next** → NEXT_STEPS.md
 5. **Overview** → This file
 
-**Good luck building LegalFlow!** 🚀⚖️
+**Good luck building iLegal!** 🚀⚖️
 
 ---
 
