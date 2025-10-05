@@ -15,7 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/use-permissions';
 import { PermissionGuard } from '@/components/permission-guard';
 import { PERMISSIONS } from '@/lib/permissions';
-import { Plus, Clock, Edit, Trash2, Filter } from 'lucide-react';
+import { Plus, Clock, Edit, Trash2, Filter, Play, Pause, Square } from 'lucide-react';
+import { TimeEntrySearchFilters } from '@/components/time-tracking/time-entry-search-filters';
 
 interface TimeEntry {
   id: string;
@@ -69,9 +70,34 @@ export default function TimeTrackingPage() {
   
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [cases, setCases] = useState<Case[]>([]);
+  const [users, setUsers] = useState<Array<{ id: string; name: string; email: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
+  const [filters, setFilters] = useState({
+    search: '',
+    case: [] as string[],
+    user: [] as string[],
+    billable: null as boolean | null,
+    status: [] as string[],
+    dateRange: {
+      from: undefined as Date | undefined,
+      to: undefined as Date | undefined,
+    },
+    durationRange: {
+      min: undefined as number | undefined,
+      max: undefined as number | undefined,
+    },
+  });
+  
+  // Timer state
+  const [timer, setTimer] = useState({
+    isRunning: false,
+    startTime: null as Date | null,
+    elapsedTime: 0,
+    caseId: 'none',
+    description: '',
+  });
   
   // Form state
   const [formData, setFormData] = useState({
@@ -87,7 +113,22 @@ export default function TimeTrackingPage() {
   useEffect(() => {
     loadTimeEntries();
     loadCases();
+    loadUsers();
   }, []);
+
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timer.isRunning && timer.startTime) {
+      interval = setInterval(() => {
+        setTimer(prev => ({
+          ...prev,
+          elapsedTime: Date.now() - prev.startTime!.getTime(),
+        }));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer.isRunning, timer.startTime]);
 
   const loadTimeEntries = async () => {
     try {
@@ -126,10 +167,38 @@ export default function TimeTrackingPage() {
     }
   };
 
+  const loadUsers = async () => {
+    try {
+      const response = await fetch('/api/users');
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.map((user: any) => ({
+          id: user.id,
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+          email: user.email,
+        })));
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
+
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours}h ${mins}m`;
+  };
+
+  const formatTime = (milliseconds: number) => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -141,6 +210,93 @@ export default function TimeTrackingPage() {
       return client.companyName;
     }
     return `${client.firstName || ''} ${client.lastName || ''}`.trim();
+  };
+
+  // Timer functions
+  const startTimer = () => {
+    if (!timer.caseId || timer.caseId === 'none') {
+      toast({
+        title: 'Greška',
+        description: 'Odaberite predmet prije pokretanja timera',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setTimer(prev => ({
+      ...prev,
+      isRunning: true,
+      startTime: new Date(),
+    }));
+  };
+
+  const stopTimer = () => {
+    setTimer(prev => ({
+      ...prev,
+      isRunning: false,
+      startTime: null,
+    }));
+  };
+
+  const saveTimerEntry = async () => {
+    if (!timer.description.trim()) {
+      toast({
+        title: 'Greška',
+        description: 'Unesite opis rada',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const duration = Math.floor(timer.elapsedTime / 60000); // Convert to minutes
+    if (duration < 1) {
+      toast({
+        title: 'Greška',
+        description: 'Vrijeme mora biti najmanje 1 minuta',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/time-entries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          date: new Date().toISOString().split('T')[0],
+          duration,
+          description: timer.description,
+          hourlyRate: 100, // Default rate, should be configurable
+          isBillable: true,
+          caseId: timer.caseId === 'none' ? '' : timer.caseId,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Uspjeh',
+          description: 'Unos vremena je spremljen',
+        });
+        loadTimeEntries();
+        setTimer({
+          isRunning: false,
+          startTime: null,
+          elapsedTime: 0,
+          caseId: 'none',
+          description: '',
+        });
+      } else {
+        throw new Error();
+      }
+    } catch (error) {
+      toast({
+        title: 'Greška',
+        description: 'Greška pri spremanju unosa vremena',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -283,6 +439,71 @@ export default function TimeTrackingPage() {
     setIsDialogOpen(true);
   };
 
+  // Filter time entries based on current filters
+  const filteredTimeEntries = timeEntries.filter(entry => {
+    // Search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      const matchesSearch = 
+        entry.description.toLowerCase().includes(searchLower) ||
+        entry.user.firstName?.toLowerCase().includes(searchLower) ||
+        entry.user.lastName?.toLowerCase().includes(searchLower) ||
+        entry.user.email.toLowerCase().includes(searchLower);
+      if (!matchesSearch) return false;
+    }
+
+    // Case filter
+    if (filters.case.length > 0) {
+      const hasMatchingCase = entry.case && filters.case.includes(entry.case.id);
+      if (!hasMatchingCase) return false;
+    }
+
+    // User filter
+    if (filters.user.length > 0 && !filters.user.includes(entry.user.id)) {
+      return false;
+    }
+
+    // Billable filter
+    if (filters.billable !== null && entry.isBillable !== filters.billable) {
+      return false;
+    }
+
+    // Status filter (based on billing status)
+    if (filters.status.length > 0) {
+      let entryStatus = 'DRAFT';
+      if (entry.isBilled) {
+        entryStatus = 'BILLED';
+      } else if (entry.isBillable) {
+        entryStatus = 'APPROVED';
+      } else {
+        entryStatus = 'SUBMITTED';
+      }
+      if (!filters.status.includes(entryStatus)) return false;
+    }
+
+    // Date range filter
+    if (filters.dateRange.from || filters.dateRange.to) {
+      const entryDate = new Date(entry.date);
+      if (filters.dateRange.from && entryDate < filters.dateRange.from) {
+        return false;
+      }
+      if (filters.dateRange.to && entryDate > filters.dateRange.to) {
+        return false;
+      }
+    }
+
+    // Duration range filter (convert minutes to hours)
+    const durationHours = entry.duration / 60;
+    if (filters.durationRange.min !== undefined && durationHours < filters.durationRange.min) {
+      return false;
+    }
+    if (filters.durationRange.max !== undefined && durationHours > filters.durationRange.max) {
+      return false;
+    }
+
+    return true;
+  });
+
   const totalHours = timeEntries.reduce((sum, entry) => sum + entry.duration, 0);
   const totalAmount = timeEntries.reduce((sum, entry) => sum + entry.amount, 0);
   const billableAmount = timeEntries
@@ -348,6 +569,99 @@ export default function TimeTrackingPage() {
         </Card>
       </div>
 
+      {/* Timer */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Timer
+          </CardTitle>
+          <CardDescription>
+            Pokrenite timer za praćenje vremena rada
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-mono font-bold">
+                {formatTime(timer.elapsedTime)}
+              </div>
+              <div className="flex gap-2">
+                {!timer.isRunning ? (
+                  <Button onClick={startTimer} size="lg" className="min-h-[44px]">
+                    <Play className="h-4 w-4 mr-2" />
+                    Pokreni
+                  </Button>
+                ) : (
+                  <Button onClick={stopTimer} variant="destructive" size="lg" className="min-h-[44px]">
+                    <Pause className="h-4 w-4 mr-2" />
+                    Zaustavi
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="timer-case">Predmet</Label>
+                <Select 
+                  value={timer.caseId} 
+                  onValueChange={(value) => setTimer(prev => ({ ...prev, caseId: value }))}
+                  disabled={timer.isRunning}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Odaberite predmet" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Bez predmeta</SelectItem>
+                    {cases.map((caseItem) => (
+                      <SelectItem key={caseItem.id} value={caseItem.id}>
+                        {caseItem.caseNumber} - {getClientName(caseItem.client)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="timer-description">Opis rada</Label>
+                <Input
+                  id="timer-description"
+                  value={timer.description}
+                  onChange={(e) => setTimer(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Opisite što radite..."
+                  disabled={timer.isRunning}
+                />
+              </div>
+            </div>
+            
+            {timer.elapsedTime > 0 && !timer.isRunning && (
+              <div className="flex justify-end">
+                <Button onClick={saveTimerEntry} className="min-h-[44px]">
+                  <Square className="h-4 w-4 mr-2" />
+                  Spremi unos
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Search and Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Pretraži i filtriraj unose vremena</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TimeEntrySearchFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            cases={cases}
+            users={users}
+          />
+        </CardContent>
+      </Card>
+
       {/* Time Entries Table */}
       <Card>
         <CardHeader>
@@ -355,16 +669,18 @@ export default function TimeTrackingPage() {
           <CardDescription>Pregled svih unosa vremena</CardDescription>
         </CardHeader>
         <CardContent>
-          {timeEntries.length === 0 ? (
+          {filteredTimeEntries.length === 0 ? (
             <div className="text-center py-8">
               <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-muted-foreground">Nema unosa vremena</p>
+              <p className="text-muted-foreground">
+                {timeEntries.length === 0 ? 'Nema unosa vremena' : 'Nema unosa vremena koji odgovaraju filtirima'}
+              </p>
             </div>
           ) : (
             <>
               {/* Mobile Card Layout */}
               <div className="block md:hidden space-y-3">
-                {timeEntries.map((entry) => (
+                {filteredTimeEntries.map((entry) => (
                   <Card key={entry.id} className="p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
@@ -449,7 +765,7 @@ export default function TimeTrackingPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {timeEntries.map((entry) => (
+                    {filteredTimeEntries.map((entry) => (
                       <TableRow key={entry.id}>
                         <TableCell>{formatDate(entry.date)}</TableCell>
                         <TableCell>
@@ -522,7 +838,7 @@ export default function TimeTrackingPage() {
       {/* Create/Edit Dialog */}
       <PermissionGuard permission={PERMISSIONS.TIME_ENTRIES_CREATE}>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingEntry ? 'Uredi unos vremena' : 'Novi unos vremena'}

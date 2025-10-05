@@ -39,6 +39,7 @@ import { CaseViewSelector, CaseViewMode } from '@/components/cases/case-view-sel
 import { CaseKanbanBoard } from '@/components/cases/case-kanban-board'
 import { CaseCard } from '@/components/cases/case-card'
 import { VirtualizedCasesTable } from '@/components/cases/virtualized-cases-table'
+import { CaseAnalytics } from '@/components/cases/case-analytics'
 
 type Case = {
   id: string
@@ -84,6 +85,7 @@ export default function CasesPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingCase, setEditingCase] = useState<Case | null>(null)
   const [viewMode, setViewMode] = useState<CaseViewMode>('table')
+  const [showAnalytics, setShowAnalytics] = useState(false)
   const [filters, setFilters] = useState<CaseFilters>({
     search: '',
     status: [],
@@ -393,6 +395,14 @@ export default function CasesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowAnalytics(!showAnalytics)}
+            className="min-h-[44px]"
+          >
+            <Briefcase className="h-4 w-4 mr-2" />
+            Analitika
+          </Button>
           <CaseViewSelector viewMode={viewMode} onViewModeChange={setViewMode} />
           <Button 
             onClick={() => { resetForm(); setDialogOpen(true) }}
@@ -411,6 +421,11 @@ export default function CasesPage() {
         clients={clients}
         users={users}
       />
+
+      {/* Case Analytics */}
+      {showAnalytics && (
+        <CaseAnalytics className="mb-6" />
+      )}
 
       <Card>
         <CardHeader>

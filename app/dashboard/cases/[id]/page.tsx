@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Briefcase, Calendar, User, FileText, Clock, CheckSquare, AlertCircle, Building2 } from 'lucide-react'
 import { CaseTimeline } from '@/components/cases/case-timeline'
 import { CaseDeadlines } from '@/components/cases/case-deadlines'
+import { CaseNotes } from '@/components/cases/case-notes'
 import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
@@ -343,6 +344,16 @@ export default function CaseDetailPage() {
         caseNumber={caseData.caseNumber} 
         caseTitle={caseData.title} 
       />
+
+
+      {/* Case Notes */}
+      <CaseNotes 
+        caseId={caseData.id}
+        caseNumber={caseData.caseNumber}
+        caseTitle={caseData.title}
+        className="mt-6"
+      />
+
     </div>
   )
 }

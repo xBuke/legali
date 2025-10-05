@@ -17,6 +17,8 @@ import { PermissionGuard } from '@/components/permission-guard';
 import { PERMISSIONS } from '@/lib/permissions';
 import { Plus, FileText, Download, Edit, Trash2, Eye, Calendar, Euro, CreditCard } from 'lucide-react';
 import { PaymentList } from '@/components/payments/payment-list';
+import { InvoiceTemplates } from '@/components/invoices/invoice-templates';
+import { InvoiceSearchFilters } from '@/components/invoices/invoice-search-filters';
 
 interface Invoice {
   id: string;
@@ -59,6 +61,20 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [filters, setFilters] = useState({
+    search: '',
+    status: [] as string[],
+    client: [] as string[],
+    dateRange: {
+      from: undefined as Date | undefined,
+      to: undefined as Date | undefined,
+    },
+    amountRange: {
+      min: undefined as number | undefined,
+      max: undefined as number | undefined,
+    },
+  });
   
   // Form state
   const [formData, setFormData] = useState({
@@ -304,6 +320,49 @@ export default function InvoicesPage() {
     });
   };
 
+  // Filter invoices based on current filters
+  const filteredInvoices = invoices.filter(invoice => {
+    // Search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      const matchesSearch = 
+        invoice.invoiceNumber.toLowerCase().includes(searchLower) ||
+        getClientName(invoice.client).toLowerCase().includes(searchLower);
+      if (!matchesSearch) return false;
+    }
+
+    // Status filter
+    if (filters.status.length > 0 && !filters.status.includes(invoice.status)) {
+      return false;
+    }
+
+    // Client filter
+    if (filters.client.length > 0 && !filters.client.includes(invoice.client.id)) {
+      return false;
+    }
+
+    // Date range filter
+    if (filters.dateRange.from || filters.dateRange.to) {
+      const issueDate = new Date(invoice.issueDate);
+      if (filters.dateRange.from && issueDate < filters.dateRange.from) {
+        return false;
+      }
+      if (filters.dateRange.to && issueDate > filters.dateRange.to) {
+        return false;
+      }
+    }
+
+    // Amount range filter
+    if (filters.amountRange.min !== undefined && invoice.total < filters.amountRange.min) {
+      return false;
+    }
+    if (filters.amountRange.max !== undefined && invoice.total > filters.amountRange.max) {
+      return false;
+    }
+
+    return true;
+  });
+
   const openCreateDialog = () => {
     setEditingInvoice(null);
     resetForm();
@@ -332,17 +391,26 @@ export default function InvoicesPage() {
             Upravljajte računima i naplatom
           </p>
         </div>
-        <PermissionGuard permission={PERMISSIONS.INVOICES_CREATE}>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                onClick={openCreateDialog}
-                className="w-full sm:w-auto min-h-[44px]"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Novi račun
-              </Button>
-            </DialogTrigger>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => setShowTemplates(!showTemplates)}
+            className="min-h-[44px]"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Predlošci
+          </Button>
+          <PermissionGuard permission={PERMISSIONS.INVOICES_CREATE}>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  onClick={openCreateDialog}
+                  className="w-full sm:w-auto min-h-[44px]"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novi račun
+                </Button>
+              </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Novi račun</DialogTitle>
@@ -412,7 +480,37 @@ export default function InvoicesPage() {
           </DialogContent>
         </Dialog>
         </PermissionGuard>
+        </div>
       </div>
+
+      {/* Templates Section */}
+      {showTemplates && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Predlošci računa</CardTitle>
+            <CardDescription>
+              Upravljajte predlošcima računa za brže stvaranje
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <InvoiceTemplates />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Search and Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Pretraži i filtriraj račune</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <InvoiceSearchFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            clients={clients}
+          />
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -463,16 +561,18 @@ export default function InvoicesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {invoices.length === 0 ? (
+          {filteredInvoices.length === 0 ? (
             <div className="text-center py-8">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-muted-foreground">Nema računa</p>
+              <p className="text-muted-foreground">
+                {invoices.length === 0 ? 'Nema računa' : 'Nema računa koji odgovaraju filtirima'}
+              </p>
             </div>
           ) : (
             <>
               {/* Mobile Card Layout */}
               <div className="block md:hidden space-y-3">
-                {invoices.map((invoice) => (
+                {filteredInvoices.map((invoice) => (
                   <Card key={invoice.id} className="p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
@@ -563,7 +663,7 @@ export default function InvoicesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {invoices.map((invoice) => (
+                    {filteredInvoices.map((invoice) => (
                       <TableRow key={invoice.id}>
                         <TableCell className="font-medium">
                           {invoice.invoiceNumber}
@@ -637,7 +737,7 @@ export default function InvoicesPage() {
       </Card>
 
       {/* Payment Management Section */}
-      {invoices.length > 0 && (
+      {filteredInvoices.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -650,7 +750,7 @@ export default function InvoicesPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {invoices.map((invoice) => (
+              {filteredInvoices.map((invoice) => (
                 <div key={invoice.id} className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-4">
                     <div>

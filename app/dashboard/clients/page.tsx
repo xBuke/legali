@@ -25,6 +25,9 @@ import { Label } from '@/components/ui/label'
 import { Plus, Users, Building2, Mail, Phone, Pencil, Trash2, Eye } from 'lucide-react'
 import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
+import { ClientSearchFilters, ClientFilters } from '@/components/clients/client-search-filters'
+import { ClientViewSelector, ClientViewMode } from '@/components/clients/client-view-selector'
+import { ClientCard } from '@/components/clients/client-card'
 
 type Client = {
   id: string
@@ -47,6 +50,13 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
+  const [viewMode, setViewMode] = useState<ClientViewMode>('table')
+  const [filters, setFilters] = useState<ClientFilters>({
+    search: '',
+    clientType: [],
+    status: [],
+    dateRange: { from: null, to: null },
+  })
   const { toast } = useToast()
 
   const [formData, setFormData] = useState({
@@ -205,6 +215,45 @@ export default function ClientsPage() {
     return `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Bez imena'
   }
 
+  // Filter clients based on current filters
+  const filteredClients = clients.filter(client => {
+    // Search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase()
+      const matchesSearch = 
+        getClientName(client).toLowerCase().includes(searchLower) ||
+        client.email?.toLowerCase().includes(searchLower) ||
+        client.companyName?.toLowerCase().includes(searchLower) ||
+        client.firstName?.toLowerCase().includes(searchLower) ||
+        client.lastName?.toLowerCase().includes(searchLower)
+      
+      if (!matchesSearch) return false
+    }
+
+    // Client type filter
+    if (filters.clientType.length > 0 && !filters.clientType.includes(client.clientType)) {
+      return false
+    }
+
+    // Status filter
+    if (filters.status.length > 0 && !filters.status.includes(client.status)) {
+      return false
+    }
+
+    // Date range filter
+    if (filters.dateRange.from || filters.dateRange.to) {
+      const clientDate = new Date(client.createdAt)
+      if (filters.dateRange.from && clientDate < filters.dateRange.from) {
+        return false
+      }
+      if (filters.dateRange.to && clientDate > filters.dateRange.to) {
+        return false
+      }
+    }
+
+    return true
+  })
+
   const statusColors = {
     ACTIVE: 'bg-green-500/10 text-green-500',
     INACTIVE: 'bg-gray-500/10 text-gray-500',
@@ -237,11 +286,43 @@ export default function ClientsPage() {
         </Button>
       </div>
 
+      {/* Search and Filters */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <CardTitle className="text-lg">Pretraži i filtriraj klijente</CardTitle>
+              <CardDescription>
+                Pronađite klijente prema različitim kriterijima
+              </CardDescription>
+            </div>
+            <ClientViewSelector 
+              viewMode={viewMode} 
+              onViewModeChange={setViewMode} 
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ClientSearchFilters 
+            filters={filters}
+            onFiltersChange={setFilters}
+            clients={clients}
+          />
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
-          <CardTitle>Svi klijenti</CardTitle>
+          <CardTitle>
+            Klijenti ({filteredClients.length})
+            {filteredClients.length !== clients.length && (
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                od {clients.length} ukupno
+              </span>
+            )}
+          </CardTitle>
           <CardDescription>
-            Pregled svih vaših klijenata
+            Pregled vaših klijenata
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -258,172 +339,148 @@ export default function ClientsPage() {
                 Dodaj prvog klijenta
               </Button>
             </div>
+          ) : filteredClients.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground">Nema klijenata koji odgovaraju filtirima</p>
+            </div>
           ) : (
             <>
-              {/* Mobile Card Layout */}
-              <div className="block md:hidden space-y-3">
-                {clients.map((client) => (
-                  <Card key={client.id} className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base truncate">
-                          {getClientName(client)}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          {client.clientType === 'COMPANY' ? (
-                            <Badge variant="outline" className="text-xs">
-                              <Building2 className="h-3 w-3 mr-1" />
-                              Tvrtka
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-xs">
-                              <Users className="h-3 w-3 mr-1" />
-                              Pojedinac
-                            </Badge>
-                          )}
-                          <Badge className={`text-xs ${statusColors[client.status as keyof typeof statusColors]}`}>
-                            {client.status}
-                          </Badge>
-                        </div>
-                        <div className="mt-2 space-y-1">
-                          {client.email && (
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <Mail className="h-3 w-3 flex-shrink-0" />
-                              <span className="truncate">{client.email}</span>
-                            </div>
-                          )}
-                          {client.phone && (
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <Phone className="h-3 w-3 flex-shrink-0" />
-                              <span>{client.phone}</span>
-                            </div>
-                          )}
-                          <div className="text-sm text-muted-foreground">
-                            {client._count.cases} predmeta
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 ml-3">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          asChild
-                          className="min-h-[44px] min-w-[44px]"
-                        >
-                          <Link href={`/dashboard/clients/${client.id}`}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditDialog(client)}
-                          className="min-h-[44px] min-w-[44px]"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(client.id)}
-                          className="min-h-[44px] min-w-[44px]"
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              {/* Cards View */}
+              {viewMode === 'cards' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredClients.map((client) => (
+                    <ClientCard
+                      key={client.id}
+                      client={client}
+                      viewMode="detailed"
+                      onEdit={() => openEditDialog(client)}
+                      onDelete={() => handleDelete(client.id)}
+                    />
+                  ))}
+                </div>
+              )}
 
-              {/* Desktop Table Layout */}
-              <div className="hidden md:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Naziv / Ime</TableHead>
-                      <TableHead>Tip</TableHead>
-                      <TableHead>Kontakt</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Predmeti</TableHead>
-                      <TableHead className="text-right">Akcije</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {clients.map((client) => (
-                      <TableRow key={client.id}>
-                        <TableCell className="font-medium">
-                          {getClientName(client)}
-                        </TableCell>
-                        <TableCell>
-                          {client.clientType === 'COMPANY' ? (
-                            <Badge variant="outline">
-                              <Building2 className="h-3 w-3 mr-1" />
-                              Tvrtka
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline">
-                              <Users className="h-3 w-3 mr-1" />
-                              Pojedinac
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-sm">
-                            {client.email && (
-                              <div className="flex items-center gap-1">
-                                <Mail className="h-3 w-3" />
-                                {client.email}
-                              </div>
-                            )}
-                            {client.phone && (
-                              <div className="flex items-center gap-1 text-muted-foreground">
-                                <Phone className="h-3 w-3" />
-                                {client.phone}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={statusColors[client.status as keyof typeof statusColors]}>
-                            {client.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {client._count.cases} predmeta
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              asChild
-                            >
-                              <Link href={`/dashboard/clients/${client.id}`}>
-                                <Eye className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => openEditDialog(client)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(client.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </div>
-                        </TableCell>
+              {/* List View */}
+              {viewMode === 'list' && (
+                <div className="space-y-3">
+                  {filteredClients.map((client) => (
+                    <ClientCard
+                      key={client.id}
+                      client={client}
+                      viewMode="compact"
+                      onEdit={() => openEditDialog(client)}
+                      onDelete={() => handleDelete(client.id)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Table View */}
+              {viewMode === 'table' && (
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Naziv / Ime</TableHead>
+                        <TableHead>Tip</TableHead>
+                        <TableHead>Kontakt</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Predmeti</TableHead>
+                        <TableHead className="text-right">Akcije</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredClients.map((client) => (
+                        <TableRow key={client.id}>
+                          <TableCell className="font-medium">
+                            {getClientName(client)}
+                          </TableCell>
+                          <TableCell>
+                            {client.clientType === 'COMPANY' ? (
+                              <Badge variant="outline">
+                                <Building2 className="h-3 w-3 mr-1" />
+                                Tvrtka
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline">
+                                <Users className="h-3 w-3 mr-1" />
+                                Pojedinac
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              {client.email && (
+                                <div className="flex items-center gap-1">
+                                  <Mail className="h-3 w-3" />
+                                  {client.email}
+                                </div>
+                              )}
+                              {client.phone && (
+                                <div className="flex items-center gap-1 text-muted-foreground">
+                                  <Phone className="h-3 w-3" />
+                                  {client.phone}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={statusColors[client.status as keyof typeof statusColors]}>
+                              {client.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {client._count.cases} predmeta
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                              >
+                                <Link href={`/dashboard/clients/${client.id}`}>
+                                  <Eye className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => openEditDialog(client)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDelete(client.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+
+              {/* Mobile fallback for table view */}
+              {viewMode === 'table' && (
+                <div className="block md:hidden space-y-3">
+                  {filteredClients.map((client) => (
+                    <ClientCard
+                      key={client.id}
+                      client={client}
+                      viewMode="detailed"
+                      onEdit={() => openEditDialog(client)}
+                      onDelete={() => handleDelete(client.id)}
+                    />
+                  ))}
+                </div>
+              )}
             </>
           )}
         </CardContent>

@@ -14,7 +14,9 @@ import {
   MessageSquare,
   AlertCircle,
   UserPlus,
-  UserMinus
+  UserMinus,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { hr } from 'date-fns/locale'
@@ -40,6 +42,7 @@ interface CaseTimelineProps {
 export function CaseTimeline({ caseId }: CaseTimelineProps) {
   const [timeline, setTimeline] = useState<CaseTimelineEvent[]>([])
   const [loading, setLoading] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   useEffect(() => {
     fetchTimeline()
@@ -142,16 +145,32 @@ export function CaseTimeline({ caseId }: CaseTimelineProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Povijest predmeta
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Povijest predmeta
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="h-8 w-8 p-0"
+            >
+              {isExpanded ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </Button>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <p className="text-muted-foreground">Učitavanje...</p>
-          </div>
-        </CardContent>
+        {isExpanded && (
+          <CardContent>
+            <div className="flex items-center justify-center py-8">
+              <p className="text-muted-foreground">Učitavanje...</p>
+            </div>
+          </CardContent>
+        )}
       </Card>
     )
   }
@@ -160,20 +179,36 @@ export function CaseTimeline({ caseId }: CaseTimelineProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Povijest predmeta
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Povijest predmeta
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="h-8 w-8 p-0"
+            >
+              {isExpanded ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </Button>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-muted-foreground">Još nema aktivnosti</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Aktivnosti će se prikazati kada se dogode promjene u predmetu
-            </p>
-          </div>
-        </CardContent>
+        {isExpanded && (
+          <CardContent>
+            <div className="text-center py-8">
+              <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground">Još nema aktivnosti</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Aktivnosti će se prikazati kada se dogode promjene u predmetu
+              </p>
+            </div>
+          </CardContent>
+        )}
       </Card>
     )
   }
@@ -181,14 +216,29 @@ export function CaseTimeline({ caseId }: CaseTimelineProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5" />
-          Povijest predmeta
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Povijest predmeta
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="h-8 w-8 p-0"
+          >
+            {isExpanded ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {timeline.map((event, index) => (
+      {isExpanded && (
+        <CardContent>
+          <div className="space-y-4">
+            {timeline.map((event, index) => (
             <div key={event.id} className="flex gap-3">
               <div className="flex-shrink-0">
                 <div className={`w-8 h-8 rounded-full ${getEventColor(event.type)} flex items-center justify-center text-white`}>
@@ -224,9 +274,10 @@ export function CaseTimeline({ caseId }: CaseTimelineProps) {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </CardContent>
+            ))}
+          </div>
+        </CardContent>
+      )}
     </Card>
   )
 }

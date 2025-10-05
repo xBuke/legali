@@ -35,6 +35,10 @@ import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { DocumentViewer } from '@/components/document-viewer'
+import { DocumentSearchFilters, DocumentFilters } from '@/components/documents/document-search-filters'
+import { DocumentViewSelector, DocumentViewMode } from '@/components/documents/document-view-selector'
+import { DocumentCard } from '@/components/documents/document-card'
+import { DocumentTemplates } from '@/components/documents/document-templates'
 
 type Document = {
   id: string
@@ -83,6 +87,17 @@ export default function DocumentsPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingDocument, setEditingDocument] = useState<Document | null>(null)
   const [viewingDocument, setViewingDocument] = useState<Document | null>(null)
+  const [viewMode, setViewMode] = useState<DocumentViewMode>('table')
+  const [showTemplates, setShowTemplates] = useState(false)
+  const [filters, setFilters] = useState<DocumentFilters>({
+    search: '',
+    category: [],
+    fileType: [],
+    case: [],
+    client: [],
+    dateRange: { from: null, to: null },
+    fileSize: { min: 0, max: 0 },
+  })
   const { toast } = useToast()
 
   const [formData, setFormData] = useState({
@@ -264,6 +279,69 @@ export default function DocumentsPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
+  // Filter documents based on current filters
+  const filteredDocuments = documents.filter(document => {
+    // Search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase()
+      const matchesSearch = 
+        (document.title || document.originalName).toLowerCase().includes(searchLower) ||
+        document.category?.toLowerCase().includes(searchLower) ||
+        document.case?.caseNumber.toLowerCase().includes(searchLower) ||
+        document.case?.title.toLowerCase().includes(searchLower) ||
+        getClientName(document.client)?.toLowerCase().includes(searchLower)
+      
+      if (!matchesSearch) return false
+    }
+
+    // Category filter
+    if (filters.category.length > 0 && (!document.category || !filters.category.includes(document.category))) {
+      return false
+    }
+
+    // File type filter
+    if (filters.fileType.length > 0) {
+      const documentFileType = document.mimeType.split('/')[1] || document.mimeType.split('/')[0]
+      if (!filters.fileType.includes(documentFileType)) {
+        return false
+      }
+    }
+
+    // Case filter
+    if (filters.case.length > 0 && (!document.case || !filters.case.includes(document.case.id))) {
+      return false
+    }
+
+    // Client filter
+    if (filters.client.length > 0 && (!document.client || !filters.client.includes(document.client.id))) {
+      return false
+    }
+
+    // Date range filter
+    if (filters.dateRange.from || filters.dateRange.to) {
+      const documentDate = new Date(document.createdAt)
+      if (filters.dateRange.from && documentDate < filters.dateRange.from) {
+        return false
+      }
+      if (filters.dateRange.to && documentDate > filters.dateRange.to) {
+        return false
+      }
+    }
+
+    // File size filter
+    if (filters.fileSize.min > 0 || filters.fileSize.max > 0) {
+      const documentSizeMB = document.fileSize / (1024 * 1024)
+      if (filters.fileSize.min > 0 && documentSizeMB < filters.fileSize.min) {
+        return false
+      }
+      if (filters.fileSize.max > 0 && documentSizeMB > filters.fileSize.max) {
+        return false
+      }
+    }
+
+    return true
+  })
+
   const categories = [
     'Ugovor',
     'Tužba',
@@ -292,20 +370,67 @@ export default function DocumentsPage() {
             Upravljajte svojim dokumentima
           </p>
         </div>
-        <Button 
-          onClick={() => { resetForm(); setDialogOpen(true) }}
-          className="w-full sm:w-auto min-h-[44px]"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Dodaj dokument
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowTemplates(!showTemplates)}
+            className="min-h-[44px]"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Predlošci
+          </Button>
+          <Button 
+            onClick={() => { resetForm(); setDialogOpen(true) }}
+            className="w-full sm:w-auto min-h-[44px]"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Dodaj dokument
+          </Button>
+        </div>
       </div>
+
+      {/* Document Templates */}
+      {showTemplates && (
+        <DocumentTemplates className="mb-6" />
+      )}
+
+      {/* Search and Filters */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <CardTitle className="text-lg">Pretraži i filtriraj dokumente</CardTitle>
+              <CardDescription>
+                Pronađite dokumente prema različitim kriterijima
+              </CardDescription>
+            </div>
+            <DocumentViewSelector 
+              viewMode={viewMode} 
+              onViewModeChange={setViewMode} 
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <DocumentSearchFilters 
+            filters={filters}
+            onFiltersChange={setFilters}
+            documents={documents}
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Svi dokumenti</CardTitle>
+          <CardTitle>
+            Dokumenti ({filteredDocuments.length})
+            {filteredDocuments.length !== documents.length && (
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                od {documents.length} ukupno
+              </span>
+            )}
+          </CardTitle>
           <CardDescription>
-            Pregled svih vaših dokumenata
+            Pregled vaših dokumenata
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -322,188 +447,165 @@ export default function DocumentsPage() {
                 Dodaj prvi dokument
               </Button>
             </div>
+          ) : filteredDocuments.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground">Nema dokumenata koji odgovaraju filtirima</p>
+            </div>
           ) : (
             <>
-              {/* Mobile Card Layout */}
-              <div className="block md:hidden space-y-3">
-                {documents.map((document) => (
-                  <Card key={document.id} className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base truncate">
-                          {document.title || document.originalName}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {document.mimeType}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          {document.category && (
-                            <Badge variant="outline" className="text-xs">
-                              {document.category}
-                            </Badge>
-                          )}
-                          <span className="text-xs text-muted-foreground">
-                            {formatFileSize(document.fileSize)}
-                          </span>
-                        </div>
-                        <div className="mt-2 space-y-1">
-                          {document.case && (
-                            <div className="text-sm text-muted-foreground">
-                              Predmet: <Link href={`/dashboard/cases/${document.case.id}`} className="text-primary hover:underline">{document.case.caseNumber}</Link>
-                            </div>
-                          )}
-                          {document.client && (
-                            <div className="text-sm text-muted-foreground">
-                              Klijent: <Link href={`/dashboard/clients/${document.client.id}`} className="text-primary hover:underline">{getClientName(document.client)}</Link>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Calendar className="h-3 w-3 flex-shrink-0" />
-                            <span>{format(new Date(document.createdAt), 'dd.MM.yyyy')}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2 ml-3">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setViewingDocument(document)}
-                          className="min-h-[44px] min-w-[44px]"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => window.open(document.fileUrl, '_blank')}
-                          className="min-h-[44px] min-w-[44px]"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditDialog(document)}
-                          className="min-h-[44px] min-w-[44px]"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(document.id)}
-                          className="min-h-[44px] min-w-[44px]"
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              {/* Grid View */}
+              {viewMode === 'grid' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {filteredDocuments.map((document) => (
+                    <DocumentCard
+                      key={document.id}
+                      document={document}
+                      viewMode="detailed"
+                      onEdit={() => openEditDialog(document)}
+                      onDelete={() => handleDelete(document.id)}
+                      onView={() => setViewingDocument(document)}
+                    />
+                  ))}
+                </div>
+              )}
 
-              {/* Desktop Table Layout */}
-              <div className="hidden md:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Naziv</TableHead>
-                      <TableHead>Kategorija</TableHead>
-                      <TableHead>Predmet</TableHead>
-                      <TableHead>Klijent</TableHead>
-                      <TableHead>Veličina</TableHead>
-                      <TableHead>Datum</TableHead>
-                      <TableHead className="text-right">Akcije</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {documents.map((document) => (
-                      <TableRow key={document.id}>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{document.title || document.originalName}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {document.mimeType}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {document.category && (
-                            <Badge variant="outline">
-                              {document.category}
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {document.case ? (
-                            <Link 
-                              href={`/dashboard/cases/${document.case.id}`}
-                              className="text-primary hover:underline"
-                            >
-                              {document.case.caseNumber}
-                            </Link>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {document.client ? (
-                            <Link 
-                              href={`/dashboard/clients/${document.client.id}`}
-                              className="text-primary hover:underline"
-                            >
-                              {getClientName(document.client)}
-                            </Link>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {formatFileSize(document.fileSize)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1 text-sm">
-                            <Calendar className="h-3 w-3" />
-                            {format(new Date(document.createdAt), 'dd.MM.yyyy')}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setViewingDocument(document)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => window.open(document.fileUrl, '_blank')}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => openEditDialog(document)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDelete(document.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                          </div>
-                        </TableCell>
+              {/* List View */}
+              {viewMode === 'list' && (
+                <div className="space-y-3">
+                  {filteredDocuments.map((document) => (
+                    <DocumentCard
+                      key={document.id}
+                      document={document}
+                      viewMode="compact"
+                      onEdit={() => openEditDialog(document)}
+                      onDelete={() => handleDelete(document.id)}
+                      onView={() => setViewingDocument(document)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Table View */}
+              {viewMode === 'table' && (
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Naziv</TableHead>
+                        <TableHead>Kategorija</TableHead>
+                        <TableHead>Predmet</TableHead>
+                        <TableHead>Klijent</TableHead>
+                        <TableHead>Veličina</TableHead>
+                        <TableHead>Datum</TableHead>
+                        <TableHead className="text-right">Akcije</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredDocuments.map((document) => (
+                        <TableRow key={document.id}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{document.title || document.originalName}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {document.mimeType}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {document.category && (
+                              <Badge variant="outline">
+                                {document.category}
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {document.case ? (
+                              <Link 
+                                href={`/dashboard/cases/${document.case.id}`}
+                                className="text-primary hover:underline"
+                              >
+                                {document.case.caseNumber}
+                              </Link>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {document.client ? (
+                              <Link 
+                                href={`/dashboard/clients/${document.client.id}`}
+                                className="text-primary hover:underline"
+                              >
+                                {getClientName(document.client)}
+                              </Link>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {formatFileSize(document.fileSize)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1 text-sm">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(document.createdAt), 'dd.MM.yyyy')}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setViewingDocument(document)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => window.open(document.fileUrl, '_blank')}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => openEditDialog(document)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDelete(document.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+
+              {/* Mobile fallback for table view */}
+              {viewMode === 'table' && (
+                <div className="block md:hidden space-y-3">
+                  {filteredDocuments.map((document) => (
+                    <DocumentCard
+                      key={document.id}
+                      document={document}
+                      viewMode="detailed"
+                      onEdit={() => openEditDialog(document)}
+                      onDelete={() => handleDelete(document.id)}
+                      onView={() => setViewingDocument(document)}
+                    />
+                  ))}
+                </div>
+              )}
             </>
           )}
         </CardContent>

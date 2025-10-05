@@ -216,6 +216,8 @@
     top: 50% !important;
     transform: translate(-50%, -50%) !important;
     z-index: 50 !important;
+    max-height: 95vh !important;
+    overflow: hidden !important;
   }
   
   /* Ensure dialog overlay covers the entire viewport */
@@ -498,6 +500,38 @@
     --popup-margin: 0.5rem;
   }
   
+  /* Very small screens (height < 600px) - ensure dialogs fit */
+  @media (max-height: 600px) {
+    [data-radix-dialog-content] {
+      max-height: 95vh !important;
+      top: 2.5vh !important;
+      transform: translate(-50%, 0) !important;
+      margin: 0.5rem !important;
+    }
+  }
+  
+  /* Very small screens (width < 480px) - ensure dialogs fit */
+  @media (max-width: 480px) {
+    [data-radix-dialog-content] {
+      max-width: 95vw !important;
+      left: 2.5vw !important;
+      transform: translate(0, -50%) !important;
+      margin: 0.5rem !important;
+    }
+  }
+  
+  /* Very small screens (both width and height) */
+  @media (max-width: 480px) and (max-height: 600px) {
+    [data-radix-dialog-content] {
+      max-width: 95vw !important;
+      max-height: 95vh !important;
+      left: 2.5vw !important;
+      top: 2.5vh !important;
+      transform: none !important;
+      margin: 0.5rem !important;
+    }
+  }
+  
   /* Dynamic popup positioning based on screen size */
   .screen-mobile [data-radix-dialog-content],
   .screen-tablet [data-radix-dialog-content] {
@@ -516,5 +550,30 @@
     z-index: 50 !important;
     max-width: var(--popup-max-width, 90vw) !important;
     max-height: var(--popup-max-height, 85vh) !important;
+  }
+  
+  /* Dialog content scrolling utility */
+  .dialog-scrollable {
+    overflow-y: auto !important;
+    max-height: calc(95vh - 8rem) !important; /* Account for header and footer */
+  }
+  
+  /* Ensure dialog content doesn't overflow on any screen */
+  [data-radix-dialog-content] .dialog-scrollable {
+    overflow-y: auto !important;
+    max-height: calc(95vh - 8rem) !important;
+  }
+  
+  /* Small screen dialog content adjustments */
+  @media (max-height: 600px) {
+    .dialog-scrollable {
+      max-height: calc(95vh - 6rem) !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .dialog-scrollable {
+      max-height: calc(95vh - 6rem) !important;
+    }
   }
 }
