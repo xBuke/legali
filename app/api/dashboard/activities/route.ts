@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
+import { db } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get user's organization
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id: session.user.id },
       include: { organization: true }
     })
@@ -22,7 +21,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get recent activities from activity logs
-    const activities = await prisma.activityLog.findMany({
+    const activities = await db.activityLog.findMany({
       where: {
         organizationId: user.organizationId
       },

@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         const casesCompleted = await db.case.count({
           where: {
             client: { organizationId },
-            assignedUserId: user.id,
+            assignedToId: user.id,
             status: 'CLOSED',
             updatedAt: { gte: currentMonthStart },
           },

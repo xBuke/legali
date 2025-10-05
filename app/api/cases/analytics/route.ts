@@ -214,14 +214,14 @@ export async function GET(request: NextRequest) {
         const casesAssigned = await db.case.count({
           where: {
             client: { organizationId },
-            assignedUserId: member.id,
+            assignedToId: member.id,
           },
         });
 
         const casesCompleted = await db.case.count({
           where: {
             client: { organizationId },
-            assignedUserId: member.id,
+            assignedToId: member.id,
             status: { in: ['CLOSED_WON', 'CLOSED_LOST', 'CLOSED_SETTLED'] },
           },
         });
@@ -230,7 +230,7 @@ export async function GET(request: NextRequest) {
         const completedCases = await db.case.findMany({
           where: {
             client: { organizationId },
-            assignedUserId: member.id,
+            assignedToId: member.id,
             status: { in: ['CLOSED_WON', 'CLOSED_LOST', 'CLOSED_SETTLED'] },
             closedAt: { not: null },
           },
