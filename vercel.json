@@ -14,7 +14,7 @@
   },
   "regions": ["iad1"],
   "framework": "nextjs",
-  "buildCommand": "npx prisma generate && next build",
   "installCommand": "npm install && npx prisma generate",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "crons": []
 }

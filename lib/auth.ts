@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs'
 import { db } from '@/lib/db'
 
 export const authConfig: NextAuthConfig = {
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: 'jwt',
   },
