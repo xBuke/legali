@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
 import { verifyTwoFactorCode, validateTwoFactorCode } from '@/lib/two-factor';
 import { logAuthActivity } from '@/lib/activity-logger';
+import { validateRequiredEnvironment } from '@/lib/env-validation';
 import crypto from 'crypto';
 
 /**
@@ -11,6 +12,17 @@ import crypto from 'crypto';
  */
 export async function POST(request: NextRequest) {
   try {
+    // Validate environment before processing
+    try {
+      validateRequiredEnvironment();
+    } catch (envError) {
+      console.error('Environment validation failed in custom-login:', envError instanceof Error ? envError.message : String(envError));
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
     const { email, password, twoFactorCode, sessionId } = await request.json();
 
     if (!email || !password) {

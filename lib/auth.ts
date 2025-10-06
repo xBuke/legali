@@ -3,6 +3,15 @@ import type { NextAuthConfig } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { db } from '@/lib/db'
+import { validateRequiredEnvironment } from '@/lib/env-validation'
+
+// Validate environment on module load
+try {
+  validateRequiredEnvironment()
+} catch (error) {
+  console.error('❌ Authentication configuration failed - Environment validation error:', error.message)
+  throw error
+}
 
 export const authConfig: NextAuthConfig = {
   secret: process.env.NEXTAUTH_SECRET,
