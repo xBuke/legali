@@ -6,7 +6,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                     CLIENT (Browser)                        │
 │  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐   │
-│  │   Next.js   │  │    Clerk     │  │   Stripe.js     │   │
+│  │   Next.js   │  │  NextAuth.js │  │   Stripe.js     │   │
 │  │   Frontend  │  │   Auth UI    │  │   Checkout      │   │
 │  └─────────────┘  └──────────────┘  └─────────────────┘   │
 └────────────────────────────┬────────────────────────────────┘
@@ -41,7 +41,7 @@
         │   PostgreSQL   │  │Vercel Blob   │  │  External  │
         │   (Vercel)     │  │   Storage    │  │  Services  │
         │  ┌──────────┐  │  │  (S3-like)   │  │┌──────────┐│
-        │  │Row-Level │  │  │              │  ││  Clerk   ││
+        │  │Row-Level │  │  │              │  ││ NextAuth ││
         │  │ Security │  │  │  Encrypted   │  ││  Stripe  ││
         │  │   (RLS)  │  │  │  Documents   │  ││  OpenAI  ││
         │  └──────────┘  │  │              │  │└──────────┘│
@@ -89,17 +89,17 @@ Organization (1)
 @@index([clientId])                 // Cases, Documents, Invoices
 @@index([status])                   // Cases, Invoices
 @@index([createdAt])                // AuditLogs
-@@index([clerkUserId])              // Users
+@@index([email])                    // Users
 ```
 
 ---
 
 ## 🔐 Security Architecture
 
-### 1. Authentication Flow (Clerk)
+### 1. Authentication Flow (NextAuth.js)
 
 ```
-User → Sign In → Clerk Auth → JWT Token → Next.js Middleware
+User → Sign In → NextAuth.js → JWT Token → Next.js Middleware
                     ↓
               Session Cookie
                     ↓
@@ -128,7 +128,7 @@ Request → API → Get File from Blob → Decrypt with IV → User
 
 ```
 Layer 1: Next.js Middleware
-  ├── Check if user is authenticated (Clerk)
+  ├── Check if user is authenticated (NextAuth.js)
   └── Redirect to sign-in if not
 
 Layer 2: API Route Guards
