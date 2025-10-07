@@ -52,7 +52,7 @@ export async function GET() {
         message: 'All required environment variables are present',
         details: {
           nodeEnv: envConfig.NODE_ENV,
-          hasDatabaseUrl: !!envConfig.POSTGRES_URL,
+          hasDatabaseUrl: !!envConfig.POSTGRES_PRISMA_URL,
           hasNextAuthSecret: !!envConfig.NEXTAUTH_SECRET,
           hasNextAuthUrl: !!envConfig.NEXTAUTH_URL,
           hasAppUrl: !!envConfig.NEXT_PUBLIC_APP_URL,
