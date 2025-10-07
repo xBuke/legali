@@ -15,7 +15,8 @@
       "Bash(git push:*)",
       "Bash(vercel logs:*)",
       "Bash(curl -s https://ilegalclaude.vercel.app/api/health)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "Bash(curl -s https://ilegalclaude-rcsykvunf-mskoric1996-4802s-projects.vercel.app/api/health)"
     ],
     "deny": [],
     "ask": []
