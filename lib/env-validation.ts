@@ -4,7 +4,7 @@
  */
 
 interface EnvironmentConfig {
-  DATABASE_URL: string;
+  POSTGRES_PRISMA_URL: string;
   NEXTAUTH_SECRET: string;
   NEXTAUTH_URL: string;
   NEXT_PUBLIC_APP_URL: string;
@@ -31,7 +31,7 @@ export type FullEnvironmentConfig = EnvironmentConfig & OptionalEnvironmentConfi
  * Required environment variables that must be present
  */
 const REQUIRED_ENV_VARS: (keyof EnvironmentConfig)[] = [
-  'DATABASE_URL',
+  'POSTGRES_PRISMA_URL',
   'NEXTAUTH_SECRET',
   'NEXTAUTH_URL',
   'NEXT_PUBLIC_APP_URL',
@@ -93,9 +93,9 @@ export function validateEnvironmentFormats(config: EnvironmentConfig): void {
     errors.push('NODE_ENV must be one of: development, production, test');
   }
 
-  // Validate DATABASE_URL format
-  if (!config.DATABASE_URL.startsWith('postgres://') && !config.DATABASE_URL.startsWith('postgresql://')) {
-    errors.push('DATABASE_URL must be a valid PostgreSQL connection string');
+  // Validate POSTGRES_PRISMA_URL format
+  if (!config.POSTGRES_PRISMA_URL.startsWith('postgres://') && !config.POSTGRES_PRISMA_URL.startsWith('postgresql://')) {
+    errors.push('POSTGRES_PRISMA_URL must be a valid PostgreSQL connection string');
   }
 
   if (errors.length > 0) {
