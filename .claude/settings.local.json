@@ -2,7 +2,20 @@
   "permissions": {
     "allow": [
       "Bash(git mv:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(vercel env add:*)",
+      "Bash(echo \"$STRIPE_BASIC_PRICE_ID\")",
+      "Bash(echo \"$STRIPE_PRO_PRICE_ID\")",
+      "Bash(echo \"$STRIPE_ENTERPRISE_PRICE_ID\")",
+      "Bash(vercel env ls:*)",
+      "Bash(echo \"$DATABASE_URL\")",
+      "Bash(echo \"$DIRECT_URL\")",
+      "Bash(echo \"$NEXTAUTH_SECRET\")",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(vercel logs:*)",
+      "Bash(curl -s https://ilegalclaude.vercel.app/api/health)",
+      "Bash(vercel:*)"
     ],
     "deny": [],
     "ask": []
