@@ -13,6 +13,3 @@ export const config = {
     '/api/invoices/:path*',
   ],
 }
-
-// Use Node.js runtime to support bcryptjs
-export const runtime = 'nodejs'
