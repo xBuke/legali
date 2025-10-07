@@ -61,7 +61,7 @@
   - `app/api/auth/2fa/complete-login/route.ts` - Login completion
   - `app/dashboard/security/page.tsx` - Security settings
   - `app/dashboard/security/2fa/page.tsx` - 2FA setup UI
-  - `app/(auth)/verify-2fa/page.tsx` - 2FA verification UI
+  - `app/(auth)/verify-2fa/page.tsx` - 2FA verification UI (REMOVED - not needed for basic deployment)
   - `app/(auth)/sign-in/page.tsx` - Updated sign-in flow
 
 ### **Document Encryption**

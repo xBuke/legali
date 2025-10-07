@@ -93,12 +93,8 @@ export default function SignInPage() {
         } else if (result.error.includes('Vaš račun je deaktiviran')) {
           errorMessage = 'Vaš račun je deaktiviran. Molimo kontaktirajte administratora'
         } else if (result.error.includes('2fa-verified')) {
-          // Handle 2FA case - redirect to 2FA verification
-          const params = new URLSearchParams({
-            email: formData.email,
-          })
-          router.push(`/verify-2fa?${params.toString()}`)
-          return
+          // 2FA verification is not currently implemented
+          errorMessage = 'Dvofaktorska autentifikacija trenutno nije dostupna'
         }
 
         toast({
