@@ -156,23 +156,13 @@ export default function SignUpPage() {
     setLoading(true)
 
     try {
-      // Split name into firstName and lastName
-      const nameParts = formData.name.trim().split(' ')
-      const firstName = nameParts[0]
-      const lastName = nameParts.slice(1).join(' ') || ''
-
-      // Create organization name from user's name
-      const organizationName = `${firstName} ${lastName}`.trim() || 'Moja kancelarija'
-
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          name: formData.name,
           email: formData.email,
           password: formData.password,
-          firstName,
-          lastName,
-          organizationName,
         }),
       })
 

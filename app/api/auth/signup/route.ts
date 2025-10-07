@@ -34,22 +34,45 @@ interface SignupError {
 
 export async function POST(request: Request): Promise<NextResponse<SignupResponse | SignupError>> {
   try {
-    const body: SignupRequest = await request.json()
-    const { name, email, password } = body
+    const body = await request.json()
+    const { name, email, password, firstName: providedFirstName, lastName: providedLastName, organizationName: providedOrgName } = body
 
-    // Validate inputs
-    if (!name || !email || !password) {
+    // Support both name-based and firstName/lastName-based signup
+    let firstName: string
+    let lastName: string | null
+    let organizationName: string
+
+    if (providedFirstName) {
+      // Use provided firstName and lastName
+      firstName = providedFirstName.trim()
+      lastName = providedLastName?.trim() || null
+      organizationName = providedOrgName?.trim() || `${firstName} ${lastName || ''}`.trim()
+    } else if (name) {
+      // Split name into firstName and lastName
+      const trimmedName = name.trim()
+      const nameParts = trimmedName.split(' ')
+      firstName = nameParts[0]
+      lastName = nameParts.slice(1).join(' ') || null
+      organizationName = providedOrgName?.trim() || `${firstName} ${lastName || ''}`.trim()
+    } else {
       return NextResponse.json(
-        { error: 'Sva polja su obavezna (ime, email, lozinka)' },
+        { error: 'Ime je obavezno' },
         { status: 400 }
       )
     }
 
-    // Trim whitespace
-    const trimmedName = name.trim()
+    // Validate inputs
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: 'Email i lozinka su obavezni' },
+        { status: 400 }
+      )
+    }
+
+    // Trim email
     const trimmedEmail = email.trim().toLowerCase()
 
-    if (!trimmedName || !trimmedEmail || !password) {
+    if (!firstName || !trimmedEmail || !password) {
       return NextResponse.json(
         { error: 'Sva polja moraju biti popunjena' },
         { status: 400 }
@@ -88,11 +111,6 @@ export async function POST(request: Request): Promise<NextResponse<SignupRespons
     // Hash password with bcrypt (10 rounds)
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Split name into firstName and lastName
-    const nameParts = trimmedName.split(' ')
-    const firstName = nameParts[0]
-    const lastName = nameParts.slice(1).join(' ') || null
-
     // Create organization and user in a transaction
     const result = await db.$transaction(async (tx) => {
       // Create organization with trial period
@@ -101,7 +119,7 @@ export async function POST(request: Request): Promise<NextResponse<SignupRespons
 
       const organization = await tx.organization.create({
         data: {
-          name: `${trimmedName} Law Firm`,
+          name: organizationName || `${firstName} ${lastName || ''}`.trim(),
           subscriptionTier: 'BASIC',
           subscriptionStatus: 'TRIAL',
           trialEndsAt,
