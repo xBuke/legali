@@ -1,7 +1,6 @@
-'use client'
-
-import { useSession } from 'next-auth/react'
-import { useState, useEffect } from 'react'
+import { auth } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+import { db } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -61,41 +60,290 @@ interface ActivityItem {
     type: 'client' | 'case' | 'document' | 'invoice';
     id: string;
     name: string;
-  };
+  } | null;
 }
 
-export default function DashboardPage() {
-  const { data: session } = useSession()
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [activities, setActivities] = useState<ActivityItem[]>([])
-  const [loading, setLoading] = useState(true)
+// Server-side data fetching functions
+async function getDashboardStats(organizationId: string): Promise<DashboardStats> {
+  try {
+    // Get current counts
+    const [
+      activeClients,
+      openCases,
+      totalDocuments,
+      monthlyRevenue
+    ] = await Promise.all([
+      // Active clients count
+      db.client.count({
+        where: {
+          organizationId,
+          status: 'ACTIVE',
+          deletedAt: null
+        }
+      }),
+      
+      // Open cases count
+      db.case.count({
+        where: {
+          organizationId,
+          status: 'OPEN',
+          deletedAt: null
+        }
+      }),
+      
+      // Total documents count
+      db.document.count({
+        where: {
+          organizationId,
+          deletedAt: null
+        }
+      }),
+      
+      // Monthly revenue (current month)
+      db.invoice.aggregate({
+        where: {
+          organizationId,
+          status: 'PAID',
+          createdAt: {
+            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+          }
+        },
+        _sum: {
+          total: true
+        }
+      })
+    ])
 
-  useEffect(() => {
-    fetchDashboardData()
-  }, [])
+    // Get previous month data for trends
+    const previousMonth = new Date()
+    previousMonth.setMonth(previousMonth.getMonth() - 1)
+    const previousMonthStart = new Date(previousMonth.getFullYear(), previousMonth.getMonth(), 1)
+    const previousMonthEnd = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0)
 
-  async function fetchDashboardData() {
-    try {
-      const [statsResponse, activitiesResponse] = await Promise.all([
-        fetch('/api/dashboard/stats'),
-        fetch('/api/dashboard/activities')
-      ])
+    const [
+      previousActiveClients,
+      previousOpenCases,
+      previousTotalDocuments,
+      previousMonthlyRevenue
+    ] = await Promise.all([
+      db.client.count({
+        where: {
+          organizationId,
+          status: 'ACTIVE',
+          deletedAt: null,
+          createdAt: {
+            lte: previousMonthEnd
+          }
+        }
+      }),
+      
+      db.case.count({
+        where: {
+          organizationId,
+          status: 'OPEN',
+          deletedAt: null,
+          createdAt: {
+            lte: previousMonthEnd
+          }
+        }
+      }),
+      
+      db.document.count({
+        where: {
+          organizationId,
+          deletedAt: null,
+          createdAt: {
+            lte: previousMonthEnd
+          }
+        }
+      }),
+      
+      db.invoice.aggregate({
+        where: {
+          organizationId,
+          status: 'PAID',
+          createdAt: {
+            gte: previousMonthStart,
+            lte: previousMonthEnd
+          }
+        },
+        _sum: {
+          total: true
+        }
+      })
+    ])
 
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json()
-        setStats(statsData)
+    // Calculate trends
+    const calculateTrend = (current: number, previous: number) => {
+      if (previous === 0) return { trend: 'up' as const, percentage: current > 0 ? 100 : 0 }
+      const percentage = Math.round(((current - previous) / previous) * 100)
+      return {
+        trend: percentage > 0 ? 'up' as const : percentage < 0 ? 'down' as const : 'stable' as const,
+        percentage: Math.abs(percentage)
       }
+    }
 
-      if (activitiesResponse.ok) {
-        const activitiesData = await activitiesResponse.json()
-        setActivities(activitiesData)
+    const activeClientsTrend = calculateTrend(activeClients, previousActiveClients)
+    const openCasesTrend = calculateTrend(openCases, previousOpenCases)
+    const documentsTrend = calculateTrend(totalDocuments, previousTotalDocuments)
+    const revenueTrend = calculateTrend(
+      monthlyRevenue._sum.total || 0, 
+      previousMonthlyRevenue._sum.total || 0
+    )
+
+    return {
+      activeClients: {
+        current: activeClients,
+        previous: previousActiveClients,
+        ...activeClientsTrend
+      },
+      openCases: {
+        current: openCases,
+        previous: previousOpenCases,
+        ...openCasesTrend
+      },
+      documentsUploaded: {
+        current: totalDocuments,
+        previous: previousTotalDocuments,
+        ...documentsTrend
+      },
+      monthlyRevenue: {
+        current: monthlyRevenue._sum.total || 0,
+        previous: previousMonthlyRevenue._sum.total || 0,
+        ...revenueTrend
       }
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error)
-    } finally {
-      setLoading(false)
+    }
+  } catch (error) {
+    console.error('Dashboard stats error:', error)
+    
+    // Return default stats if there's an error
+    return {
+      activeClients: {
+        current: 0,
+        previous: 0,
+        trend: 'stable' as const,
+        percentage: 0
+      },
+      openCases: {
+        current: 0,
+        previous: 0,
+        trend: 'stable' as const,
+        percentage: 0
+      },
+      documentsUploaded: {
+        current: 0,
+        previous: 0,
+        trend: 'stable' as const,
+        percentage: 0
+      },
+      monthlyRevenue: {
+        current: 0,
+        previous: 0,
+        trend: 'stable' as const,
+        percentage: 0
+      }
     }
   }
+}
+
+async function getDashboardActivities(organizationId: string): Promise<ActivityItem[]> {
+  try {
+    // Get recent activities from audit logs
+    const activities = await db.auditLog.findMany({
+      where: {
+        organizationId
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 10,
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
+      }
+    })
+
+    // Transform activities to match the interface
+    return activities.map((activity: any) => {
+      let type: 'client_created' | 'case_opened' | 'document_uploaded' | 'invoice_sent' | 'payment_received' = 'client_created'
+      let title = activity.description
+      let relatedEntity = null
+
+      // Determine activity type and create related entity info
+      if (activity.entityType === 'Client') {
+        type = 'client_created'
+        title = `Novi klijent: ${activity.entityName}`
+        relatedEntity = {
+          type: 'client' as const,
+          id: activity.entityId,
+          name: activity.entityName
+        }
+      } else if (activity.entityType === 'Case') {
+        type = 'case_opened'
+        title = `Novi predmet: ${activity.entityName}`
+        relatedEntity = {
+          type: 'case' as const,
+          id: activity.entityId,
+          name: activity.entityName
+        }
+      } else if (activity.entityType === 'Document') {
+        type = 'document_uploaded'
+        title = `Dokument uploadan: ${activity.entityName}`
+        relatedEntity = {
+          type: 'document' as const,
+          id: activity.entityId,
+          name: activity.entityName
+        }
+      } else if (activity.entityType === 'Invoice') {
+        type = 'invoice_sent'
+        title = `Račun poslan: ${activity.entityName}`
+        relatedEntity = {
+          type: 'invoice' as const,
+          id: activity.entityId,
+          name: activity.entityName
+        }
+      }
+
+      return {
+        id: activity.id,
+        type,
+        title,
+        description: activity.description,
+        timestamp: activity.createdAt,
+        user: `${activity.user.firstName} ${activity.user.lastName}`.trim() || activity.user.email,
+        relatedEntity
+      }
+    })
+  } catch (error) {
+    console.error('Dashboard activities error:', error)
+    return []
+  }
+}
+
+export default async function DashboardPage() {
+  const session = await auth()
+  
+  if (!session) {
+    redirect('/sign-in')
+  }
+
+  // Get user's organization ID from session
+  const organizationId = session.user.organizationId
+  
+  if (!organizationId) {
+    redirect('/sign-in')
+  }
+
+  // Fetch dashboard data server-side
+  const [stats, activities] = await Promise.all([
+    getDashboardStats(organizationId),
+    getDashboardActivities(organizationId)
+  ])
 
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
     switch (trend) {
@@ -180,37 +428,12 @@ export default function DashboardPage() {
     }
   ]
 
-  if (loading) {
-    return (
-      <div className="space-y-4 md:space-y-6 w-full container-overflow-fix">
-        <div className="w-full">
-          <h1 className="text-2xl md:text-3xl font-bold">
-            Dobrodošli, {session?.user?.name?.split(' ')[0] || 'korisniče'}!
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm md:text-base">
-            Evo pregleda vaše kancelarije
-          </p>
-        </div>
-        <div className="responsive-grid responsive-grid-4">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="p-3 md:p-6 w-full grid-overflow-fix">
-              <div className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded mb-1"></div>
-                <div className="h-3 bg-gray-200 rounded"></div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-4 md:space-y-6 w-full container-overflow-fix">
       <div className="w-full">
         <h1 className="text-2xl md:text-3xl font-bold laptop-heading">
-          Dobrodošli, {session?.user?.name?.split(' ')[0] || 'korisniče'}!
+          Dobrodošli, {session.user.name?.split(' ')[0] || 'korisniče'}!
         </h1>
         <p className="text-muted-foreground mt-1 text-sm md:text-base laptop-text">
           Evo pregleda vaše kancelarije
@@ -252,7 +475,7 @@ export default function DashboardPage() {
 
       {/* Stats Grid - Mobile Optimized */}
       <div className="responsive-grid responsive-grid-4">
-        {stats && [
+        {[
           {
             name: 'Aktivni klijenti',
             value: stats.activeClients.current.toString(),

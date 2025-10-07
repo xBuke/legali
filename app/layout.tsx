@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from './providers'
 import { ResponsiveProvider } from './responsive-provider'
+import { auth } from '@/lib/auth'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -13,16 +14,18 @@ export const metadata: Metadata = {
   description: 'Sveobuhvatna platforma za upravljanje odvjetničkom praksom',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const session = await auth()
+
   return (
     <html lang="hr" suppressHydrationWarning>
       <body className={inter.className}>
         <ResponsiveProvider>
-          <AuthProvider>
+          <AuthProvider session={session}>
             <ThemeProvider
               defaultTheme="system"
             >

@@ -15,7 +15,7 @@ This guide will help you get iLegal up and running from scratch.
    - Verify: `git --version`
 
 3. **Create accounts** (you can use free tiers initially):
-   - [Clerk](https://clerk.dev) - Authentication
+   - [NextAuth.js](https://next-auth.js.org) - Authentication
    - [Stripe](https://stripe.com) - Payments (test mode)
    - [OpenAI](https://platform.openai.com) - AI features
    - [Vercel](https://vercel.com) - Hosting
@@ -55,9 +55,9 @@ openssl rand -base64 32
 # Database - Start with Vercel Postgres or local PostgreSQL
 DATABASE_URL="postgresql://user:password@localhost:5432/ilegal"
 
-# Clerk - Get from dashboard.clerk.dev
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
+# NextAuth.js - Already configured
+NEXTAUTH_SECRET="your-super-secret-key-here-min-32-chars"
+NEXTAUTH_URL="http://localhost:3000"
 
 # Stripe - Get from dashboard.stripe.com (use test keys)
 STRIPE_SECRET_KEY=sk_test_...
@@ -111,9 +111,9 @@ vercel postgres create
 vercel env pull .env.local
 ```
 
-### Step 5: Clerk Configuration
+### Step 5: NextAuth.js Configuration
 
-1. Go to [dashboard.clerk.dev](https://dashboard.clerk.dev)
+1. NextAuth.js is already configured
 2. Create new application
 3. Enable Email/Password authentication
 4. Enable 2FA (Two-Factor Authentication)
@@ -235,7 +235,7 @@ vercel postgres create --prod
 # Go to: Settings → Environment Variables
 # Add all variables from .env
 
-# 6. Update Clerk redirect URLs with production domain
+# 6. Update NextAuth.js URLs with production domain
 # Update Stripe webhook URL with production domain
 
 # 7. Deploy to production
@@ -270,11 +270,11 @@ postgresql://USER:PASSWORD@HOST:PORT/DATABASE
 npx prisma db push
 ```
 
-### Issue: Clerk auth not working
+### Issue: NextAuth.js auth not working
 
-1. Check `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` starts with `pk_`
-2. Check `CLERK_SECRET_KEY` starts with `sk_`
-3. Verify redirect URLs in Clerk Dashboard match your app
+1. Check `NEXTAUTH_SECRET` is set and at least 32 characters
+2. Check `NEXTAUTH_URL` matches your domain
+3. Verify environment variables are loaded correctly
 
 ### Issue: Stripe webhooks not received
 
@@ -325,15 +325,15 @@ Organizations (Law Firms)
 1. **Create page file:**
 ```typescript
 // app/(dashboard)/reports/page.tsx
-import { auth } from '@clerk/nextjs/server'
+import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 
 export default async function ReportsPage() {
-  const { userId } = await auth()
+  const session = await auth()
   
   // Fetch data
   const reports = await db.case.findMany({
-    where: { organization: { users: { some: { clerkUserId: userId } } } }
+    where: { organization: { users: { some: { id: session.user.id } } } }
   })
   
   return (
@@ -400,7 +400,7 @@ npx @sentry/wizard@latest -i nextjs
 
 - [x] All documents encrypted at rest
 - [x] HTTPS enforced (automatic with Vercel)
-- [x] 2FA enabled in Clerk
+- [x] 2FA enabled in NextAuth.js
 - [x] Row-level security in database
 - [x] Audit logging enabled
 - [ ] Regular security audits (schedule)
@@ -436,7 +436,7 @@ npx @sentry/wizard@latest -i nextjs
 
 - **Next.js**: [nextjs.org/docs](https://nextjs.org/docs)
 - **Prisma**: [prisma.io/docs](https://prisma.io/docs)
-- **Clerk**: [clerk.dev/docs](https://clerk.dev/docs)
+- **NextAuth.js**: [next-auth.js.org](https://next-auth.js.org)
 - **Stripe**: [stripe.com/docs](https://stripe.com/docs)
 - **Vercel**: [vercel.com/docs](https://vercel.com/docs)
 

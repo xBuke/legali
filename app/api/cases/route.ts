@@ -1,22 +1,41 @@
-import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthenticatedUser } from '@/lib/api-helpers'
 import { db } from '@/lib/db'
 import { createCaseCreatedEvent } from '@/lib/case-timeline'
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'
+
+// Types for case data
+interface CreateCaseRequest {
+  caseNumber?: string
+  title: string
+  description?: string
+  status: string
+  priority: string
+  caseType: string
+  clientId: string
+  assignedToId?: string
+  nextHearingDate?: string
+  statuteOfLimitations?: string
+  estimatedValue?: number
+  currency?: string
+}
 
 // GET /api/cases - List all cases
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-
-    if (!session?.user?.organizationId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getAuthenticatedUser()
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Neovlašten pristup - potrebna je autentifikacija' },
+        { status: 401 }
+      )
     }
 
     const cases = await db.case.findMany({
       where: {
-        organizationId: session.user.organizationId,
+        organizationId: user.organizationId,
         deletedAt: null,
       },
       orderBy: {
@@ -49,7 +68,11 @@ export async function GET(request: Request) {
       },
     })
 
-    return NextResponse.json(cases)
+    return NextResponse.json({
+      cases,
+      count: cases.length,
+      organizationId: user.organizationId
+    })
   } catch (error) {
     console.error('Error fetching cases:', error)
     return NextResponse.json(
@@ -60,35 +83,63 @@ export async function GET(request: Request) {
 }
 
 // POST /api/cases - Create new case
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-
-    if (!session?.user?.organizationId) {
-      console.error('No session or organizationId found:', { session: !!session, userId: session?.user?.id, orgId: session?.user?.organizationId })
-      return NextResponse.json({ error: 'Unauthorized - No valid session' }, { status: 401 })
+    const user = await getAuthenticatedUser()
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Neovlašten pristup - potrebna je autentifikacija' },
+        { status: 401 }
+      )
     }
 
-    const body = await request.json()
+    const body: CreateCaseRequest = await request.json()
+
+    // Validate required fields
+    if (!body.title || !body.status || !body.priority || !body.caseType || !body.clientId) {
+      return NextResponse.json(
+        { error: 'Naslov, status, prioritet, tip predmeta i klijent su obavezni' },
+        { status: 400 }
+      )
+    }
+
+    // Verify client exists and belongs to organization
+    const client = await db.client.findFirst({
+      where: {
+        id: body.clientId,
+        organizationId: user.organizationId,
+        deletedAt: null
+      }
+    })
+
+    if (!client) {
+      return NextResponse.json(
+        { error: 'Klijent nije pronađen' },
+        { status: 404 }
+      )
+    }
 
     // Generate case number if not provided
-    if (!body.caseNumber) {
+    let caseNumber = body.caseNumber
+    if (!caseNumber) {
       const count = await db.case.count({
-        where: { organizationId: session.user.organizationId },
+        where: { organizationId: user.organizationId },
       })
-      body.caseNumber = `CASE-${String(count + 1).padStart(6, '0')}`
+      caseNumber = `CASE-${String(count + 1).padStart(6, '0')}`
     }
 
     // Handle empty date strings - convert to null for Prisma
     const processedBody = {
       ...body,
+      caseNumber,
       nextHearingDate: body.nextHearingDate && body.nextHearingDate.trim() !== '' 
         ? new Date(body.nextHearingDate) 
         : null,
       statuteOfLimitations: body.statuteOfLimitations && body.statuteOfLimitations.trim() !== '' 
         ? new Date(body.statuteOfLimitations) 
         : null,
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
     }
 
     const caseData = await db.case.create({
@@ -104,8 +155,8 @@ export async function POST(request: Request) {
       await createCaseCreatedEvent(
         caseData.id,
         caseData.caseNumber,
-        session.user.id,
-        session.user.organizationId
+        user.userId,
+        user.organizationId
       )
     } catch (timelineError) {
       console.error('Error creating timeline event:', timelineError)

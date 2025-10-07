@@ -1,26 +1,43 @@
-import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthenticatedUser } from '@/lib/api-helpers'
 import { db } from '@/lib/db'
 import { createStatusChangedEvent, createAssignmentEvent, createHearingScheduledEvent } from '@/lib/case-timeline'
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'
+
+// Types for update request
+interface UpdateCaseRequest {
+  title?: string
+  description?: string
+  status?: string
+  priority?: string
+  caseType?: string
+  assignedToId?: string
+  nextHearingDate?: string
+  statuteOfLimitations?: string
+  estimatedValue?: number
+  currency?: string
+}
 
 // GET /api/cases/[id] - Get single case
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth()
-
-    if (!session?.user?.organizationId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getAuthenticatedUser()
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Neovlašten pristup - potrebna je autentifikacija' },
+        { status: 401 }
+      )
     }
 
     const caseData = await db.case.findFirst({
       where: {
         id: params.id,
-        organizationId: session.user.organizationId,
+        organizationId: user.organizationId,
         deletedAt: null,
       },
       include: {
@@ -76,23 +93,26 @@ export async function GET(
 
 // PATCH /api/cases/[id] - Update case
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth()
-
-    if (!session?.user?.organizationId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getAuthenticatedUser()
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Neovlašten pristup - potrebna je autentifikacija' },
+        { status: 401 }
+      )
     }
 
-    const body = await request.json()
+    const body: UpdateCaseRequest = await request.json()
 
     // Get current case data to compare changes
     const currentCase = await db.case.findFirst({
       where: {
         id: params.id,
-        organizationId: session.user.organizationId,
+        organizationId: user.organizationId,
         deletedAt: null,
       },
     })
@@ -101,6 +121,15 @@ export async function PATCH(
       return NextResponse.json(
         { error: 'Predmet nije pronađen' },
         { status: 404 }
+      )
+    }
+
+    // Validate that at least one field is provided
+    const hasUpdates = Object.keys(body).some(key => body[key as keyof UpdateCaseRequest] !== undefined)
+    if (!hasUpdates) {
+      return NextResponse.json(
+        { error: 'Najmanje jedno polje mora biti ažurirano' },
+        { status: 400 }
       )
     }
 
@@ -113,18 +142,19 @@ export async function PATCH(
       statuteOfLimitations: body.statuteOfLimitations && body.statuteOfLimitations.trim() !== '' 
         ? new Date(body.statuteOfLimitations) 
         : body.statuteOfLimitations === '' ? null : body.statuteOfLimitations,
+      updatedAt: new Date()
     }
 
-    const caseData = await db.case.updateMany({
+    const result = await db.case.updateMany({
       where: {
         id: params.id,
-        organizationId: session.user.organizationId,
+        organizationId: user.organizationId,
         deletedAt: null,
       },
       data: processedBody,
     })
 
-    if (caseData.count === 0) {
+    if (result.count === 0) {
       return NextResponse.json(
         { error: 'Predmet nije pronađen' },
         { status: 404 }
@@ -140,8 +170,8 @@ export async function PATCH(
           currentCase.caseNumber,
           currentCase.status,
           body.status,
-          session.user.id,
-          session.user.organizationId
+          user.userId,
+          user.organizationId
         )
       }
 
@@ -150,7 +180,10 @@ export async function PATCH(
         let assignedToName = null
         if (body.assignedToId) {
           const assignedUser = await db.user.findFirst({
-            where: { id: body.assignedToId },
+            where: { 
+              id: body.assignedToId,
+              organizationId: user.organizationId 
+            },
             select: { firstName: true, lastName: true },
           })
           assignedToName = assignedUser ? `${assignedUser.firstName} ${assignedUser.lastName}`.trim() : null
@@ -159,10 +192,10 @@ export async function PATCH(
         await createAssignmentEvent(
           params.id,
           currentCase.caseNumber,
-          body.assignedToId,
+          body.assignedToId || null,
           assignedToName,
-          session.user.id,
-          session.user.organizationId
+          user.userId,
+          user.organizationId
         )
       }
 
@@ -172,8 +205,8 @@ export async function PATCH(
           params.id,
           currentCase.caseNumber,
           new Date(body.nextHearingDate),
-          session.user.id,
-          session.user.organizationId
+          user.userId,
+          user.organizationId
         )
       }
     } catch (timelineError) {
@@ -181,7 +214,27 @@ export async function PATCH(
       // Don't fail the update if timeline events fail
     }
 
-    return NextResponse.json({ success: true })
+    // Fetch and return the updated case
+    const updatedCase = await db.case.findFirst({
+      where: {
+        id: params.id,
+        organizationId: user.organizationId,
+        deletedAt: null,
+      },
+      include: {
+        client: true,
+        assignedTo: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
+    })
+
+    return NextResponse.json(updatedCase)
   } catch (error) {
     console.error('Error updating case:', error)
     return NextResponse.json(
@@ -193,35 +246,42 @@ export async function PATCH(
 
 // DELETE /api/cases/[id] - Soft delete case
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth()
-
-    if (!session?.user?.organizationId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getAuthenticatedUser()
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Neovlašten pristup - potrebna je autentifikacija' },
+        { status: 401 }
+      )
     }
 
-    const caseData = await db.case.updateMany({
+    const result = await db.case.updateMany({
       where: {
         id: params.id,
-        organizationId: session.user.organizationId,
+        organizationId: user.organizationId,
         deletedAt: null,
       },
       data: {
         deletedAt: new Date(),
+        updatedAt: new Date()
       },
     })
 
-    if (caseData.count === 0) {
+    if (result.count === 0) {
       return NextResponse.json(
         { error: 'Predmet nije pronađen' },
         { status: 404 }
       )
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Predmet je uspješno obrisan' 
+    })
   } catch (error) {
     console.error('Error deleting case:', error)
     return NextResponse.json(

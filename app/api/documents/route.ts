@@ -1,17 +1,30 @@
-import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthenticatedUser } from '@/lib/api-helpers'
 import { db } from '@/lib/db'
 import { uploadEncryptedDocument } from '@/lib/document-storage'
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'
+
+// Types for document upload
+interface DocumentUploadData {
+  caseId?: string
+  clientId?: string
+  title?: string
+  description?: string
+  category?: string
+  tags?: string
+}
 
 // GET /api/documents - List all documents
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-
-    if (!session?.user?.organizationId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getAuthenticatedUser()
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Neovlašten pristup - potrebna je autentifikacija' },
+        { status: 401 }
+      )
     }
 
     const { searchParams } = new URL(request.url)
@@ -19,7 +32,7 @@ export async function GET(request: Request) {
     const clientId = searchParams.get('clientId')
 
     const where: any = {
-      organizationId: session.user.organizationId,
+      organizationId: user.organizationId,
       deletedAt: null,
     }
 
@@ -56,7 +69,11 @@ export async function GET(request: Request) {
       },
     })
 
-    return NextResponse.json(documents)
+    return NextResponse.json({
+      documents,
+      count: documents.length,
+      organizationId: user.organizationId
+    })
   } catch (error) {
     console.error('Error fetching documents:', error)
     return NextResponse.json(
@@ -67,12 +84,15 @@ export async function GET(request: Request) {
 }
 
 // POST /api/documents - Upload new document with encryption
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-
-    if (!session?.user?.organizationId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getAuthenticatedUser()
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Neovlašten pristup - potrebna je autentifikacija' },
+        { status: 401 }
+      )
     }
 
     const formData = await request.formData()
@@ -117,12 +137,48 @@ export async function POST(request: Request) {
       )
     }
 
+    // Verify case belongs to organization if provided
+    if (caseId) {
+      const caseExists = await db.case.findFirst({
+        where: {
+          id: caseId,
+          organizationId: user.organizationId,
+          deletedAt: null
+        }
+      })
+
+      if (!caseExists) {
+        return NextResponse.json(
+          { error: 'Predmet nije pronađen' },
+          { status: 404 }
+        )
+      }
+    }
+
+    // Verify client belongs to organization if provided
+    if (clientId) {
+      const clientExists = await db.client.findFirst({
+        where: {
+          id: clientId,
+          organizationId: user.organizationId,
+          deletedAt: null
+        }
+      })
+
+      if (!clientExists) {
+        return NextResponse.json(
+          { error: 'Klijent nije pronađen' },
+          { status: 404 }
+        )
+      }
+    }
+
     // Upload and encrypt document
     const result = await uploadEncryptedDocument(file, {
       caseId: caseId || undefined,
       clientId: clientId || undefined,
-      organizationId: session.user.organizationId,
-      uploadedById: session.user.id,
+      organizationId: user.organizationId,
+      uploadedById: user.userId,
       title: title || undefined,
       description: description || undefined,
       category: category || undefined,

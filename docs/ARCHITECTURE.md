@@ -152,7 +152,7 @@ Every action is logged:
   action: "UPDATE" | "CREATE" | "DELETE" | "VIEW",
   entity: "Case" | "Document" | "Client",
   entityId: "cuid",
-  userId: "clerk_user_id",
+  userId: "user_id",
   organizationId: "org_cuid",
   ipAddress: "1.2.3.4",
   userAgent: "Mozilla/...",
@@ -171,7 +171,7 @@ Every action is logged:
    └─> POST /api/cases
 
 2. API Route Handler
-   ├─> Verify authentication (Clerk)
+   ├─> Verify authentication (NextAuth.js)
    ├─> Get organizationId from user
    ├─> Validate input (Zod schema)
    ├─> Check subscription limits
@@ -348,17 +348,17 @@ Production URLs:
 ```
 Development:
   - Local PostgreSQL or Vercel Postgres (dev)
-  - Clerk development instance
+  - NextAuth.js development instance
   - Stripe test mode
   
 Staging (optional):
   - Vercel Postgres (staging)
-  - Clerk staging instance
+  - NextAuth.js staging instance
   - Stripe test mode
   
 Production:
   - Vercel Postgres (production)
-  - Clerk production instance
+  - NextAuth.js production instance
   - Stripe live mode
   - Custom domain
   - SSL/TLS via Vercel
@@ -374,7 +374,7 @@ Production:
 | **TypeScript** | Type safety for legal data is critical | JavaScript |
 | **Prisma** | Best DX, great migrations, type-safe | Drizzle, raw SQL |
 | **PostgreSQL** | ACID compliance, JSON support, proven | MongoDB, MySQL |
-| **Clerk** | Best auth UX, built-in 2FA, org management | NextAuth, Auth0 |
+| **NextAuth.js** | Best auth UX, built-in 2FA, org management | Auth0, Clerk |
 | **Stripe** | Industry standard, excellent EU support, low fees | Paddle, PayPal |
 | **Vercel** | Zero-config deployment, Edge Network | AWS, Railway |
 | **Tailwind CSS** | Rapid development, consistent design | CSS Modules, Styled Components |

@@ -9,11 +9,12 @@ import { validateRequiredEnvironment } from '@/lib/env-validation'
 try {
   validateRequiredEnvironment()
 } catch (error) {
-  console.error('❌ Authentication configuration failed - Environment validation error:', error.message)
+  const errorMessage = error instanceof Error ? error.message : 'Unknown environment validation error';
+  console.error('❌ Authentication configuration failed - Environment validation error:', errorMessage)
   throw error
 }
 
-export const authConfig: NextAuthConfig = {
+export const authOptions: NextAuthConfig = {
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: 'jwt',
@@ -32,7 +33,7 @@ export const authConfig: NextAuthConfig = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Molimo unesite email i lozinku')
+          throw new Error('Email i lozinka su obavezni')
         }
 
         const user = await db.user.findUnique({
@@ -94,6 +95,7 @@ export const authConfig: NextAuthConfig = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.id = user.id
         token.organizationId = user.organizationId
         token.role = user.role
       }
@@ -101,7 +103,7 @@ export const authConfig: NextAuthConfig = {
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.sub!
+        session.user.id = token.id as string
         session.user.organizationId = token.organizationId as string
         session.user.role = token.role as string
       }
@@ -110,8 +112,7 @@ export const authConfig: NextAuthConfig = {
   },
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)
+export const { handlers, auth, signIn, signOut } = NextAuth(authOptions)
 
 // Export for backward compatibility
-export const authOptions = authConfig
 export { auth as getServerSession }

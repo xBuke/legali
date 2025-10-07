@@ -137,7 +137,8 @@ export function validateEnvironmentOnStartup(): FullEnvironmentConfig {
     console.log('✅ Environment validation passed');
     return config;
   } catch (error) {
-    console.error('❌ Environment validation failed:', error.message);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown environment validation error';
+    console.error('❌ Environment validation failed:', errorMessage);
     throw error;
   }
 }

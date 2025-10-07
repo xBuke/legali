@@ -10,7 +10,7 @@ I've created a **complete foundation** for your Croatian legal practice manageme
 
 ### ✅ Complete Foundation (100% Done)
 - **Database Schema**: 18 tables covering cases, clients, documents, billing, time tracking
-- **Authentication**: Clerk integration ready
+- **Authentication**: NextAuth.js integration ready
 - **Payments**: Stripe integration with webhooks
 - **AI Features**: OpenAI setup for document analysis and chatbot
 - **Security**: File encryption, audit logging, 2FA setup
@@ -36,7 +36,7 @@ I've created a **complete foundation** for your Croatian legal practice manageme
 npm install
 
 # 2. Set up your API keys (see QUICK_START.md)
-# - Clerk (free)
+# - NextAuth.js (free)
 # - Stripe (free test mode)
 # - OpenAI ($5 credit)
 # - Vercel Postgres (free tier)
@@ -151,7 +151,7 @@ Open http://localhost:3000 and see your landing page! 🎊
 - **Frontend**: Next.js 14 + TypeScript + Tailwind CSS
 - **Backend**: Next.js API Routes (serverless)
 - **Database**: PostgreSQL (Prisma ORM)
-- **Auth**: Clerk (with 2FA)
+- **Auth**: NextAuth.js (with 2FA)
 - **Payments**: Stripe
 - **AI**: OpenAI GPT-4
 - **Storage**: Vercel Blob (encrypted)
@@ -318,13 +318,13 @@ All answers are in the docs. Use this cheat sheet:
 ### Common Issues
 - **Build errors**: `rm -rf .next node_modules && npm install`
 - **Database errors**: Check DATABASE_URL in .env
-- **Auth not working**: Verify Clerk keys, restart server
+- **Auth not working**: Verify NextAuth.js keys, restart server
 - **Type errors**: Run `npx prisma generate`
 
 ### Resources
 - Next.js: [nextjs.org/docs](https://nextjs.org/docs)
 - Prisma: [prisma.io/docs](https://prisma.io/docs)
-- Clerk: [clerk.dev/docs](https://clerk.dev/docs)
+- NextAuth.js: [next-auth.js.org](https://next-auth.js.org)
 - Stripe: [stripe.com/docs](https://stripe.com/docs)
 
 ---

@@ -35,9 +35,10 @@ export async function GET() {
         responseTime: Date.now() - dbStartTime
       };
     } catch (dbError) {
+      const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
       healthCheck.checks.database = {
         status: 'unhealthy',
-        message: `Database connection failed: ${dbError.message}`,
+        message: `Database connection failed: ${errorMessage}`,
         responseTime: Date.now() - dbStartTime
       };
       healthCheck.status = 'unhealthy';
@@ -60,9 +61,10 @@ export async function GET() {
         }
       };
     } catch (envError) {
+      const errorMessage = envError instanceof Error ? envError.message : 'Unknown environment error';
       healthCheck.checks.environment = {
         status: 'unhealthy',
-        message: `Environment validation failed: ${envError.message}`,
+        message: `Environment validation failed: ${errorMessage}`,
         details: getEnvironmentStatus()
       };
       healthCheck.status = 'unhealthy';
@@ -77,11 +79,12 @@ export async function GET() {
     return NextResponse.json(healthCheck, { status: statusCode });
 
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     healthCheck.status = 'unhealthy';
     healthCheck.responseTime = Date.now() - startTime;
     healthCheck.checks.application = {
       status: 'unhealthy',
-      message: `Health check failed: ${error.message}`
+      message: `Health check failed: ${errorMessage}`
     };
 
     return NextResponse.json(healthCheck, { status: 500 });
@@ -121,9 +124,10 @@ export async function POST() {
         error: null
       };
     } catch (dbError) {
+      const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
       detailedHealth.database = {
         connected: false,
-        error: dbError.message
+        error: errorMessage
       };
       detailedHealth.status = 'unhealthy';
     }
@@ -133,11 +137,12 @@ export async function POST() {
     });
 
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       {
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
-        error: error.message
+        error: errorMessage
       },
       { status: 500 }
     );

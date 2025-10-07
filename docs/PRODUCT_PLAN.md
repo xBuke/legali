@@ -202,7 +202,7 @@ iLegal is a comprehensive legal practice management platform designed for Croati
 
 ### Backend
 - **API**: Next.js API Routes (App Router)
-- **Authentication**: NextAuth.js v5 or Clerk
+- **Authentication**: NextAuth.js v5
 - **Database**: PostgreSQL (Vercel Postgres or Supabase)
 - **ORM**: Prisma
 - **File Storage**: Vercel Blob or AWS S3
@@ -301,7 +301,7 @@ organizations (firms)
 **Week 1: Setup & Core Infrastructure** ✅ COMPLETE
 - ✅ 1.1 Project setup (Next.js, TypeScript, Tailwind, Prisma) - COMPLETE
 - ✅ 1.2 Database schema design and implementation - COMPLETE (SQLite configured, schema pushed)
-- ✅ 1.3 Authentication system (NextAuth.js v5) - COMPLETE (FREE alternative to Clerk, middleware + auth pages created)
+- ✅ 1.3 Authentication system (NextAuth.js v5) - COMPLETE (middleware + auth pages created)
 - ✅ 1.4 Basic UI components library (shadcn/ui) - COMPLETE (Button, Toast, Card, Input, Label, Badge, Table, Dialog)
 - ✅ 1.5 Organization/tenant setup - COMPLETE (Auto-created during registration)
 

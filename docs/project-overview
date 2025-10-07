@@ -6,7 +6,7 @@
 
 **Target Market**: Croatian law firms (solo practitioners to large firms)  
 **MVP Timeline**: 13 weeks  
-**Tech Stack**: Next.js 14, TypeScript, PostgreSQL, Clerk, Stripe, OpenAI  
+**Tech Stack**: Next.js 14, TypeScript, PostgreSQL, NextAuth.js, Stripe, OpenAI  
 **Deployment**: Vercel  
 
 ---
@@ -59,7 +59,7 @@ Stripe (Payments)
 ### ✅ Completed
 - [x] Project structure and configuration
 - [x] Complete database schema (18 tables)
-- [x] Authentication setup (Clerk integration)
+- [x] Authentication setup (NextAuth.js integration)
 - [x] Payment structure (Stripe webhooks)
 - [x] Security utilities (encryption, audit logging)
 - [x] Subscription management logic
@@ -80,7 +80,7 @@ Stripe (Payments)
 ## 🚧 What to Build Next (Priority Order)
 
 ### Week 1: Setup & Authentication
-- 1.1 Set up all API keys (Clerk, Stripe, OpenAI, Vercel)
+- 1.1 Set up all API keys (NextAuth.js, Stripe, OpenAI, Vercel)
 - 1.2 Create sign-up/sign-in pages
 - 1.3 Build onboarding flow (create organization)
 - 1.4 Create dashboard layout with navigation
@@ -374,9 +374,9 @@ ilegalclaude/
 - [Prisma Docs](https://prisma.io/docs)
 - [Schema Reference](https://prisma.io/docs/reference/api-reference/prisma-schema-reference)
 
-### Clerk
-- [Clerk Docs](https://clerk.dev/docs)
-- [Next.js Integration](https://clerk.dev/docs/quickstarts/nextjs)
+### NextAuth.js
+- [NextAuth.js Docs](https://next-auth.js.org)
+- [Next.js Integration](https://next-auth.js.org/getting-started/example)
 
 ### Stripe
 - [Stripe Docs](https://stripe.com/docs)
@@ -461,7 +461,7 @@ vercel --prod
 ## 🚀 Action Plan (This Week)
 
 ### Monday-Tuesday: Setup
-1. Set up Clerk account
+1. NextAuth.js is already configured
 2. Set up Stripe account (test mode)
 3. Get OpenAI API key
 4. Set up Vercel Postgres

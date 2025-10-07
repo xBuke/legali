@@ -421,7 +421,7 @@ Currently: Week 6 planning phase
 ### Technology Decisions:
 1. **SQLite vs PostgreSQL**: Using SQLite for development simplicity. Will migrate to PostgreSQL for production.
 
-2. **NextAuth.js vs Clerk**: Chose NextAuth.js v5 for zero cost and full control. Clerk would be $25+/month.
+2. **NextAuth.js**: Chose NextAuth.js v5 for zero cost and full control.
 
 3. **Soft Deletes**: All deletions are soft (data preserved with `deletedAt` timestamp) for legal compliance.
 

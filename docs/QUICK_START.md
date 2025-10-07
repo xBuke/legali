@@ -6,7 +6,7 @@ Get up and running in 15 minutes!
 
 Your project includes:
 - ✅ Complete database schema (18 tables for cases, clients, documents, billing)
-- ✅ Authentication setup (Clerk integration ready)
+- ✅ Authentication setup (NextAuth.js v5)
 - ✅ Payment processing (Stripe integration ready)
 - ✅ AI features setup (OpenAI integration ready)
 - ✅ Security (encryption, audit logging)
@@ -43,7 +43,7 @@ npm install
 This will install:
 - Next.js, React, TypeScript
 - Prisma (database)
-- Clerk (authentication)
+- NextAuth.js (authentication)
 - Stripe (payments)
 - OpenAI (AI features)
 - UI components (shadcn/ui)
@@ -52,8 +52,8 @@ This will install:
 
 ## 🔑 Step 2: Get Your API Keys (10 minutes)
 
-### 2.1 Clerk (Authentication) - FREE
-1. Go to [clerk.dev](https://clerk.dev)
+### 2.1 NextAuth.js (Authentication) - FREE
+1. NextAuth.js is already configured
 2. Sign up / Log in
 3. Create new application: "iLegal"
 4. Copy these keys:
@@ -109,13 +109,9 @@ openssl rand -base64 32
 # Database (we'll set this up next)
 DATABASE_URL="postgresql://..."
 
-# Clerk (from step 2.1)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_YOUR_KEY_HERE
-CLERK_SECRET_KEY=sk_test_YOUR_KEY_HERE
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
+# NextAuth.js (already configured)
+NEXTAUTH_SECRET="your-super-secret-key-here-min-32-chars"
+NEXTAUTH_URL="http://localhost:3000"
 
 # Stripe (from step 2.2)
 STRIPE_SECRET_KEY=sk_test_YOUR_KEY_HERE
@@ -195,31 +191,7 @@ You should see your beautiful landing page! 🎊
 
 #### Day 1-2: Sign Up/In Pages
 
-**Create**: `app/(auth)/sign-up/[[...sign-up]]/page.tsx`
-```typescript
-import { SignUp } from '@clerk/nextjs'
-
-export default function SignUpPage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <SignUp />
-    </div>
-  )
-}
-```
-
-**Create**: `app/(auth)/sign-in/[[...sign-in]]/page.tsx`
-```typescript
-import { SignIn } from '@clerk/nextjs'
-
-export default function SignInPage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <SignIn />
-    </div>
-  )
-}
-```
+**Note**: Sign-up and sign-in pages are already created using NextAuth.js
 
 **Test**: Click "Prijava" or "Započni besplatno" on landing page
 
@@ -231,7 +203,7 @@ export default function SignInPage() {
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useUser } from '@clerk/nextjs'
+import { useSession } from 'next-auth/react'
 
 export default function OnboardingPage() {
   const { user } = useUser()
@@ -300,17 +272,16 @@ export default function OnboardingPage() {
 
 **Create**: `app/api/organizations/create/route.ts`
 ```typescript
-import { auth, currentUser } from '@clerk/nextjs/server'
+import { auth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSubscriptionLimits } from '@/lib/subscription'
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await auth()
-    const clerkUser = await currentUser()
+    const session = await auth()
     
-    if (!userId || !clerkUser) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -331,10 +302,9 @@ export async function POST(request: Request) {
     // Create user as ADMIN
     const user = await db.user.create({
       data: {
-        clerkUserId: userId,
-        email: clerkUser.emailAddresses[0]?.emailAddress || email,
-        firstName: clerkUser.firstName,
-        lastName: clerkUser.lastName,
+        email: session.user.email || email,
+        firstName: session.user.name?.split(' ')[0] || '',
+        lastName: session.user.name?.split(' ')[1] || '',
         role: 'ADMIN',
         organizationId: organization.id,
       },
@@ -355,7 +325,7 @@ export async function POST(request: Request) {
 
 **Create**: `app/(dashboard)/layout.tsx`
 ```typescript
-import { auth } from '@clerk/nextjs/server'
+import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
 
@@ -364,14 +334,14 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { userId } = await auth()
+  const session = await auth()
   
-  if (!userId) {
+  if (!session?.user?.id) {
     redirect('/sign-in')
   }
 
   const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
+    where: { id: session.user.id },
     include: { organization: true },
   })
 
@@ -421,14 +391,14 @@ export default async function DashboardLayout({
 
 **Create**: `app/(dashboard)/dashboard/page.tsx`
 ```typescript
-import { auth } from '@clerk/nextjs/server'
+import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 
 export default async function DashboardPage() {
-  const { userId } = await auth()
+  const session = await auth()
   
   const user = await db.user.findUnique({
-    where: { clerkUserId: userId! },
+    where: { id: session.user.id },
     include: { organization: true },
   })
 
@@ -501,9 +471,9 @@ npx prisma generate
 npm run db:push
 ```
 
-### Clerk auth not working
-- Check `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in `.env`
-- Verify redirect URLs in Clerk Dashboard
+### NextAuth auth not working
+- Check `NEXTAUTH_SECRET` in `.env`
+- Verify `NEXTAUTH_URL` matches your domain
 - Restart dev server: `npm run dev`
 
 ### Build errors

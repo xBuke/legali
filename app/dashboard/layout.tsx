@@ -6,6 +6,11 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
   Scale,
   LayoutDashboard,
   Users,
@@ -18,6 +23,8 @@ import {
   Menu,
   Search,
   BarChart3,
+  User,
+  ChevronDown,
 } from 'lucide-react'
 import { useState } from 'react'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -32,6 +39,7 @@ export default function DashboardLayout({
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const { canAccessRoute } = usePermissions()
 
   if (status === 'loading') {
@@ -141,11 +149,11 @@ export default function DashboardLayout({
           </Link>
           <Button
             variant="ghost"
-            onClick={() => signOut({ callbackUrl: '/sign-in' })}
+            onClick={() => signOut({ callbackUrl: '/' })}
             className="w-full justify-start min-h-[44px]"
           >
             <LogOut className="h-5 w-5 flex-shrink-0" />
-            {sidebarOpen && <span className="ml-3 text-sm md:text-base">Odjava</span>}
+            {sidebarOpen && <span className="ml-3 text-sm md:text-base">Odjavi se</span>}
           </Button>
         </div>
       </aside>
@@ -183,6 +191,44 @@ export default function DashboardLayout({
               <span className="hidden sm:inline">Pretraži</span>
             </Button>
             <ThemeToggle />
+            
+            {/* User Menu */}
+            <Popover open={userMenuOpen} onOpenChange={setUserMenuOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 min-h-[44px] px-3"
+                >
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline truncate max-w-[120px]">
+                    {session?.user?.name?.split(' ')[0] || session?.user?.email}
+                  </span>
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-1" align="end">
+                <div className="px-3 py-2 border-b border-border">
+                  <p className="text-sm font-medium">{session?.user?.name}</p>
+                  <p className="text-xs text-muted-foreground">{session?.user?.email}</p>
+                  <p className="text-xs text-muted-foreground">{session?.user?.role}</p>
+                </div>
+                <div className="p-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setUserMenuOpen(false)
+                      signOut({ callbackUrl: '/' })
+                    }}
+                    className="w-full justify-start"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Odjavi se
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </header>
 

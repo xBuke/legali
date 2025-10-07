@@ -93,7 +93,7 @@ export async function POST(req: Request) {
           })
         }
         
-        console.log('Payment succeeded for invoice:', invoice.id)
+        // Payment succeeded for invoice: invoice.id
         break
       }
 
@@ -110,7 +110,7 @@ export async function POST(req: Request) {
           })
         }
         
-        console.log('Payment failed for invoice:', invoice.id)
+        // Payment failed for invoice: invoice.id
         break
       }
 
@@ -119,12 +119,12 @@ export async function POST(req: Request) {
         
         // This event is fired when a checkout session is completed
         // The subscription will be created/updated via the subscription events
-        console.log('Checkout session completed:', session.id)
+        // Checkout session completed: session.id
         break
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        // Unhandled event type: event.type
     }
 
     return NextResponse.json({ received: true })

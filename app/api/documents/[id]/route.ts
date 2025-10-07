@@ -1,23 +1,36 @@
-import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuthenticatedUser } from '@/lib/api-helpers'
 import { db } from '@/lib/db'
 import { getDocumentMetadata, deleteDocument } from '@/lib/document-storage'
 
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'
+
+// Types for document update
+interface UpdateDocumentRequest {
+  title?: string
+  description?: string
+  category?: string
+  tags?: string
+  caseId?: string
+  clientId?: string
+}
 
 // GET /api/documents/[id] - Get document details
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth()
-
-    if (!session?.user?.organizationId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getAuthenticatedUser()
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Neovlašten pristup - potrebna je autentifikacija' },
+        { status: 401 }
+      )
     }
 
-    const result = await getDocumentMetadata(params.id, session.user.organizationId)
+    const result = await getDocumentMetadata(params.id, user.organizationId)
 
     if (!result.success) {
       return NextResponse.json(
@@ -38,27 +51,93 @@ export async function GET(
 
 // PATCH /api/documents/[id] - Update document
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth()
-
-    if (!session?.user?.organizationId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getAuthenticatedUser()
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Neovlašten pristup - potrebna je autentifikacija' },
+        { status: 401 }
+      )
     }
 
-    const body = await request.json()
+    const body: UpdateDocumentRequest = await request.json()
+
+    // Validate that at least one field is provided
+    const hasUpdates = Object.keys(body).some(key => body[key as keyof UpdateDocumentRequest] !== undefined)
+    if (!hasUpdates) {
+      return NextResponse.json(
+        { error: 'Najmanje jedno polje mora biti ažurirano' },
+        { status: 400 }
+      )
+    }
+
+    // Verify case belongs to organization if provided
+    if (body.caseId) {
+      const caseExists = await db.case.findFirst({
+        where: {
+          id: body.caseId,
+          organizationId: user.organizationId,
+          deletedAt: null
+        }
+      })
+
+      if (!caseExists) {
+        return NextResponse.json(
+          { error: 'Predmet nije pronađen' },
+          { status: 404 }
+        )
+      }
+    }
+
+    // Verify client belongs to organization if provided
+    if (body.clientId) {
+      const clientExists = await db.client.findFirst({
+        where: {
+          id: body.clientId,
+          organizationId: user.organizationId,
+          deletedAt: null
+        }
+      })
+
+      if (!clientExists) {
+        return NextResponse.json(
+          { error: 'Klijent nije pronađen' },
+          { status: 404 }
+        )
+      }
+    }
 
     const document = await db.document.update({
       where: {
         id: params.id,
-        organizationId: session.user.organizationId,
+        organizationId: user.organizationId,
+        deletedAt: null
       },
-      data: body,
+      data: {
+        ...body,
+        updatedAt: new Date()
+      },
       include: {
-        case: true,
-        client: true,
+        case: {
+          select: {
+            id: true,
+            caseNumber: true,
+            title: true
+          }
+        },
+        client: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            companyName: true,
+            clientType: true
+          }
+        }
       },
     })
 
@@ -74,20 +153,23 @@ export async function PATCH(
 
 // DELETE /api/documents/[id] - Delete document
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth()
-
-    if (!session?.user?.organizationId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const user = await getAuthenticatedUser()
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Neovlašten pristup - potrebna je autentifikacija' },
+        { status: 401 }
+      )
     }
 
     const result = await deleteDocument(
       params.id,
-      session.user.id,
-      session.user.organizationId
+      user.userId,
+      user.organizationId
     )
 
     if (!result.success) {
@@ -97,7 +179,10 @@ export async function DELETE(
       )
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Dokument je uspješno obrisan' 
+    })
   } catch (error) {
     console.error('Error deleting document:', error)
     return NextResponse.json(

@@ -1,70 +1,228 @@
 'use client'
 
 import { useState } from 'react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Scale } from 'lucide-react'
+import { Scale, Eye, EyeOff, Check, X } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
+
+interface FormData {
+  name: string
+  email: string
+  password: string
+  confirmPassword: string
+}
+
+interface FormErrors {
+  name?: string
+  email?: string
+  password?: string
+  confirmPassword?: string
+}
+
+interface PasswordStrength {
+  score: number
+  feedback: string[]
+}
 
 export default function SignUpPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [formData, setFormData] = useState({
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    organizationName: '',
   })
+  const [errors, setErrors] = useState<FormErrors>({})
+
+  // Password strength calculation
+  const calculatePasswordStrength = (password: string): PasswordStrength => {
+    const feedback: string[] = []
+    let score = 0
+
+    if (password.length >= 8) {
+      score += 1
+    } else {
+      feedback.push('Najmanje 8 znakova')
+    }
+
+    if (/[a-z]/.test(password)) {
+      score += 1
+    } else {
+      feedback.push('Mala slova')
+    }
+
+    if (/[A-Z]/.test(password)) {
+      score += 1
+    } else {
+      feedback.push('Velika slova')
+    }
+
+    if (/[0-9]/.test(password)) {
+      score += 1
+    } else {
+      feedback.push('Brojevi')
+    }
+
+    if (/[^A-Za-z0-9]/.test(password)) {
+      score += 1
+    } else {
+      feedback.push('Specijalni znakovi')
+    }
+
+    return { score, feedback }
+  }
+
+  const passwordStrength = calculatePasswordStrength(formData.password)
+
+  const getPasswordStrengthColor = (score: number) => {
+    if (score <= 2) return 'text-red-500'
+    if (score <= 3) return 'text-yellow-500'
+    return 'text-green-500'
+  }
+
+  const getPasswordStrengthText = (score: number) => {
+    if (score <= 2) return 'Slaba'
+    if (score <= 3) return 'Srednja'
+    return 'Jaka'
+  }
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {}
+
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = 'Ime je obavezno'
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = 'Ime mora imati najmanje 2 znaka'
+    }
+
+    // Email validation
+    if (!formData.email) {
+      newErrors.email = 'Email je obavezan'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Molimo unesite valjanu email adresu'
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = 'Lozinka je obavezna'
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Lozinka mora imati najmanje 8 znakova'
+    } else if (passwordStrength.score < 3) {
+      newErrors.password = 'Lozinka je previše slaba. Molimo koristite jake lozinke'
+    }
+
+    // Confirm password validation
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Potvrda lozinke je obavezna'
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Lozinke se ne podudaraju'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }))
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    
+    if (!validateForm()) {
+      toast({
+        title: 'Greška u validaciji',
+        description: 'Molimo provjerite unesene podatke',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setLoading(true)
-    setError('')
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Lozinke se ne podudaraju')
-      setLoading(false)
-      return
-    }
-
-    if (formData.password.length < 8) {
-      setError('Lozinka mora imati najmanje 8 znakova')
-      setLoading(false)
-      return
-    }
 
     try {
+      // Split name into firstName and lastName
+      const nameParts = formData.name.trim().split(' ')
+      const firstName = nameParts[0]
+      const lastName = nameParts.slice(1).join(' ') || ''
+
+      // Create organization name from user's name
+      const organizationName = `${firstName} ${lastName}`.trim() || 'Moja kancelarija'
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          firstName,
+          lastName,
+          organizationName,
+        }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Došlo je do greške pri registraciji')
-        setLoading(false)
+        toast({
+          title: 'Greška pri registraciji',
+          description: data.error || 'Došlo je do greške pri registraciji',
+          variant: 'destructive',
+        })
         return
       }
 
-      // Redirect to sign-in after successful registration
-      router.push('/sign-in?registered=true')
+      // Automatically sign in after successful registration
+      const signInResult = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      })
+
+      if (signInResult?.error) {
+        toast({
+          title: 'Registracija uspješna',
+          description: 'Račun je kreiran, ali došlo je do greške pri prijavi. Molimo prijavite se ručno.',
+          variant: 'destructive',
+        })
+        router.push('/sign-in?registered=true')
+      } else if (signInResult?.ok) {
+        toast({
+          title: 'Dobrodošli!',
+          description: 'Vaš račun je uspješno kreiran i prijavljeni ste.',
+        })
+        router.push('/dashboard')
+      }
     } catch (error) {
-      setError('Došlo je do greške pri registraciji')
+      console.error('Registration error:', error)
+      toast({
+        title: 'Greška',
+        description: 'Došlo je do neočekivane greške. Molimo pokušajte ponovno.',
+        variant: 'destructive',
+      })
+    } finally {
       setLoading(false)
     }
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Card className="w-full max-w-2xl">
+      <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <Scale className="h-8 w-8 text-primary" />
@@ -78,88 +236,147 @@ export default function SignUpPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 text-sm text-red-500 bg-red-50 border border-red-200 rounded">
-                {error}
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">Ime</Label>
-                <Input
-                  id="firstName"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  placeholder="Ivan"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Prezime</Label>
-                <Input
-                  id="lastName"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  placeholder="Horvat"
-                  required
-                />
-              </div>
-            </div>
-
             <div className="space-y-2">
-              <Label htmlFor="organizationName">Naziv kancelarije / organizacije</Label>
+              <Label htmlFor="name">Ime i prezime</Label>
               <Input
-                id="organizationName"
-                value={formData.organizationName}
-                onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })}
-                placeholder="Odvjetnička kancelarija Horvat"
+                id="name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                placeholder="Ivan Horvat"
                 required
+                autoComplete="name"
+                className={errors.name ? 'border-red-500 focus:border-red-500' : ''}
               />
+              {errors.name && (
+                <p className="text-sm text-red-500">{errors.name}</p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email adresa</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => handleInputChange('email', e.target.value)}
                 placeholder="vas.email@primjer.hr"
                 required
                 autoComplete="email"
+                className={errors.email ? 'border-red-500 focus:border-red-500' : ''}
               />
+              {errors.email && (
+                <p className="text-sm text-red-500">{errors.email}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Lozinka</Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="••••••••"
-                required
-                autoComplete="new-password"
-                minLength={8}
-              />
-              <p className="text-xs text-muted-foreground">
-                Najmanje 8 znakova
-              </p>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="new-password"
+                  className={errors.password ? 'border-red-500 focus:border-red-500 pr-10' : 'pr-10'}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
+              
+              {/* Password strength indicator */}
+              {formData.password && (
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          passwordStrength.score <= 2
+                            ? 'bg-red-500'
+                            : passwordStrength.score <= 3
+                            ? 'bg-yellow-500'
+                            : 'bg-green-500'
+                        }`}
+                        style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                      />
+                    </div>
+                    <span className={`text-xs font-medium ${getPasswordStrengthColor(passwordStrength.score)}`}>
+                      {getPasswordStrengthText(passwordStrength.score)}
+                    </span>
+                  </div>
+                  
+                  {passwordStrength.feedback.length > 0 && (
+                    <div className="text-xs text-muted-foreground">
+                      <p className="mb-1">Lozinka treba sadržavati:</p>
+                      <ul className="space-y-1">
+                        {passwordStrength.feedback.map((item, index) => (
+                          <li key={index} className="flex items-center space-x-1">
+                            <X className="h-3 w-3 text-red-500" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {passwordStrength.score >= 3 && (
+                    <div className="flex items-center space-x-1 text-xs text-green-600">
+                      <Check className="h-3 w-3" />
+                      <span>Lozinka je dovoljno jaka</span>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {errors.password && (
+                <p className="text-sm text-red-500">{errors.password}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Potvrdite lozinku</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                placeholder="••••••••"
-                required
-                autoComplete="new-password"
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={formData.confirmPassword}
+                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="new-password"
+                  className={errors.confirmPassword ? 'border-red-500 focus:border-red-500 pr-10' : 'pr-10'}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+              )}
             </div>
 
             <Button
@@ -175,8 +392,8 @@ export default function SignUpPage() {
             </p>
           </form>
         </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
+        <CardFooter className="flex flex-col space-y-2">
+          <p className="text-sm text-muted-foreground text-center">
             Već imate račun?{' '}
             <Link href="/sign-in" className="text-primary hover:underline font-medium">
               Prijavite se
