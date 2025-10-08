@@ -176,19 +176,41 @@ export default function DocumentsPage() {
     setLoading(true)
 
     try {
-      // For now, we'll create a mock document entry
-      // In a real implementation, you'd upload the file to Vercel Blob or S3
-      const mockDocument = {
-        fileName: formData.file?.name || 'mock-file.pdf',
-        originalName: formData.file?.name || 'mock-file.pdf',
-        fileSize: formData.file?.size || 1024,
-        mimeType: formData.file?.type || 'application/pdf',
-        fileUrl: 'https://example.com/mock-file.pdf',
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        caseId: formData.caseId === 'none' ? null : formData.caseId || null,
-        clientId: formData.clientId === 'none' ? null : formData.clientId || null,
+      if (!formData.file && !editingDocument) {
+        toast({
+          title: 'Greška',
+          description: 'Molimo odaberite datoteku',
+          variant: 'destructive',
+        })
+        setLoading(false)
+        return
+      }
+
+      // Create FormData for file upload
+      const uploadData = new FormData()
+
+      // Append file if present
+      if (formData.file) {
+        uploadData.append('file', formData.file)
+      }
+
+      // Append other form fields
+      uploadData.append('title', formData.title)
+
+      if (formData.description) {
+        uploadData.append('description', formData.description)
+      }
+
+      if (formData.category) {
+        uploadData.append('category', formData.category)
+      }
+
+      if (formData.caseId && formData.caseId !== 'none') {
+        uploadData.append('caseId', formData.caseId)
+      }
+
+      if (formData.clientId && formData.clientId !== 'none') {
+        uploadData.append('clientId', formData.clientId)
       }
 
       const url = editingDocument ? `/api/documents/${editingDocument.id}` : '/api/documents'
@@ -196,8 +218,7 @@ export default function DocumentsPage() {
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mockDocument),
+        body: uploadData,
       })
 
       if (response.ok) {
@@ -211,12 +232,13 @@ export default function DocumentsPage() {
         resetForm()
         fetchDocuments()
       } else {
-        throw new Error()
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Greška pri spremanju dokumenta')
       }
     } catch (error) {
       toast({
         title: 'Greška',
-        description: 'Nije moguće spremiti dokument',
+        description: error instanceof Error ? error.message : 'Nije moguće spremiti dokument',
         variant: 'destructive',
       })
     } finally {
@@ -650,15 +672,16 @@ export default function DocumentsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="file">Datoteka</Label>
+              <Label htmlFor="file">Datoteka {!editingDocument && '*'}</Label>
               <Input
                 id="file"
                 type="file"
                 onChange={(e) => setFormData({ ...formData, file: e.target.files?.[0] || null })}
                 accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                required={!editingDocument}
               />
               <p className="text-sm text-muted-foreground">
-                Podržani formati: PDF, DOC, DOCX, TXT, JPG, PNG
+                Podržani formati: PDF, DOC, DOCX, TXT, JPG, PNG (max 50MB)
               </p>
             </div>
 
