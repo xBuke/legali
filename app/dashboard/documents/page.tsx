@@ -156,8 +156,6 @@ export default function DocumentsPage() {
     } catch (error) {
       console.error('Error fetching cases:', error)
       setCases([])
-    } catch (error) {
-      console.error('Error fetching cases:', error)
     }
   }
 
