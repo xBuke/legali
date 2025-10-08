@@ -135,7 +135,7 @@ export default function TimeTrackingPage() {
       const response = await fetch('/api/time-entries');
       if (response.ok) {
         const data = await response.json();
-        setTimeEntries(data);
+        setTimeEntries(Array.isArray(data.timeEntries) ? data.timeEntries : []);
       } else {
         toast({
           title: 'Greška',
@@ -160,7 +160,7 @@ export default function TimeTrackingPage() {
       const response = await fetch('/api/cases');
       if (response.ok) {
         const data = await response.json();
-        setCases(data.cases || []);
+        setCases(Array.isArray(data.cases) ? data.cases : []);
       } else {
         console.error('Failed to load cases:', response.status);
         setCases([]);
@@ -176,7 +176,8 @@ export default function TimeTrackingPage() {
       const response = await fetch('/api/users');
       if (response.ok) {
         const data = await response.json();
-        setUsers(data.map((user: any) => ({
+        const usersArray = Array.isArray(data) ? data : [];
+        setUsers(usersArray.map((user: any) => ({
           id: user.id,
           name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
           email: user.email,

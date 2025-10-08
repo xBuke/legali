@@ -95,7 +95,7 @@ export default function InvoicesPage() {
       const response = await fetch('/api/invoices');
       if (response.ok) {
         const data = await response.json();
-        setInvoices(data.invoices || []);
+        setInvoices(Array.isArray(data.invoices) ? data.invoices : []);
       } else {
         console.error('Failed to load invoices:', response.status);
         setInvoices([]);
@@ -123,7 +123,7 @@ export default function InvoicesPage() {
       const response = await fetch('/api/clients');
       if (response.ok) {
         const data = await response.json();
-        setClients(data);
+        setClients(Array.isArray(data) ? data : []);
       }
     } catch (error) {
       console.error('Error loading clients:', error);

@@ -131,8 +131,9 @@ export function DocumentSearchFilters({ filters, onFiltersChange, documents }: D
   const activeFiltersCount = getActiveFiltersCount()
 
   // Get unique categories and file types from documents
-  const categories = Array.from(new Set(documents.map(doc => doc.category).filter((cat): cat is string => Boolean(cat))))
-  const fileTypes = Array.from(new Set(documents.map(doc => doc.mimeType.split('/')[1] || doc.mimeType.split('/')[0])))
+  const documentsArray = Array.isArray(documents) ? documents : []
+  const categories = Array.from(new Set(documentsArray.map(doc => doc.category).filter((cat): cat is string => Boolean(cat))))
+  const fileTypes = Array.from(new Set(documentsArray.map(doc => doc.mimeType.split('/')[1] || doc.mimeType.split('/')[0])))
 
   const getClientName = (client: any) => {
     if (!client) return ''
@@ -222,7 +223,7 @@ export function DocumentSearchFilters({ filters, onFiltersChange, documents }: D
               <div className="space-y-2">
                 <Label>Predmet</Label>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {documents
+                  {documentsArray
                     .filter(doc => doc.case)
                     .map((doc) => (
                       <div key={doc.case!.id} className="flex items-center space-x-2">
@@ -245,7 +246,7 @@ export function DocumentSearchFilters({ filters, onFiltersChange, documents }: D
               <div className="space-y-2">
                 <Label>Klijent</Label>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {documents
+                  {documentsArray
                     .filter(doc => doc.client)
                     .map((doc) => (
                       <div key={doc.client!.id} className="flex items-center space-x-2">
@@ -381,7 +382,7 @@ export function DocumentSearchFilters({ filters, onFiltersChange, documents }: D
           ))}
           
           {filters.case.map((caseId) => {
-            const caseData = documents.find(doc => doc.case?.id === caseId)?.case
+            const caseData = documentsArray.find(doc => doc.case?.id === caseId)?.case
             return caseData ? (
               <Badge key={caseId} variant="secondary" className="flex items-center gap-1">
                 Predmet: {caseData.caseNumber}
@@ -398,7 +399,7 @@ export function DocumentSearchFilters({ filters, onFiltersChange, documents }: D
           })}
           
           {filters.client.map((clientId) => {
-            const clientData = documents.find(doc => doc.client?.id === clientId)?.client
+            const clientData = documentsArray.find(doc => doc.client?.id === clientId)?.client
             return clientData ? (
               <Badge key={clientId} variant="secondary" className="flex items-center gap-1">
                 Klijent: {getClientName(clientData)}

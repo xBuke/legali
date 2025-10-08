@@ -120,7 +120,7 @@ export default function DocumentsPage() {
       const response = await fetch('/api/documents')
       if (response.ok) {
         const data = await response.json()
-        setDocuments(data.documents || [])
+        setDocuments(Array.isArray(data.documents) ? data.documents : [])
       } else {
         console.error('Failed to fetch documents:', response.status)
         setDocuments([])
@@ -148,7 +148,7 @@ export default function DocumentsPage() {
       const response = await fetch('/api/cases')
       if (response.ok) {
         const data = await response.json()
-        setCases(data.cases || [])
+        setCases(Array.isArray(data.cases) ? data.cases : [])
       } else {
         console.error('Failed to fetch cases:', response.status)
         setCases([])
@@ -164,7 +164,7 @@ export default function DocumentsPage() {
       const response = await fetch('/api/clients')
       if (response.ok) {
         const data = await response.json()
-        setClients(data)
+        setClients(Array.isArray(data) ? data : [])
       }
     } catch (error) {
       console.error('Error fetching clients:', error)
@@ -294,7 +294,7 @@ export default function DocumentsPage() {
   }
 
   // Filter documents based on current filters
-  const filteredDocuments = documents.filter(document => {
+  const filteredDocuments = Array.isArray(documents) ? documents.filter(document => {
     // Search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()
@@ -354,7 +354,7 @@ export default function DocumentsPage() {
     }
 
     return true
-  })
+  }) : []
 
   const categories = [
     'Ugovor',
@@ -673,7 +673,7 @@ export default function DocumentsPage() {
                     <SelectValue placeholder="Odaberite kategoriju" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((category) => (
+                    {Array.isArray(categories) && categories.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category}
                       </SelectItem>
@@ -693,7 +693,7 @@ export default function DocumentsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Bez predmeta</SelectItem>
-                    {cases.map((caseData) => (
+                    {Array.isArray(cases) && cases.map((caseData) => (
                       <SelectItem key={caseData.id} value={caseData.id}>
                         {caseData.caseNumber} - {caseData.title}
                       </SelectItem>
@@ -714,7 +714,7 @@ export default function DocumentsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Bez klijenta</SelectItem>
-                  {clients.map((client) => (
+                  {Array.isArray(clients) && clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>
                       {client.clientType === 'COMPANY'
                         ? client.companyName

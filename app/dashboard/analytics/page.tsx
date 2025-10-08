@@ -101,6 +101,8 @@ export default function AnalyticsPage() {
       if (kpisResponse.ok) {
         const kpisData = await kpisResponse.json();
         setKpis(kpisData);
+      } else {
+        console.error('Failed to load KPIs:', kpisResponse.status);
       }
 
       // Load Forecast
@@ -108,13 +110,17 @@ export default function AnalyticsPage() {
       if (forecastResponse.ok) {
         const forecastData = await forecastResponse.json();
         setForecast(forecastData);
+      } else {
+        console.error('Failed to load forecast:', forecastResponse.status);
       }
 
       // Load Alerts
       const alertsResponse = await fetch('/api/analytics/alerts');
       if (alertsResponse.ok) {
         const alertsData = await alertsResponse.json();
-        setAlerts(alertsData);
+        setAlerts(Array.isArray(alertsData) ? alertsData : []);
+      } else {
+        console.error('Failed to load alerts:', alertsResponse.status);
       }
 
     } catch (error) {

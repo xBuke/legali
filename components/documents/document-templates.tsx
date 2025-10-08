@@ -104,7 +104,7 @@ export function DocumentTemplates({ caseId, caseType, onTemplateSelect, classNam
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
-        setTemplates(data);
+        setTemplates(Array.isArray(data) ? data : []);
       }
     } catch (error) {
       console.error('Error loading templates:', error);
