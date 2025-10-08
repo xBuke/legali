@@ -12,6 +12,7 @@
     "db:studio": "prisma studio",
     "db:migrate": "prisma migrate deploy",
     "db:generate": "prisma generate",
+    "db:setup": "node scripts/setup-production-db.js",
     "postinstall": "prisma generate",
     "vercel-build": "prisma generate && prisma db push --accept-data-loss && next build",
     "test": "jest",

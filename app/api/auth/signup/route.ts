@@ -173,12 +173,17 @@ export async function POST(request: Request): Promise<NextResponse<SignupRespons
       console.error('Error name:', error.name)
       console.error('Error message:', error.message)
       console.error('Error stack:', error.stack)
+      
+      // Log Prisma-specific error codes
+      if ('code' in error) {
+        console.error('Prisma error code:', (error as any).code)
+      }
     }
 
     // Handle specific database errors
     if (error instanceof Error) {
       // Check for unique constraint violations
-      if (error.message.includes('Unique constraint') || error.message.includes('unique')) {
+      if (error.message.includes('Unique constraint') || error.message.includes('unique') || (error as any).code === 'P2002') {
         return NextResponse.json(
           { error: 'Korisnik s tim emailom već postoji' },
           { status: 400 }
@@ -186,7 +191,7 @@ export async function POST(request: Request): Promise<NextResponse<SignupRespons
       }
 
       // Check for connection errors
-      if (error.message.includes('connection') || error.message.includes('connect')) {
+      if (error.message.includes('connection') || error.message.includes('connect') || (error as any).code === 'P1001') {
         console.error('Database connection error detected')
         return NextResponse.json(
           { error: 'Greška povezivanja s bazom podataka. Molimo pokušajte ponovno.' },
@@ -194,9 +199,27 @@ export async function POST(request: Request): Promise<NextResponse<SignupRespons
         )
       }
 
+      // Check for authentication errors
+      if ((error as any).code === 'P1000') {
+        console.error('Database authentication error detected')
+        return NextResponse.json(
+          { error: 'Greška autentifikacije baze podataka. Molimo kontaktirajte administratora.' },
+          { status: 500 }
+        )
+      }
+
+      // Check for server closed connection
+      if ((error as any).code === 'P1017') {
+        console.error('Database server closed connection')
+        return NextResponse.json(
+          { error: 'Baza podataka je zatvorila konekciju. Molimo pokušajte ponovno.' },
+          { status: 500 }
+        )
+      }
+
       // Check for other database errors
-      if (error.message.includes('Database') || error.message.includes('prisma')) {
-        console.error('Prisma/Database error detected')
+      if (error.message.includes('Database') || error.message.includes('prisma') || (error as any).code?.startsWith('P')) {
+        console.error('Prisma/Database error detected:', (error as any).code)
         return NextResponse.json(
           { error: 'Greška baze podataka. Molimo pokušajte ponovno.' },
           { status: 500 }
