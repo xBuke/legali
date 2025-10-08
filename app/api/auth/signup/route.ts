@@ -166,20 +166,37 @@ export async function POST(request: Request): Promise<NextResponse<SignupRespons
     return NextResponse.json(response, { status: 201 })
 
   } catch (error) {
-    console.error('Signup error:', error)
-    
+    console.error('❌ Signup error:', error)
+
+    // Log detailed error information for debugging
+    if (error instanceof Error) {
+      console.error('Error name:', error.name)
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
+
     // Handle specific database errors
     if (error instanceof Error) {
       // Check for unique constraint violations
-      if (error.message.includes('Unique constraint')) {
+      if (error.message.includes('Unique constraint') || error.message.includes('unique')) {
         return NextResponse.json(
           { error: 'Korisnik s tim emailom već postoji' },
           { status: 400 }
         )
       }
-      
+
+      // Check for connection errors
+      if (error.message.includes('connection') || error.message.includes('connect')) {
+        console.error('Database connection error detected')
+        return NextResponse.json(
+          { error: 'Greška povezivanja s bazom podataka. Molimo pokušajte ponovno.' },
+          { status: 500 }
+        )
+      }
+
       // Check for other database errors
-      if (error.message.includes('Database')) {
+      if (error.message.includes('Database') || error.message.includes('prisma')) {
+        console.error('Prisma/Database error detected')
         return NextResponse.json(
           { error: 'Greška baze podataka. Molimo pokušajte ponovno.' },
           { status: 500 }
