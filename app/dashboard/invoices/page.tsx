@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/use-permissions';
 import { PermissionGuard } from '@/components/permission-guard';
 import { PERMISSIONS } from '@/lib/permissions';
-import { Plus, FileText, Download, Edit, Trash2, Eye, Calendar, Euro, CreditCard, FileSearch } from 'lucide-react';
+import { Plus, FileText, Download, Edit, Trash2, Eye, Calendar, Euro, CreditCard, FileSearch, Briefcase } from 'lucide-react';
 import { PaymentList } from '@/components/payments/payment-list';
 import { InvoiceTemplates } from '@/components/invoices/invoice-templates';
 import { InvoiceSearchFilters } from '@/components/invoices/invoice-search-filters';
@@ -48,6 +48,73 @@ interface Client {
   firstName: string | null;
   lastName: string | null;
   companyName: string | null;
+  email: string | null;
+  phone: string | null;
+  clientType: string;
+  status: string;
+  _count: {
+    cases: number;
+    documents: number;
+  };
+}
+
+interface TimeEntry {
+  id: string;
+  date: string;
+  duration: number;
+  description: string;
+  hourlyRate: number;
+  amount: number;
+  case: {
+    id: string;
+    title: string;
+    caseNumber: string | null;
+  } | null;
+  user: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    email: string;
+  };
+}
+
+interface BillableTimeData {
+  timeEntries: TimeEntry[];
+  summary: {
+    totalEntries: number;
+    totalHours: number;
+    subtotal: number;
+    taxRate: number;
+    taxAmount: number;
+    total: number;
+  };
+}
+
+interface Case {
+  id: string;
+  caseNumber: string;
+  title: string;
+  clientId: string;
+  client: {
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    companyName: string | null;
+    clientType: string;
+  };
+}
+
+interface CaseInvoicePreview {
+  case: Case;
+  timeEntries: TimeEntry[];
+  summary: {
+    totalEntries: number;
+    totalHours: number;
+    subtotal: number;
+    taxRate: number;
+    taxAmount: number;
+    total: number;
+  };
 }
 
 
@@ -55,13 +122,23 @@ export default function InvoicesPage() {
   const { data: session } = useSession();
   const { toast } = useToast();
   const { hasPermission } = usePermissions();
-  
+
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [billableTimeData, setBillableTimeData] = useState<BillableTimeData | null>(null);
+  const [loadingBillableTime, setLoadingBillableTime] = useState(false);
+
+  // Case-based invoice generation state
+  const [isCaseInvoiceDialogOpen, setIsCaseInvoiceDialogOpen] = useState(false);
+  const [selectedCaseId, setSelectedCaseId] = useState('');
+  const [caseInvoicePreview, setCaseInvoicePreview] = useState<CaseInvoicePreview | null>(null);
+  const [loadingCasePreview, setLoadingCasePreview] = useState(false);
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
     status: [] as string[],
@@ -88,6 +165,7 @@ export default function InvoicesPage() {
   useEffect(() => {
     loadInvoices();
     loadClients();
+    loadCases();
   }, []);
 
   const loadInvoices = async () => {
@@ -123,10 +201,151 @@ export default function InvoicesPage() {
       const response = await fetch('/api/clients');
       if (response.ok) {
         const data = await response.json();
-        setClients(Array.isArray(data) ? data : []);
+        setClients(Array.isArray(data.clients) ? data.clients : []);
       }
     } catch (error) {
       console.error('Error loading clients:', error);
+    }
+  };
+
+  const loadCases = async () => {
+    try {
+      const response = await fetch('/api/cases');
+      if (response.ok) {
+        const data = await response.json();
+        setCases(Array.isArray(data.cases) ? data.cases : []);
+      }
+    } catch (error) {
+      console.error('Error loading cases:', error);
+    }
+  };
+
+  const loadCaseInvoicePreview = async (caseId: string) => {
+    if (!caseId) {
+      setCaseInvoicePreview(null);
+      return;
+    }
+
+    setLoadingCasePreview(true);
+    try {
+      const response = await fetch(`/api/invoices/from-case?caseId=${caseId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setCaseInvoicePreview(data);
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Greška',
+          description: error.error || 'Greška pri učitavanju podataka',
+          variant: 'destructive',
+        });
+        setCaseInvoicePreview(null);
+      }
+    } catch (error) {
+      console.error('Error loading case preview:', error);
+      toast({
+        title: 'Greška',
+        description: 'Greška pri učitavanju podataka',
+        variant: 'destructive',
+      });
+      setCaseInvoicePreview(null);
+    } finally {
+      setLoadingCasePreview(false);
+    }
+  };
+
+  const handleGenerateFromCase = async () => {
+    if (!selectedCaseId) {
+      toast({
+        title: 'Greška',
+        description: 'Molimo odaberite predmet',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!caseInvoicePreview || caseInvoicePreview.timeEntries.length === 0) {
+      toast({
+        title: 'Greška',
+        description: 'Nema nenaplaćenih unosa vremena za ovaj predmet',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setGeneratingInvoice(true);
+    try {
+      const response = await fetch('/api/invoices/from-case', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          caseId: selectedCaseId,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        toast({
+          title: 'Uspjeh',
+          description: data.message || 'Račun je uspješno kreiran',
+        });
+        setIsCaseInvoiceDialogOpen(false);
+        setSelectedCaseId('');
+        setCaseInvoicePreview(null);
+        loadInvoices();
+      } else {
+        const error = await response.json();
+        toast({
+          title: 'Greška',
+          description: error.error || 'Greška pri kreiranju računa',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error generating invoice from case:', error);
+      toast({
+        title: 'Greška',
+        description: 'Greška pri kreiranju računa',
+        variant: 'destructive',
+      });
+    } finally {
+      setGeneratingInvoice(false);
+    }
+  };
+
+  const loadBillableTimeData = async (clientId: string) => {
+    if (!clientId) {
+      setBillableTimeData(null);
+      return;
+    }
+
+    setLoadingBillableTime(true);
+    try {
+      const response = await fetch(`/api/clients/${clientId}/billable-time`);
+      if (response.ok) {
+        const data = await response.json();
+        setBillableTimeData(data);
+      } else {
+        console.error('Failed to load billable time data:', response.status);
+        setBillableTimeData(null);
+        toast({
+          title: 'Greška',
+          description: 'Greška pri učitavanju naplativih sati',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error loading billable time data:', error);
+      setBillableTimeData(null);
+      toast({
+        title: 'Greška',
+        description: 'Greška pri učitavanju naplativih sati',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingBillableTime(false);
     }
   };
 
@@ -388,6 +607,7 @@ export default function InvoicesPage() {
 
   const openCreateDialog = () => {
     setEditingInvoice(null);
+    setBillableTimeData(null);
     resetForm();
     setIsDialogOpen(true);
   };
@@ -437,7 +657,7 @@ export default function InvoicesPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button 
+          <Button
             variant="outline"
             onClick={() => setShowTemplates(!showTemplates)}
             className="min-h-[44px]"
@@ -445,6 +665,16 @@ export default function InvoicesPage() {
             <FileText className="h-4 w-4 mr-2" />
             Predlošci
           </Button>
+          <PermissionGuard permission={PERMISSIONS.INVOICES_CREATE}>
+            <Button
+              variant="outline"
+              onClick={() => setIsCaseInvoiceDialogOpen(true)}
+              className="min-h-[44px]"
+            >
+              <Briefcase className="h-4 w-4 mr-2" />
+              Generiraj iz predmeta
+            </Button>
+          </PermissionGuard>
           <PermissionGuard permission={PERMISSIONS.INVOICES_CREATE}>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
@@ -548,14 +778,22 @@ export default function InvoicesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="clientId">Klijent</Label>
-                  <Select value={formData.clientId} onValueChange={(value) => setFormData({ ...formData, clientId: value })}>
+                  <Select value={formData.clientId} onValueChange={(value) => {
+                    setFormData({ ...formData, clientId: value });
+                    loadBillableTimeData(value);
+                  }}>
                     <SelectTrigger>
                       <SelectValue placeholder="Odaberite klijenta" />
                     </SelectTrigger>
                     <SelectContent>
                       {clients.map((client) => (
                         <SelectItem key={client.id} value={client.id}>
-                          {getClientName(client)}
+                          <div className="flex flex-col">
+                            <span className="font-medium">{getClientName(client)}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {client.clientType === 'COMPANY' ? 'Tvrtka' : 'Osoba'} • {client._count.cases} slučajeva
+                            </span>
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -593,6 +831,97 @@ export default function InvoicesPage() {
                 />
               </div>
 
+              {/* Billable Time Preview */}
+              {formData.clientId && (
+                <div className="border rounded-lg p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Pregled naplativih sati</h3>
+                    {loadingBillableTime && (
+                      <div className="text-sm text-muted-foreground">Učitavanje...</div>
+                    )}
+                  </div>
+                  
+                  {billableTimeData && billableTimeData.timeEntries.length > 0 ? (
+                    <>
+                      {/* Time Entries Table */}
+                      <div className="border rounded-lg">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Datum</TableHead>
+                              <TableHead>Slučaj</TableHead>
+                              <TableHead>Opis</TableHead>
+                              <TableHead>Trajanje</TableHead>
+                              <TableHead>Stopa</TableHead>
+                              <TableHead>Iznos</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {billableTimeData.timeEntries.map((entry) => (
+                              <TableRow key={entry.id}>
+                                <TableCell className="text-sm">
+                                  {new Date(entry.date).toLocaleDateString('hr-HR')}
+                                </TableCell>
+                                <TableCell className="text-sm">
+                                  {entry.case ? (
+                                    <div>
+                                      <div className="font-medium">{entry.case.title}</div>
+                                      {entry.case.caseNumber && (
+                                        <div className="text-xs text-muted-foreground">
+                                          {entry.case.caseNumber}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <span className="text-muted-foreground">Bez slučaja</span>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-sm max-w-xs truncate">
+                                  {entry.description}
+                                </TableCell>
+                                <TableCell className="text-sm">
+                                  {(entry.duration / 60).toFixed(1)}h
+                                </TableCell>
+                                <TableCell className="text-sm">
+                                  {entry.hourlyRate.toFixed(2)} EUR/h
+                                </TableCell>
+                                <TableCell className="text-sm font-medium">
+                                  {entry.amount.toFixed(2)} EUR
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+
+                      {/* Summary */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted rounded-lg">
+                        <div>
+                          <div className="text-sm text-muted-foreground">Ukupno unosa</div>
+                          <div className="text-lg font-semibold">{billableTimeData.summary.totalEntries}</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">Ukupno sati</div>
+                          <div className="text-lg font-semibold">{billableTimeData.summary.totalHours.toFixed(1)}h</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">Osnovica</div>
+                          <div className="text-lg font-semibold">{billableTimeData.summary.subtotal.toFixed(2)} EUR</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-muted-foreground">Ukupno (PDV 25%)</div>
+                          <div className="text-lg font-semibold text-primary">{billableTimeData.summary.total.toFixed(2)} EUR</div>
+                        </div>
+                      </div>
+                    </>
+                  ) : billableTimeData && billableTimeData.timeEntries.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <div className="text-lg font-medium">Nema naplativih sati</div>
+                      <div className="text-sm">Ovaj klijent nema naplative sate za računiranje</div>
+                    </div>
+                  ) : null}
+                </div>
+              )}
 
                 <div className="flex justify-end space-x-2">
                   <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
@@ -624,6 +953,183 @@ export default function InvoicesPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Case Invoice Generation Dialog */}
+      <Dialog open={isCaseInvoiceDialogOpen} onOpenChange={setIsCaseInvoiceDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Generiraj račun iz predmeta</DialogTitle>
+            <DialogDescription>
+              Odaberite predmet za generiranje računa iz nenaplaćenih unosa vremena
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Case Selector */}
+            <div>
+              <Label htmlFor="caseSelect">Predmet</Label>
+              <Select
+                value={selectedCaseId}
+                onValueChange={(value) => {
+                  setSelectedCaseId(value);
+                  loadCaseInvoicePreview(value);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Odaberite predmet" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cases.map((caseItem) => (
+                    <SelectItem key={caseItem.id} value={caseItem.id}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{caseItem.caseNumber} - {caseItem.title}</span>
+                        <span className="text-xs text-muted-foreground">
+                          Klijent: {caseItem.client.clientType === 'COMPANY'
+                            ? caseItem.client.companyName
+                            : `${caseItem.client.firstName || ''} ${caseItem.client.lastName || ''}`.trim()}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Loading State */}
+            {loadingCasePreview && (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Učitavanje podataka...</p>
+              </div>
+            )}
+
+            {/* Preview Section */}
+            {caseInvoicePreview && !loadingCasePreview && (
+              <div className="space-y-4">
+                {/* Case Info */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium flex items-center">
+                      <Briefcase className="h-4 w-4 mr-2" />
+                      Informacije o predmetu
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Broj predmeta</label>
+                      <p className="text-sm font-medium">{caseInvoicePreview.case.caseNumber}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Naziv</label>
+                      <p className="text-sm">{caseInvoicePreview.case.title}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Klijent</label>
+                      <p className="text-sm">
+                        {caseInvoicePreview.case.client.clientType === 'COMPANY'
+                          ? caseInvoicePreview.case.client.companyName
+                          : `${caseInvoicePreview.case.client.firstName || ''} ${caseInvoicePreview.case.client.lastName || ''}`.trim()}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Time Entries Preview */}
+                {caseInvoicePreview.timeEntries.length > 0 ? (
+                  <>
+                    <div>
+                      <h3 className="text-sm font-semibold mb-2">Nenaplaćeni unosi vremena ({caseInvoicePreview.summary.totalEntries})</h3>
+                      <div className="border rounded-lg">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Datum</TableHead>
+                              <TableHead>Opis</TableHead>
+                              <TableHead>Korisnik</TableHead>
+                              <TableHead>Trajanje</TableHead>
+                              <TableHead>Iznos</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {caseInvoicePreview.timeEntries.map((entry) => (
+                              <TableRow key={entry.id}>
+                                <TableCell className="text-sm">
+                                  {new Date(entry.date).toLocaleDateString('hr-HR')}
+                                </TableCell>
+                                <TableCell className="text-sm max-w-xs truncate">
+                                  {entry.description}
+                                </TableCell>
+                                <TableCell className="text-sm">
+                                  {entry.user.firstName && entry.user.lastName
+                                    ? `${entry.user.firstName} ${entry.user.lastName}`
+                                    : entry.user.email}
+                                </TableCell>
+                                <TableCell className="text-sm">
+                                  {(entry.duration / 60).toFixed(1)}h
+                                </TableCell>
+                                <TableCell className="text-sm font-medium">
+                                  {entry.amount.toFixed(2)} EUR
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+
+                    {/* Summary */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted rounded-lg">
+                      <div>
+                        <div className="text-sm text-muted-foreground">Ukupno unosa</div>
+                        <div className="text-lg font-semibold">{caseInvoicePreview.summary.totalEntries}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Ukupno sati</div>
+                        <div className="text-lg font-semibold">{caseInvoicePreview.summary.totalHours.toFixed(1)}h</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Osnovica</div>
+                        <div className="text-lg font-semibold">{caseInvoicePreview.summary.subtotal.toFixed(2)} EUR</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Ukupno (PDV {caseInvoicePreview.summary.taxRate}%)</div>
+                        <div className="text-lg font-semibold text-primary">{caseInvoicePreview.summary.total.toFixed(2)} EUR</div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <div className="text-lg font-medium">Nema nenaplaćenih unosa vremena</div>
+                    <div className="text-sm">Ovaj predmet nema nenaplaćenih unosa vremena</div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsCaseInvoiceDialogOpen(false);
+                  setSelectedCaseId('');
+                  setCaseInvoicePreview(null);
+                }}
+              >
+                Odustani
+              </Button>
+              <Button
+                type="button"
+                onClick={handleGenerateFromCase}
+                disabled={!caseInvoicePreview || caseInvoicePreview.timeEntries.length === 0 || generatingInvoice}
+              >
+                {generatingInvoice ? 'Generiranje...' : 'Generiraj račun'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Search and Filters */}
       <Card>
