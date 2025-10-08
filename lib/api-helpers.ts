@@ -1,5 +1,6 @@
 import { auth } from '@/lib/auth'
 import { NextRequest, NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 
 // Types for authenticated user context
 export interface AuthenticatedUser {
@@ -20,22 +21,38 @@ export type AuthenticatedHandler = (
  */
 export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
   try {
+    // First check if session cookie exists
+    const cookieStore = await cookies()
+    const sessionToken = cookieStore.get('authjs.session-token') ||
+                        cookieStore.get('__Secure-authjs.session-token')
+
+    if (!sessionToken) {
+      console.log('No session token found in cookies')
+      return null
+    }
+
+    // Get session using NextAuth
     const session = await auth()
-    
+
     if (!session?.user?.id) {
+      console.log('No user in session')
       return null
     }
 
     // Extract user information from session
-    // Adjust these field names based on your session structure
     const userId = session.user.id
-    const organizationId = session.user.organizationId || 'default-org'
-    const role = session.user.role || 'user'
+    const organizationId = session.user.organizationId
+    const role = session.user.role
+
+    if (!organizationId) {
+      console.error('User session missing organizationId:', session.user)
+      return null
+    }
 
     return {
       userId,
       organizationId,
-      role
+      role: role || 'user'
     }
   } catch (error) {
     console.error('Error getting authenticated user:', error)
