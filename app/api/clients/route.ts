@@ -62,8 +62,15 @@ export async function GET(request: NextRequest) {
         clientType: true,
         email: true,
         phone: true,
+        status: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        _count: {
+          select: {
+            cases: true,
+            documents: true
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc'
@@ -164,9 +171,16 @@ export async function POST(request: NextRequest) {
         clientType: true,
         email: true,
         phone: true,
+        status: true,
         organizationId: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        _count: {
+          select: {
+            cases: true,
+            documents: true
+          }
+        }
       }
     })
 

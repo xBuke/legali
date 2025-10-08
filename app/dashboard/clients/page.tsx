@@ -39,7 +39,7 @@ type Client = {
   phone?: string
   status: string
   createdAt: string
-  _count: {
+  _count?: {
     cases: number
     documents: number
   }
@@ -442,7 +442,7 @@ export default function ClientsPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {client._count.cases} predmeta
+                            {client._count?.cases || 0} predmeta
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
