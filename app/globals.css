@@ -4,22 +4,35 @@
 
 @layer base {
   :root {
+    /* Base colors */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
+    
+    /* Theme colors - Professional Blue (default) */
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
+    
+    /* Status colors */
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+    --info: 199.4 89.1% 48.4%;
+    --info-foreground: 210 40% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+    
+    /* UI colors */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
@@ -27,25 +40,66 @@
   }
 
   .dark {
+    /* Base colors */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
+    
+    /* Theme colors - Professional Blue (dark) */
     --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
+    
+    /* Status colors */
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 144.9 80.4% 10%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+    --info: 199.4 89.1% 48.4%;
+    --info-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
+    
+    /* UI colors */
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
+  }
+
+  /* Theme variants */
+  [data-theme="legal-gray"] {
+    --primary: 215 14% 34%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 215 14% 34%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 215 14% 34%;
+  }
+
+  [data-theme="modern-purple"] {
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 262 83% 58%;
+    --accent: 262 83% 95%;
+    --accent-foreground: 262 83% 58%;
+  }
+
+  [data-theme="classic-slate"] {
+    --primary: 215 25% 27%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 215 25% 27%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 215 25% 27%;
   }
 }
 
@@ -59,521 +113,126 @@
 }
 
 @layer utilities {
-  /* Prevent container overflow and ensure proper grid behavior */
-  .container-overflow-fix {
-    max-width: 100%;
-    overflow-x: hidden;
-    box-sizing: border-box;
+  /* Modern responsive utilities */
+  .container-responsive {
+    @apply w-full max-w-full overflow-hidden;
   }
   
-  /* Ensure main content area doesn't overflow */
-  .main-content-fix {
-    max-width: calc(100vw - 256px); /* Account for sidebar width */
-    overflow-x: hidden;
-    box-sizing: border-box;
+  .grid-responsive {
+    @apply grid gap-3 w-full max-w-full overflow-hidden;
   }
   
-  @media (max-width: 768px) {
-    .main-content-fix {
-      max-width: 100vw;
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3;
+  }
+  
+  .grid-responsive-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3;
+  }
+  
+  .grid-responsive-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3;
+  }
+  
+  /* Text utilities */
+  .text-truncate {
+    @apply overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Spacing utilities */
+  .space-y-responsive > * + * {
+    @apply mt-3 sm:mt-4 lg:mt-6;
+  }
+  
+  .space-x-responsive > * + * {
+    @apply ml-3 sm:ml-4 lg:ml-6;
+  }
+  
+  /* Card utilities */
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-md hover:scale-[1.02];
+  }
+  
+  .card-interactive {
+    @apply cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98];
+  }
+  
+  /* Animation utilities */
+  .animate-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .animate-out {
+    animation: fadeOut 0.2s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
   
-  /* Ensure grid items don't overflow */
-  .grid-overflow-fix {
-    min-width: 0;
-    overflow: hidden;
-  }
-  
-  /* Responsive text truncation */
-  .text-responsive-truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  /* Better responsive grid behavior */
-  .responsive-grid {
-    display: grid;
-    gap: 0.75rem;
-    width: 100%;
-    max-width: 100%;
-    overflow: hidden;
-  }
-  
-  .responsive-grid-2 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .responsive-grid-4 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  /* Ultra-wide screens (1920px+) - 4 columns */
-  @media (min-width: 1920px) {
-    .responsive-grid-4 {
-      grid-template-columns: repeat(4, 1fr);
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-1rem);
     }
   }
   
-  /* Large laptop screens (1440px-1919px) - 4 columns */
-  @media (min-width: 1440px) and (max-width: 1919px) {
-    .responsive-grid-4 {
-      grid-template-columns: repeat(4, 1fr);
-    }
+  /* Focus utilities */
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
   }
   
-  /* Standard laptop screens (1366px-1439px) - 3 columns */
-  @media (min-width: 1366px) and (max-width: 1439px) {
-    .responsive-grid-4 {
-      grid-template-columns: repeat(3, 1fr);
-    }
+  /* Layout utilities */
+  .main-layout {
+    @apply min-h-screen flex flex-col;
   }
   
-  /* Medium laptop screens (1200px-1365px) - 3 columns */
-  @media (min-width: 1200px) and (max-width: 1365px) {
-    .responsive-grid-4 {
-      grid-template-columns: repeat(3, 1fr);
-    }
+  .content-area {
+    @apply flex-1 overflow-hidden;
   }
   
-  /* Small laptop screens (1024px-1199px) - 2 columns */
-  @media (min-width: 1024px) and (max-width: 1199px) {
-    .responsive-grid-4 {
-      grid-template-columns: repeat(2, 1fr);
-    }
+  .sidebar-layout {
+    @apply flex h-full;
   }
   
-  /* Tablet and smaller screens (below 1024px) - 2 columns */
-  @media (max-width: 1023px) {
-    .responsive-grid-4 {
-      grid-template-columns: repeat(2, 1fr);
-    }
+  .sidebar-content {
+    @apply flex-1 overflow-y-auto;
   }
   
-  /* Ultra-wide screen optimizations */
-  @media (min-width: 1920px) {
-    .responsive-grid {
-      gap: 1rem;
-      max-width: 1600px; /* Limit max width for better readability */
-      margin: 0 auto;
-    }
-    
-    .main-content-fix {
-      max-width: calc(1600px - 256px);
-    }
-  }
-  
-  /* Laptop screen optimizations */
-  @media (min-width: 1366px) and (max-width: 1919px) {
-    .responsive-grid {
-      gap: 0.875rem;
-    }
-    
-    /* Optimize main content area for laptop screens */
-    .main-content-fix {
-      max-width: calc(100vw - 240px); /* Account for sidebar width */
-    }
-    
-    /* Better spacing for laptop screens */
-    .laptop-optimized {
-      padding: 1rem 1.25rem;
-    }
-    
-    /* Optimize card spacing */
-    .card-laptop {
-      padding: 1rem 1.25rem;
-    }
-  }
-  
-  /* Standard laptop screens (1366x768) optimizations */
-  @media (min-width: 1366px) and (max-width: 1439px) {
-    .responsive-grid {
-      gap: 0.75rem;
-    }
-    
-    /* Tighter spacing for smaller laptop screens */
-    .main-content-fix {
-      padding: 1rem;
-    }
-    
-    /* Optimize font sizes for 1366x768 */
-    .laptop-text {
-      font-size: 0.875rem;
-      line-height: 1.4;
-    }
-    
-    .laptop-heading {
-      font-size: 1.5rem;
-      line-height: 1.3;
-    }
-  }
-  
-  /* Ensure dialogs are properly centered - override any conflicting styles */
+  /* Dialog and popup utilities */
   [data-radix-dialog-content] {
-    position: fixed !important;
-    left: 50% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    z-index: 50 !important;
-    max-height: 95vh !important;
-    overflow: hidden !important;
-  }
-  
-  /* Ensure dialog overlay covers the entire viewport */
-  [data-radix-dialog-overlay] {
-    position: fixed !important;
-    inset: 0 !important;
-    z-index: 49 !important;
-  }
-  
-  /* Responsive popup positioning for all Radix UI components */
-  [data-radix-select-content],
-  [data-radix-dropdown-menu-content],
-  [data-radix-popover-content],
-  [data-radix-tooltip-content],
-  [data-radix-context-menu-content] {
-    position: fixed !important;
-    z-index: 50 !important;
-  }
-  
-  /* Smart positioning for laptop screens */
-  @media (min-width: 1366px) and (max-width: 1919px) {
-    [data-radix-select-content],
-    [data-radix-dropdown-menu-content],
-    [data-radix-popover-content] {
-      max-height: 60vh !important;
-      max-width: 90vw !important;
-    }
-    
-    /* Ensure popups don't go off-screen on laptop */
-    [data-radix-select-content][data-side="bottom"] {
-      transform: translateY(4px) !important;
-    }
-    
-    [data-radix-select-content][data-side="top"] {
-      transform: translateY(-4px) !important;
-    }
-  }
-  
-  /* Standard laptop screens (1366x768) popup optimizations */
-  @media (min-width: 1366px) and (max-width: 1439px) {
-    [data-radix-select-content],
-    [data-radix-dropdown-menu-content],
-    [data-radix-popover-content] {
-      max-height: 50vh !important;
-      max-width: 95vw !important;
-      font-size: 0.875rem !important;
-    }
-    
-    /* Tighter spacing for smaller laptop screens */
-    [data-radix-select-item],
-    [data-radix-dropdown-menu-item] {
-      padding: 0.375rem 0.5rem !important;
-      font-size: 0.875rem !important;
-    }
-  }
-  
-  /* Additional centering fix for any dialog content */
-  .dialog-content-center {
-    position: fixed !important;
-    left: 50% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    z-index: 50 !important;
-  }
-  
-  /* Laptop dialog optimizations */
-  @media (min-width: 1366px) and (max-width: 1919px) {
-    .laptop-dialog {
-      max-width: 90vw !important;
-      max-height: 85vh !important;
-      margin: 1rem !important;
-    }
-    
-    /* Ensure dialog fits well on laptop screens */
-    [data-radix-dialog-content].laptop-dialog {
-      max-width: 90vw !important;
-      max-height: 85vh !important;
-    }
-  }
-  
-  /* Standard laptop screens (1366x768) dialog optimizations */
-  @media (min-width: 1366px) and (max-width: 1439px) {
-    .laptop-dialog {
-      max-width: 95vw !important;
-      max-height: 90vh !important;
-      margin: 0.5rem !important;
-    }
-    
-    /* Tighter dialog spacing for smaller laptop screens */
-    [data-radix-dialog-content].laptop-dialog {
-      max-width: 95vw !important;
-      max-height: 90vh !important;
-    }
-  }
-  
-  /* Laptop table optimizations */
-  @media (min-width: 1366px) and (max-width: 1919px) {
-    .laptop-table {
-      font-size: 0.875rem;
-    }
-    
-    .laptop-table th,
-    .laptop-table td {
-      padding: 0.5rem 0.75rem;
-    }
-    
-    /* Optimize table spacing for laptop screens */
-    .table-laptop {
-      border-spacing: 0;
-      border-collapse: collapse;
-    }
-    
-    .table-laptop th,
-    .table-laptop td {
-      padding: 0.5rem 0.75rem;
-      font-size: 0.875rem;
-    }
-  }
-  
-  /* Standard laptop screens (1366x768) table optimizations */
-  @media (min-width: 1366px) and (max-width: 1439px) {
-    .laptop-table th,
-    .laptop-table td {
-      padding: 0.375rem 0.5rem;
-      font-size: 0.8125rem;
-    }
-    
-    .table-laptop th,
-    .table-laptop td {
-      padding: 0.375rem 0.5rem;
-      font-size: 0.8125rem;
-    }
-  }
-  
-  /* Dynamic resolution adaptation */
-  @media (max-width: 1023px) {
-    /* Mobile and tablet optimizations */
-    [data-radix-dialog-content] {
-      max-width: 95vw !important;
-      max-height: 90vh !important;
-      margin: 1rem !important;
-    }
-    
-    [data-radix-select-content],
-    [data-radix-dropdown-menu-content],
-    [data-radix-popover-content] {
-      max-width: 95vw !important;
-      max-height: 50vh !important;
-    }
-  }
-  
-  @media (min-width: 1024px) and (max-width: 1365px) {
-    /* Small laptop screens */
-    [data-radix-dialog-content] {
-      max-width: 90vw !important;
-      max-height: 85vh !important;
-    }
-    
-    [data-radix-select-content],
-    [data-radix-dropdown-menu-content],
-    [data-radix-popover-content] {
-      max-width: 90vw !important;
-      max-height: 60vh !important;
-    }
-  }
-  
-  @media (min-width: 1920px) {
-    /* Ultra-wide screens */
-    [data-radix-dialog-content] {
-      max-width: 80vw !important;
-      max-height: 80vh !important;
-    }
-    
-    [data-radix-select-content],
-    [data-radix-dropdown-menu-content],
-    [data-radix-popover-content] {
-      max-width: 80vw !important;
-      max-height: 70vh !important;
-    }
-  }
-  
-  /* Viewport-based positioning for all popups */
-  .responsive-popup {
-    position: fixed !important;
-    z-index: 50 !important;
-  }
-  
-  /* Smart centering for different screen sizes */
-  .popup-center {
-    left: 50% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) !important;
-  }
-  
-  /* Edge-aware positioning */
-  .popup-smart-position {
-    position: fixed !important;
-    z-index: 50 !important;
-  }
-  
-  /* Ensure popups stay within viewport bounds */
-  @media (max-height: 768px) {
-    [data-radix-dialog-content] {
-      max-height: 95vh !important;
-      top: 2.5vh !important;
-      transform: translate(-50%, 0) !important;
-    }
-  }
-  
-  @media (max-width: 1366px) {
-    [data-radix-dialog-content] {
-      max-width: 95vw !important;
-      left: 2.5vw !important;
-      transform: translate(0, -50%) !important;
-    }
-  }
-  
-  /* Screen-specific body classes for dynamic adaptation */
-  .screen-mobile {
-    --popup-max-width: 95vw;
-    --popup-max-height: 90vh;
-    --popup-margin: 1rem;
-  }
-  
-  .screen-tablet {
-    --popup-max-width: 90vw;
-    --popup-max-height: 85vh;
-    --popup-margin: 1.5rem;
-  }
-  
-  .screen-laptop {
-    --popup-max-width: 90vw;
-    --popup-max-height: 85vh;
-    --popup-margin: 1rem;
-  }
-  
-  .screen-desktop {
-    --popup-max-width: 80vw;
-    --popup-max-height: 80vh;
-    --popup-margin: 2rem;
-  }
-  
-  .screen-ultrawide {
-    --popup-max-width: 70vw;
-    --popup-max-height: 75vh;
-    --popup-margin: 2rem;
-  }
-  
-  /* Apply CSS variables to all popups */
-  [data-radix-dialog-content] {
-    max-width: var(--popup-max-width, 90vw) !important;
-    max-height: var(--popup-max-height, 85vh) !important;
-    margin: var(--popup-margin, 1rem) !important;
+    @apply max-w-[95vw] max-h-[90vh] sm:max-w-[90vw] sm:max-h-[85vh] lg:max-w-[80vw] lg:max-h-[80vh];
   }
   
   [data-radix-select-content],
   [data-radix-dropdown-menu-content],
   [data-radix-popover-content] {
-    max-width: var(--popup-max-width, 90vw) !important;
-    max-height: var(--popup-max-height, 60vh) !important;
+    @apply max-w-[95vw] max-h-[50vh] sm:max-w-[90vw] sm:max-h-[60vh] lg:max-w-[80vw] lg:max-h-[70vh];
   }
   
-  /* Laptop-specific optimizations */
-  .laptop-1366 {
-    --popup-max-width: 95vw;
-    --popup-max-height: 90vh;
-    --popup-margin: 0.5rem;
-  }
-  
-  .laptop-1440 {
-    --popup-max-width: 90vw;
-    --popup-max-height: 85vh;
-    --popup-margin: 1rem;
-  }
-  
-  /* Small screen optimizations */
-  .small-screen {
-    --popup-max-width: 95vw;
-    --popup-max-height: 90vh;
-    --popup-margin: 0.5rem;
-  }
-  
-  /* Very small screens (height < 600px) - ensure dialogs fit */
-  @media (max-height: 600px) {
-    [data-radix-dialog-content] {
-      max-height: 95vh !important;
-      top: 2.5vh !important;
-      transform: translate(-50%, 0) !important;
-      margin: 0.5rem !important;
-    }
-  }
-  
-  /* Very small screens (width < 480px) - ensure dialogs fit */
-  @media (max-width: 480px) {
-    [data-radix-dialog-content] {
-      max-width: 95vw !important;
-      left: 2.5vw !important;
-      transform: translate(0, -50%) !important;
-      margin: 0.5rem !important;
-    }
-  }
-  
-  /* Very small screens (both width and height) */
-  @media (max-width: 480px) and (max-height: 600px) {
-    [data-radix-dialog-content] {
-      max-width: 95vw !important;
-      max-height: 95vh !important;
-      left: 2.5vw !important;
-      top: 2.5vh !important;
-      transform: none !important;
-      margin: 0.5rem !important;
-    }
-  }
-  
-  /* Dynamic popup positioning based on screen size */
-  .screen-mobile [data-radix-dialog-content],
-  .screen-tablet [data-radix-dialog-content] {
-    top: 5vh !important;
-    transform: translate(-50%, 0) !important;
-  }
-  
-  .laptop-1366 [data-radix-dialog-content] {
-    top: 2.5vh !important;
-    transform: translate(-50%, 0) !important;
-  }
-  
-  /* Ensure all popups are properly centered and responsive */
-  .responsive-popup {
-    position: fixed !important;
-    z-index: 50 !important;
-    max-width: var(--popup-max-width, 90vw) !important;
-    max-height: var(--popup-max-height, 85vh) !important;
-  }
-  
-  /* Dialog content scrolling utility */
+  /* Dialog scrollable content */
   .dialog-scrollable {
-    overflow-y: auto !important;
-    max-height: calc(95vh - 8rem) !important; /* Account for header and footer */
+    @apply overflow-y-auto max-h-[calc(95vh-8rem)];
   }
   
-  /* Ensure dialog content doesn't overflow on any screen */
-  [data-radix-dialog-content] .dialog-scrollable {
-    overflow-y: auto !important;
-    max-height: calc(95vh - 8rem) !important;
-  }
-  
-  /* Small screen dialog content adjustments */
   @media (max-height: 600px) {
     .dialog-scrollable {
-      max-height: calc(95vh - 6rem) !important;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .dialog-scrollable {
-      max-height: calc(95vh - 6rem) !important;
+      @apply max-h-[calc(95vh-6rem)];
     }
   }
 }

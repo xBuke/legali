@@ -1,0 +1,500 @@
+{
+  "navigation": {
+    "title": "Navigation",
+    "dashboard": "Dashboard",
+    "clients": "Clients",
+    "cases": "Cases",
+    "documents": "Documents",
+    "timeTracking": "Time Tracking",
+    "invoices": "Invoices",
+    "settings": "Settings",
+    "security": "Security",
+    "analytics": "Analytics"
+  },
+  "common": {
+    "search": "Search",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "create": "Create",
+    "update": "Update",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "reset": "Reset",
+    "clear": "Clear",
+    "filter": "Filter",
+    "sort": "Sort",
+    "export": "Export",
+    "import": "Import",
+    "download": "Download",
+    "upload": "Upload",
+    "refresh": "Refresh",
+    "reload": "Reload",
+    "new": "New",
+    "details": "Details",
+    "item": "Item",
+    "quickActions": "Quick Actions"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "verifyEmail": "Verify Email",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "firstName": "First Name",
+    "welcomeBack": "Welcome back",
+    "signInToAccount": "Sign in to your iLegal account",
+    "enterCredentials": "Enter your credentials to access your account",
+    "emailPlaceholder": "your.email@example.com",
+    "signingIn": "Signing in...",
+    "orContinueWith": "Or continue with",
+    "noAccount": "Don't have an account?",
+    "signInSuccess": "Sign in successful",
+    "welcomeBackMessage": "Welcome back!",
+    "passwordMin8Chars": "At least 8 characters",
+    "passwordLowercase": "Lowercase letters",
+    "passwordUppercase": "Uppercase letters",
+    "passwordNumbers": "Numbers",
+    "passwordSpecialChars": "Special characters",
+    "passwordWeak": "Weak",
+    "passwordMedium": "Medium",
+    "passwordStrong": "Strong",
+    "lastName": "Last Name",
+    "rememberMe": "Remember me",
+    "createAccount": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "checkEmail": "Check your email",
+    "emailSent": "Email sent successfully",
+    "invalidCredentials": "Invalid credentials",
+    "accountCreated": "Account created successfully",
+    "passwordReset": "Password reset successfully"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "quickActions": "Quick Actions",
+    "recentActivity": "Recent Activity",
+    "stats": {
+      "activeClients": "Active Clients",
+      "openCases": "Open Cases",
+      "documents": "Documents",
+      "monthlyRevenue": "This Month",
+      "currentlyActive": "Currently Active",
+      "inProgress": "In Progress",
+      "totalUploaded": "Total Uploaded",
+      "invoiced": "Invoiced"
+    }
+  },
+  "clients": {
+    "title": "Clients",
+    "addClient": "Add Client",
+    "clientDetails": "Client Details",
+    "contactInfo": "Contact Information",
+    "cases": "Cases",
+    "documents": "Documents",
+    "invoices": "Invoices",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "archived": "Archived"
+    }
+  },
+  "cases": {
+    "title": "Cases",
+    "addCase": "Add Case",
+    "caseDetails": "Case Details",
+    "caseNumber": "Case Number",
+    "description": "Description",
+    "status": {
+      "open": "Open",
+      "closed": "Closed",
+      "pending": "Pending",
+      "inProgress": "In Progress"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    }
+  },
+  "documents": {
+    "title": "Documents",
+    "uploadDocument": "Upload Document",
+    "documentLibrary": "Document Library",
+    "fileName": "File Name",
+    "fileSize": "File Size",
+    "uploadDate": "Upload Date",
+    "documentType": "Document Type",
+    "tags": "Tags"
+  },
+  "timeTracking": {
+    "title": "Time Tracking",
+    "startTimer": "Start Timer",
+    "stopTimer": "Stop Timer",
+    "pauseTimer": "Pause Timer",
+    "resumeTimer": "Resume Timer",
+    "timeEntries": "Time Entries",
+    "totalTime": "Total Time",
+    "description": "Description",
+    "billable": "Billable",
+    "nonBillable": "Non-billable"
+  },
+  "invoices": {
+    "title": "Invoices",
+    "createInvoice": "Create Invoice",
+    "invoiceNumber": "Invoice Number",
+    "amount": "Amount",
+    "dueDate": "Due Date",
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "security": "Security",
+    "organization": "Organization",
+    "subscription": "Subscription",
+    "preferences": "Preferences",
+    "language": "Language",
+    "theme": "Theme",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "account": "Account",
+    "team": "Team",
+    "billing": "Billing"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "validation": "Please check your input and try again.",
+    "serverError": "Server error. Please try again later.",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Please enter a valid email address",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "checkInput": "Please check your input and try again",
+    "signInFailed": "Sign in failed",
+    "emailPasswordRequired": "Email and password are required",
+    "invalidCredentials": "Invalid email or password",
+    "accountDeactivated": "Your account is deactivated. Please contact administrator",
+    "twoFactorUnavailable": "Two-factor authentication is currently unavailable",
+    "nameRequired": "Name is required",
+    "nameMinLength": "Name must be at least 2 characters",
+    "passwordTooWeak": "Password is too weak. Please use a strong password",
+    "confirmPasswordRequired": "Password confirmation is required",
+    "passwordsDoNotMatch": "Passwords do not match"
+  },
+  "emptyStates": {
+    "noData": "No data available",
+    "noResults": "No results found",
+    "noClients": "No clients yet",
+    "noCases": "No cases yet",
+    "noDocuments": "No documents yet",
+    "noInvoices": "No invoices yet",
+    "noTimeEntries": "No time entries yet",
+    "getStarted": "Get started by creating your first item"
+  },
+  "homepage": {
+    "subtitle": "Comprehensive legal practice management platform",
+    "description": "Manage clients, cases, documents and time - all in one place",
+    "getStarted": "Get started for free",
+    "signIn": "Sign In",
+    "trial": "14 days free trial",
+    "noCard": "No credit card required",
+    "hero": {
+      "badge": "New & Improved",
+      "title": "Streamline Your Legal Practice",
+      "subtitle": "The all-in-one platform for modern law firms. Manage clients, cases, documents, and billing with ease."
+    },
+    "features": {
+      "title": "Everything You Need",
+      "subtitle": "Powerful features designed specifically for legal professionals",
+      "clients": {
+        "title": "Client Management",
+        "description": "Organize client information, track communication history, and manage relationships effectively."
+      },
+      "cases": {
+        "title": "Case Management",
+        "description": "Track case progress, manage deadlines, and collaborate with your team seamlessly."
+      },
+      "documents": {
+        "title": "Document Library",
+        "description": "Secure document storage, version control, and easy sharing with clients and team members."
+      },
+      "timeTracking": {
+        "title": "Time Tracking",
+        "description": "Accurate time tracking with automatic billing and detailed reporting capabilities."
+      },
+      "invoicing": {
+        "title": "Invoicing & Billing",
+        "description": "Professional invoices, payment tracking, and automated billing workflows."
+      },
+      "analytics": {
+        "title": "Analytics & Reports",
+        "description": "Comprehensive insights into your practice performance and financial metrics."
+      }
+    },
+    "pricing": {
+      "title": "Simple, Transparent Pricing",
+      "subtitle": "Choose the plan that fits your practice size and needs",
+      "popular": "Most Popular",
+      "getStarted": "Get Started",
+      "starter": {
+        "name": "Starter",
+        "price": "€29/mo",
+        "description": "Perfect for solo practitioners",
+        "features": {
+          "clients": "Up to 50 clients",
+          "cases": "Unlimited cases",
+          "documents": "10GB storage",
+          "support": "Email support"
+        }
+      },
+      "professional": {
+        "name": "Professional",
+        "price": "€79/mo",
+        "description": "Ideal for small to medium firms",
+        "features": {
+          "everything": "Everything in Starter",
+          "timeTracking": "Time tracking & billing",
+          "invoicing": "Advanced invoicing",
+          "analytics": "Analytics & reports",
+          "priority": "Priority support"
+        }
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "Custom",
+        "description": "For large firms and organizations",
+        "features": {
+          "everything": "Everything in Professional",
+          "team": "Unlimited team members",
+          "custom": "Custom integrations",
+          "integrations": "API access",
+          "dedicated": "Dedicated support"
+        }
+      }
+    },
+    "testimonials": {
+      "title": "Trusted by Legal Professionals",
+      "subtitle": "See what our clients say about iLegal",
+      "john": {
+        "name": "John Smith",
+        "role": "Senior Partner, Smith & Associates",
+        "content": "iLegal has transformed how we manage our practice. The time tracking alone has increased our billable hours by 30%."
+      },
+      "sarah": {
+        "name": "Sarah Johnson",
+        "role": "Solo Practitioner",
+        "content": "The document management system is incredible. I can find any document in seconds and share securely with clients."
+      },
+      "michael": {
+        "name": "Michael Brown",
+        "role": "Managing Partner, Brown Law Group",
+        "content": "The analytics dashboard gives us insights we never had before. We can now make data-driven decisions about our practice."
+      }
+    },
+    "cta": {
+      "title": "Ready to Transform Your Practice?",
+      "subtitle": "Join thousands of legal professionals who trust iLegal to manage their practice."
+    },
+    "footer": {
+      "description": "The modern legal practice management platform trusted by law firms worldwide.",
+      "product": "Product",
+      "features": "Features",
+      "pricing": "Pricing",
+      "integrations": "Integrations",
+      "company": "Company",
+      "about": "About",
+      "blog": "Blog",
+      "careers": "Careers",
+      "support": "Support",
+      "help": "Help Center",
+      "contact": "Contact",
+      "status": "Status",
+      "rights": "All rights reserved.",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    }
+  },
+  "clientPortal": {
+    "navigation": {
+      "overview": "Overview",
+      "cases": "My Cases",
+      "documents": "Documents",
+      "signOut": "Sign Out"
+    },
+    "header": {
+      "title": "Client Portal",
+      "subtitle": "Track your cases and access documents"
+    },
+    "welcome": {
+      "title": "Welcome, {name}!",
+      "subtitle": "Here you can track the progress of your cases and access documents."
+    },
+    "stats": {
+      "activeCases": "Active Cases",
+      "totalCases": "Total cases",
+      "documents": "Documents",
+      "availableDocuments": "Available documents",
+      "timeSpent": "Time Spent",
+      "totalWork": "Total work",
+      "billed": "Billed",
+      "totalCosts": "Total costs"
+    },
+    "sections": {
+      "myCases": "My Cases",
+      "casesDescription": "Overview of your active cases",
+      "recentDocuments": "Recent Documents",
+      "documentsDescription": "Latest documents related to your cases",
+      "recentWork": "Recent Work",
+      "workDescription": "Overview of recently completed work on your cases"
+    },
+    "status": {
+      "open": "Open",
+      "inProgress": "In Progress",
+      "onHold": "On Hold",
+      "closedWon": "Successfully Closed",
+      "closedLost": "Closed"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "table": {
+      "caseNumber": "Case Number",
+      "title": "Title",
+      "status": "Status",
+      "priority": "Priority",
+      "nextHearing": "Next Hearing",
+      "estimatedValue": "Estimated Value",
+      "name": "Name",
+      "category": "Category",
+      "date": "Date",
+      "type": "Type",
+      "description": "Description",
+      "duration": "Duration",
+      "amount": "Amount",
+      "case": "Case",
+      "size": "Size",
+      "actions": "Actions"
+    },
+    "emptyStates": {
+      "noActiveCases": "No active cases",
+      "noActiveCasesDescription": "You don't have any active cases at the moment.",
+      "noDocuments": "No documents available",
+      "noDocumentsDescription": "There are no documents available for your cases.",
+      "noWork": "No work recorded",
+      "noWorkDescription": "No work has been recorded for your cases yet.",
+      "noCases": "No cases",
+      "noCasesDescription": "You don't have any cases yet.",
+      "noMatchingDocuments": "No matching documents",
+      "noMatchingDocumentsDescription": "No documents match your current filters."
+    },
+    "cases": {
+      "title": "My Cases",
+      "subtitle": "Overview of all your cases and their progress",
+      "stats": {
+        "totalCases": "Total Cases",
+        "allCases": "All cases",
+        "active": "Active",
+        "inProgress": "In progress",
+        "completed": "Completed",
+        "successfullyCompleted": "Successfully completed",
+        "totalValue": "Total Value",
+        "estimatedValue": "Estimated value"
+      },
+      "list": {
+        "title": "Cases",
+        "description": "Detailed overview of all your cases"
+      },
+      "details": {
+        "basicInfo": "Basic Information",
+        "opened": "Opened",
+        "closed": "Closed",
+        "nextHearing": "Next hearing",
+        "courtInfo": "Court Information",
+        "caseNumber": "Case number",
+        "judge": "Judge",
+        "financialInfo": "Financial Information",
+        "value": "Value",
+        "commission": "Commission",
+        "opposingCounsel": "Opposing counsel"
+      }
+    },
+    "documents": {
+      "title": "Documents",
+      "subtitle": "Overview of all documents related to your cases",
+      "stats": {
+        "totalDocuments": "Total Documents",
+        "allDocuments": "All documents",
+        "pdfDocuments": "PDF Documents",
+        "pdfFormat": "PDF format",
+        "totalSize": "Total Size",
+        "totalSpace": "Total space"
+      },
+      "filters": {
+        "title": "Filter Documents",
+        "searchPlaceholder": "Search documents...",
+        "allCategories": "All categories"
+      },
+      "list": {
+        "title": "Documents",
+        "of": "of",
+        "documents": "documents"
+      },
+      "actions": {
+        "view": "View",
+        "download": "Download"
+      }
+    }
+  },
+  "security": {
+    "twoFactor": {
+      "disableConfirm": "Are you sure you want to disable 2FA? This will reduce the security of your account.",
+      "enterCode": "Enter 6-digit code from authenticator app or backup code:",
+      "disableSuccess": "2FA has been disabled successfully",
+      "disableError": "Failed to disable 2FA. Please check your code and try again.",
+      "setupError": "Error setting up 2FA",
+      "enterCodeError": "Please enter a code",
+      "verificationSuccess": "2FA has been enabled successfully",
+      "verificationError": "Invalid verification code. Please try again."
+    },
+    "backupCodes": {
+      "show": "Show Backup Codes",
+      "hide": "Hide Backup Codes",
+      "regenerate": "Regenerate Codes",
+      "regenerateConfirm": "Are you sure you want to regenerate backup codes? This will invalidate all existing codes.",
+      "regenerateSuccess": "New backup codes have been generated",
+      "regenerateError": "Failed to generate new backup codes"
+    }
+  }
+}

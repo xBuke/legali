@@ -82,10 +82,6 @@ model User {
   backupCodes       String?  // JSON array of backup codes
   twoFactorVerifiedAt DateTime?
   
-  // Password reset
-  resetToken        String?
-  resetTokenExpiry  DateTime?
-  
   // Notification settings
   notificationSettings String? // JSON object with email and push notification preferences
   

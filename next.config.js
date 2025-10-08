@@ -1,30 +1,22 @@
-const path = require('path')
+const withNextIntl = require('next-intl/plugin')(
+  // This is the default (also the `src` folder is supported out of the box)
+  './lib/i18n.ts'
+)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    // Skip type checking during build (types are checked in development)
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    // Skip ESLint during build (linting is checked in development)
-    ignoreDuringBuilds: true,
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs']
   },
   images: {
-    domains: ['public.blob.vercel-storage.com'],
+    domains: ['localhost', 'vercel.app', 'images.unsplash.com']
   },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '10mb',
-    },
+  typescript: {
+    ignoreBuildErrors: false
   },
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': path.resolve(__dirname, '.'),
-    }
-    return config
-  },
+  eslint: {
+    ignoreDuringBuilds: false
+  }
 }
 
-module.exports = nextConfig
+module.exports = withNextIntl(nextConfig)

@@ -1,0 +1,500 @@
+{
+  "navigation": {
+    "title": "Navigacija",
+    "dashboard": "Nadzorna ploča",
+    "clients": "Klijenti",
+    "cases": "Predmeti",
+    "documents": "Dokumenti",
+    "timeTracking": "Pratnja vremena",
+    "invoices": "Računi",
+    "settings": "Postavke",
+    "security": "Sigurnost",
+    "analytics": "Analitika"
+  },
+  "common": {
+    "search": "Pretraži",
+    "save": "Spremi",
+    "cancel": "Odustani",
+    "delete": "Obriši",
+    "edit": "Uredi",
+    "view": "Pogledaj",
+    "create": "Stvori",
+    "update": "Ažuriraj",
+    "loading": "Učitavanje...",
+    "saving": "Spremanje...",
+    "error": "Greška",
+    "success": "Uspjeh",
+    "warning": "Upozorenje",
+    "info": "Informacija",
+    "yes": "Da",
+    "no": "Ne",
+    "ok": "U redu",
+    "close": "Zatvori",
+    "back": "Natrag",
+    "next": "Sljedeće",
+    "previous": "Prethodno",
+    "submit": "Pošalji",
+    "reset": "Resetiraj",
+    "clear": "Očisti",
+    "filter": "Filtriraj",
+    "sort": "Sortiraj",
+    "export": "Izvezi",
+    "import": "Uvezi",
+    "download": "Preuzmi",
+    "upload": "Učitaj",
+    "refresh": "Osvježi",
+    "reload": "Ponovno učitaj",
+    "new": "Novo",
+    "details": "Detalji",
+    "item": "Element",
+    "quickActions": "Brze akcije"
+  },
+  "auth": {
+    "signIn": "Prijavi se",
+    "signUp": "Registriraj se",
+    "signOut": "Odjavi se",
+    "forgotPassword": "Zaboravili ste lozinku?",
+    "resetPassword": "Resetiraj lozinku",
+    "verifyEmail": "Potvrdi email",
+    "email": "Email",
+    "password": "Lozinka",
+    "confirmPassword": "Potvrdi lozinku",
+    "firstName": "Ime",
+    "welcomeBack": "Dobrodošli nazad",
+    "signInToAccount": "Prijavite se u svoj iLegal račun",
+    "enterCredentials": "Unesite svoje podatke za pristup računu",
+    "emailPlaceholder": "vas.email@primjer.hr",
+    "signingIn": "Prijava...",
+    "orContinueWith": "Ili nastavite s",
+    "noAccount": "Nemate račun?",
+    "signInSuccess": "Uspješna prijava",
+    "welcomeBackMessage": "Dobrodošli nazad!",
+    "passwordMin8Chars": "Najmanje 8 znakova",
+    "passwordLowercase": "Mala slova",
+    "passwordUppercase": "Velika slova",
+    "passwordNumbers": "Brojevi",
+    "passwordSpecialChars": "Specijalni znakovi",
+    "passwordWeak": "Slaba",
+    "passwordMedium": "Srednja",
+    "passwordStrong": "Jaka",
+    "lastName": "Prezime",
+    "rememberMe": "Zapamti me",
+    "createAccount": "Stvori račun",
+    "alreadyHaveAccount": "Već imate račun?",
+    "dontHaveAccount": "Nemate račun?",
+    "checkEmail": "Provjerite svoj email",
+    "emailSent": "Email je uspješno poslan",
+    "invalidCredentials": "Neispravni podaci za prijavu",
+    "accountCreated": "Račun je uspješno stvoren",
+    "passwordReset": "Lozinka je uspješno resetirana"
+  },
+  "dashboard": {
+    "welcome": "Dobrodošli",
+    "quickActions": "Brze akcije",
+    "recentActivity": "Nedavne aktivnosti",
+    "stats": {
+      "activeClients": "Aktivni klijenti",
+      "openCases": "Otvoreni predmeti",
+      "documents": "Dokumenti",
+      "monthlyRevenue": "Ovaj mjesec",
+      "currentlyActive": "Trenutno aktivno",
+      "inProgress": "U obradi",
+      "totalUploaded": "Ukupno uploadano",
+      "invoiced": "Fakturirano"
+    }
+  },
+  "clients": {
+    "title": "Klijenti",
+    "addClient": "Dodaj klijenta",
+    "clientDetails": "Detalji klijenta",
+    "contactInfo": "Kontakt informacije",
+    "cases": "Predmeti",
+    "documents": "Dokumenti",
+    "invoices": "Računi",
+    "status": {
+      "active": "Aktivan",
+      "inactive": "Neaktivan",
+      "archived": "Arhiviran"
+    }
+  },
+  "cases": {
+    "title": "Predmeti",
+    "addCase": "Dodaj predmet",
+    "caseDetails": "Detalji predmeta",
+    "caseNumber": "Broj predmeta",
+    "description": "Opis",
+    "status": {
+      "open": "Otvoren",
+      "closed": "Zatvoren",
+      "pending": "Na čekanju",
+      "inProgress": "U tijeku"
+    },
+    "priority": {
+      "low": "Niska",
+      "medium": "Srednja",
+      "high": "Visoka",
+      "urgent": "Hitno"
+    }
+  },
+  "documents": {
+    "title": "Dokumenti",
+    "uploadDocument": "Učitaj dokument",
+    "documentLibrary": "Biblioteka dokumenata",
+    "fileName": "Naziv datoteke",
+    "fileSize": "Veličina datoteke",
+    "uploadDate": "Datum učitavanja",
+    "documentType": "Tip dokumenta",
+    "tags": "Oznake"
+  },
+  "timeTracking": {
+    "title": "Pratnja vremena",
+    "startTimer": "Pokreni timer",
+    "stopTimer": "Zaustavi timer",
+    "pauseTimer": "Pauziraj timer",
+    "resumeTimer": "Nastavi timer",
+    "timeEntries": "Unosi vremena",
+    "totalTime": "Ukupno vrijeme",
+    "description": "Opis",
+    "billable": "Naplativo",
+    "nonBillable": "Nenaplativo"
+  },
+  "invoices": {
+    "title": "Računi",
+    "createInvoice": "Stvori račun",
+    "invoiceNumber": "Broj računa",
+    "amount": "Iznos",
+    "dueDate": "Datum dospijeća",
+    "status": {
+      "draft": "Nacrt",
+      "sent": "Poslan",
+      "paid": "Plaćen",
+      "overdue": "Dospio",
+      "cancelled": "Otkazan"
+    }
+  },
+  "settings": {
+    "title": "Postavke",
+    "profile": "Profil",
+    "security": "Sigurnost",
+    "organization": "Organizacija",
+    "subscription": "Pretplata",
+    "preferences": "Preference",
+    "language": "Jezik",
+    "theme": "Tema",
+    "notifications": "Obavještenja",
+    "privacy": "Privatnost",
+    "account": "Račun",
+    "team": "Tim",
+    "billing": "Naplata"
+  },
+  "errors": {
+    "generic": "Nešto je pošlo po zlu. Molimo pokušajte ponovno.",
+    "network": "Greška mreže. Molimo provjerite svoju vezu.",
+    "unauthorized": "Nemate dozvolu za izvršavanje ove akcije.",
+    "notFound": "Traženi resurs nije pronađen.",
+    "validation": "Molimo provjerite svoje podatke i pokušajte ponovno.",
+    "serverError": "Greška servera. Molimo pokušajte kasnije.",
+    "emailRequired": "Email je obavezan",
+    "emailInvalid": "Molimo unesite valjanu email adresu",
+    "passwordRequired": "Lozinka je obavezna",
+    "passwordMinLength": "Lozinka mora imati najmanje 6 znakova",
+    "checkInput": "Molimo provjerite svoje podatke i pokušajte ponovno",
+    "signInFailed": "Greška pri prijavi",
+    "emailPasswordRequired": "Email i lozinka su obavezni",
+    "invalidCredentials": "Neispravni email ili lozinka",
+    "accountDeactivated": "Vaš račun je deaktiviran. Molimo kontaktirajte administratora",
+    "twoFactorUnavailable": "Dvofaktorska autentifikacija trenutno nije dostupna",
+    "nameRequired": "Ime je obavezno",
+    "nameMinLength": "Ime mora imati najmanje 2 znaka",
+    "passwordTooWeak": "Lozinka je previše slaba. Molimo koristite jake lozinke",
+    "confirmPasswordRequired": "Potvrda lozinke je obavezna",
+    "passwordsDoNotMatch": "Lozinke se ne podudaraju"
+  },
+  "emptyStates": {
+    "noData": "Nema dostupnih podataka",
+    "noResults": "Nema rezultata",
+    "noClients": "Još nema klijenata",
+    "noCases": "Još nema predmeta",
+    "noDocuments": "Još nema dokumenata",
+    "noInvoices": "Još nema računa",
+    "noTimeEntries": "Još nema unosa vremena",
+    "getStarted": "Započnite stvaranjem svog prvog elementa"
+  },
+  "homepage": {
+    "subtitle": "Sveobuhvatna platforma za upravljanje odvjetničkom praksom",
+    "description": "Upravljajte klijentima, predmetima, dokumentima i vremenom - sve na jednom mjestu",
+    "getStarted": "Započnite besplatno",
+    "signIn": "Prijava",
+    "trial": "14 dana besplatnog probnog razdoblja",
+    "noCard": "Ne treba kreditna kartica",
+    "hero": {
+      "badge": "Novo i poboljšano",
+      "title": "Pojednostavite svoju odvjetničku praksu",
+      "subtitle": "Sveobuhvatna platforma za moderne odvjetničke urede. Upravljajte klijentima, predmetima, dokumentima i naplatom s lakoćom."
+    },
+    "features": {
+      "title": "Sve što trebate",
+      "subtitle": "Moćne značajke dizajnirane posebno za pravne stručnjake",
+      "clients": {
+        "title": "Upravljanje klijentima",
+        "description": "Organizirajte informacije o klijentima, pratite povijest komunikacije i učinkovito upravljajte odnosima."
+      },
+      "cases": {
+        "title": "Upravljanje predmetima",
+        "description": "Pratite napredak predmeta, upravljajte rokovima i besprijekorno surađujte sa svojim timom."
+      },
+      "documents": {
+        "title": "Biblioteka dokumenata",
+        "description": "Sigurno pohranjivanje dokumenata, kontrola verzija i jednostavno dijeljenje s klijentima i članovima tima."
+      },
+      "timeTracking": {
+        "title": "Pratnja vremena",
+        "description": "Precizna pratnja vremena s automatskim naplatom i detaljnim izvještajima."
+      },
+      "invoicing": {
+        "title": "Fakturiranje i naplata",
+        "description": "Profesionalne fakture, praćenje plaćanja i automatizirani radni tokovi naplate."
+      },
+      "analytics": {
+        "title": "Analitika i izvještaji",
+        "description": "Sveobuhvatni uvid u performanse vaše prakse i financijske metrike."
+      }
+    },
+    "pricing": {
+      "title": "Jednostavne, transparentne cijene",
+      "subtitle": "Odaberite plan koji odgovara veličini vaše prakse i potrebama",
+      "popular": "Najpopularniji",
+      "getStarted": "Započni",
+      "starter": {
+        "name": "Početni",
+        "price": "€29/mj",
+        "description": "Savršeno za samostalne odvjetnike",
+        "features": {
+          "clients": "Do 50 klijenata",
+          "cases": "Neograničeni predmeti",
+          "documents": "10GB prostora",
+          "support": "Email podrška"
+        }
+      },
+      "professional": {
+        "name": "Profesionalni",
+        "price": "€79/mj",
+        "description": "Idealno za male i srednje urede",
+        "features": {
+          "everything": "Sve iz Početnog",
+          "timeTracking": "Pratnja vremena i naplata",
+          "invoicing": "Napredno fakturiranje",
+          "analytics": "Analitika i izvještaji",
+          "priority": "Prioritetna podrška"
+        }
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "Prilagođeno",
+        "description": "Za velike urede i organizacije",
+        "features": {
+          "everything": "Sve iz Profesionalnog",
+          "team": "Neograničeni članovi tima",
+          "custom": "Prilagođene integracije",
+          "integrations": "API pristup",
+          "dedicated": "Namjenska podrška"
+        }
+      }
+    },
+    "testimonials": {
+      "title": "Povjerenje pravnih stručnjaka",
+      "subtitle": "Pogledajte što naši klijenti kažu o iLegal",
+      "john": {
+        "name": "Ivan Horvat",
+        "role": "Stariji partner, Horvat & Partneri",
+        "content": "iLegal je transformirao način na koji upravljamo našom praksom. Samo praćenje vremena povećalo je naše naplaćene sate za 30%."
+      },
+      "sarah": {
+        "name": "Ana Marić",
+        "role": "Samostalna odvjetnica",
+        "content": "Sustav upravljanja dokumentima je nevjerojatan. Mogu pronaći bilo koji dokument u sekundama i sigurno ga podijeliti s klijentima."
+      },
+      "michael": {
+        "name": "Marko Novak",
+        "role": "Upravljački partner, Novak Law Group",
+        "content": "Analitička nadzorna ploča daje nam uvide koje nikad prije nismo imali. Sada možemo donositi odluke temeljene na podacima o našoj praksi."
+      }
+    },
+    "cta": {
+      "title": "Spremni transformirati svoju praksu?",
+      "subtitle": "Pridružite se tisućama pravnih stručnjaka koji vjeruju iLegal za upravljanje svojom praksom."
+    },
+    "footer": {
+      "description": "Moderna platforma za upravljanje odvjetničkom praksom kojoj vjeruju odvjetnički uredi diljem svijeta.",
+      "product": "Proizvod",
+      "features": "Značajke",
+      "pricing": "Cijene",
+      "integrations": "Integracije",
+      "company": "Tvrtka",
+      "about": "O nama",
+      "blog": "Blog",
+      "careers": "Karijere",
+      "support": "Podrška",
+      "help": "Centar za pomoć",
+      "contact": "Kontakt",
+      "status": "Status",
+      "rights": "Sva prava pridržana.",
+      "privacy": "Pravila privatnosti",
+      "terms": "Uvjeti korištenja"
+    }
+  },
+  "clientPortal": {
+    "navigation": {
+      "overview": "Pregled",
+      "cases": "Moji predmeti",
+      "documents": "Dokumenti",
+      "signOut": "Odjava"
+    },
+    "header": {
+      "title": "Klijentski portal",
+      "subtitle": "Pratite svoje predmete i pristupite dokumentima"
+    },
+    "welcome": {
+      "title": "Dobrodošli, {name}!",
+      "subtitle": "Ovdje možete pratiti napredak svojih predmeta i pristupiti dokumentima."
+    },
+    "stats": {
+      "activeCases": "Aktivni predmeti",
+      "totalCases": "Ukupno predmeta",
+      "documents": "Dokumenti",
+      "availableDocuments": "Dostupni dokumenti",
+      "timeSpent": "Utrošeno vrijeme",
+      "totalWork": "Ukupno rada",
+      "billed": "Naplaćeno",
+      "totalCosts": "Ukupni troškovi"
+    },
+    "sections": {
+      "myCases": "Moji predmeti",
+      "casesDescription": "Pregled vaših aktivnih predmeta",
+      "recentDocuments": "Nedavni dokumenti",
+      "documentsDescription": "Najnoviji dokumenti vezani za vaše predmete",
+      "recentWork": "Nedavni radovi",
+      "workDescription": "Pregled nedavno obavljenih radova na vašim predmetima"
+    },
+    "status": {
+      "open": "Otvoren",
+      "inProgress": "U tijeku",
+      "onHold": "Na čekanju",
+      "closedWon": "Završen uspješno",
+      "closedLost": "Završen"
+    },
+    "priority": {
+      "low": "Niska",
+      "medium": "Srednja",
+      "high": "Visoka",
+      "urgent": "Hitno"
+    },
+    "table": {
+      "caseNumber": "Broj predmeta",
+      "title": "Naziv",
+      "status": "Status",
+      "priority": "Prioritet",
+      "nextHearing": "Sljedeći ročište",
+      "estimatedValue": "Procijenjena vrijednost",
+      "name": "Naziv",
+      "category": "Kategorija",
+      "date": "Datum",
+      "type": "Tip",
+      "description": "Opis",
+      "duration": "Trajanje",
+      "amount": "Iznos",
+      "case": "Predmet",
+      "size": "Veličina",
+      "actions": "Akcije"
+    },
+    "emptyStates": {
+      "noActiveCases": "Nema aktivnih predmeta",
+      "noActiveCasesDescription": "Trenutno nemate aktivnih predmeta.",
+      "noDocuments": "Nema dostupnih dokumenata",
+      "noDocumentsDescription": "Nema dokumenata dostupnih za vaše predmete.",
+      "noWork": "Nema zabilježenih radova",
+      "noWorkDescription": "Još nije zabilježen rad na vašim predmetima.",
+      "noCases": "Nema predmeta",
+      "noCasesDescription": "Još nemate predmeta.",
+      "noMatchingDocuments": "Nema odgovarajućih dokumenata",
+      "noMatchingDocumentsDescription": "Nema dokumenata koji odgovaraju vašim filterima."
+    },
+    "cases": {
+      "title": "Moji predmeti",
+      "subtitle": "Pregled svih vaših predmeta i njihovog napretka",
+      "stats": {
+        "totalCases": "Ukupno predmeta",
+        "allCases": "Svi predmeti",
+        "active": "Aktivni",
+        "inProgress": "U tijeku",
+        "completed": "Završeni",
+        "successfullyCompleted": "Uspješno završeni",
+        "totalValue": "Ukupna vrijednost",
+        "estimatedValue": "Procijenjena vrijednost"
+      },
+      "list": {
+        "title": "Predmeti",
+        "description": "Detaljni pregled svih vaših predmeta"
+      },
+      "details": {
+        "basicInfo": "Osnovne informacije",
+        "opened": "Otvoren",
+        "closed": "Završen",
+        "nextHearing": "Sljedeći ročište",
+        "courtInfo": "Sudski podaci",
+        "caseNumber": "Broj predmeta",
+        "judge": "Sudac",
+        "financialInfo": "Financijski podaci",
+        "value": "Vrijednost",
+        "commission": "Provizija",
+        "opposingCounsel": "Protivni odvjetnik"
+      }
+    },
+    "documents": {
+      "title": "Dokumenti",
+      "subtitle": "Pregled svih dokumenata vezanih za vaše predmete",
+      "stats": {
+        "totalDocuments": "Ukupno dokumenata",
+        "allDocuments": "Svi dokumenti",
+        "pdfDocuments": "PDF dokumenti",
+        "pdfFormat": "PDF formata",
+        "totalSize": "Ukupna veličina",
+        "totalSpace": "Ukupno prostora"
+      },
+      "filters": {
+        "title": "Filtriraj dokumente",
+        "searchPlaceholder": "Pretraži dokumente...",
+        "allCategories": "Sve kategorije"
+      },
+      "list": {
+        "title": "Dokumenti",
+        "of": "od",
+        "documents": "dokumenata"
+      },
+      "actions": {
+        "view": "Pogledaj",
+        "download": "Preuzmi"
+      }
+    }
+  },
+  "security": {
+    "twoFactor": {
+      "disableConfirm": "Jeste li sigurni da želite onemogućiti 2FA? Ovo će smanjiti sigurnost vašeg računa.",
+      "enterCode": "Unesite 6-znamenkasti kod iz aplikacije za autentifikaciju ili rezervni kod:",
+      "disableSuccess": "2FA je uspješno onemogućen",
+      "disableError": "Neuspješno onemogućavanje 2FA. Molimo provjerite kod i pokušajte ponovno.",
+      "setupError": "Greška pri postavljanju 2FA",
+      "enterCodeError": "Molimo unesite kod",
+      "verificationSuccess": "2FA je uspješno omogućen",
+      "verificationError": "Neispravan kod za provjeru. Molimo pokušajte ponovno."
+    },
+    "backupCodes": {
+      "show": "Prikaži rezervne kodove",
+      "hide": "Sakrij rezervne kodove",
+      "regenerate": "Regeneriraj kodove",
+      "regenerateConfirm": "Jeste li sigurni da želite regenerirati rezervne kodove? Ovo će poništiti sve postojeće kodove.",
+      "regenerateSuccess": "Novi rezervni kodovi su generirani",
+      "regenerateError": "Neuspješno generiranje novih rezervnih kodova"
+    }
+  }
+}

@@ -19,7 +19,8 @@
       "Bash(curl -s https://ilegalclaude-rcsykvunf-mskoric1996-4802s-projects.vercel.app/api/health)",
       "Bash(printf \"https://ilegalclaude.vercel.app\")",
       "Bash(curl -s \"https://ilegalclaude.vercel.app/sign-in\")",
-      "Bash(curl -s -X POST \"https://ilegalclaude.vercel.app/api/auth/callback/credentials\" -H \"Content-Type: application/json\" -d '{\"\"\"\"email\"\"\"\":\"\"\"\"test@test.com\"\"\"\",\"\"\"\"password\"\"\"\":\"\"\"\"wrongpassword\"\"\"\"}')"
+      "Bash(curl -s -X POST \"https://ilegalclaude.vercel.app/api/auth/callback/credentials\" -H \"Content-Type: application/json\" -d '{\"\"\"\"email\"\"\"\":\"\"\"\"test@test.com\"\"\"\",\"\"\"\"password\"\"\"\":\"\"\"\"wrongpassword\"\"\"\"}')",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress'
 import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { 
   Users, 
   Briefcase, 
@@ -21,9 +22,14 @@ import {
   Minus,
   Eye,
   Calendar,
-  DollarSign
+  DollarSign,
+  Activity,
+  BarChart3,
+  PieChart as PieChartIcon,
+  Sparkles
 } from 'lucide-react'
 import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
 interface DashboardStats {
   activeClients: {
@@ -64,6 +70,18 @@ interface ActivityItem {
     id: string;
     name: string;
   } | null;
+}
+
+interface ChartData {
+  name: string;
+  value: number;
+  color?: string;
+}
+
+interface RevenueData {
+  month: string;
+  revenue: number;
+  clients: number;
 }
 
 // Server-side data fetching functions
@@ -328,6 +346,76 @@ async function getDashboardActivities(organizationId: string): Promise<ActivityI
   }
 }
 
+async function getRevenueChartData(organizationId: string): Promise<RevenueData[]> {
+  try {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const currentMonth = new Date().getMonth()
+    
+    const data = []
+    for (let i = 5; i >= 0; i--) {
+      const monthIndex = (currentMonth - i + 12) % 12
+      const monthStart = new Date(new Date().getFullYear(), monthIndex, 1)
+      const monthEnd = new Date(new Date().getFullYear(), monthIndex + 1, 0)
+      
+      const [revenue, clients] = await Promise.all([
+        db.invoice.aggregate({
+          where: {
+            organizationId,
+            status: 'PAID',
+            createdAt: {
+              gte: monthStart,
+              lte: monthEnd
+            }
+          },
+          _sum: { total: true }
+        }),
+        db.client.count({
+          where: {
+            organizationId,
+            status: 'ACTIVE',
+            createdAt: {
+              gte: monthStart,
+              lte: monthEnd
+            }
+          }
+        })
+      ])
+      
+      data.push({
+        month: months[monthIndex],
+        revenue: revenue._sum.total || 0,
+        clients: clients
+      })
+    }
+    
+    return data
+  } catch (error) {
+    console.error('Revenue chart data error:', error)
+    return []
+  }
+}
+
+async function getCaseStatusData(organizationId: string): Promise<ChartData[]> {
+  try {
+    const [open, closed, pending, inProgress] = await Promise.all([
+      db.case.count({ where: { organizationId, status: 'OPEN' } }),
+      db.case.count({ where: { organizationId, status: 'CLOSED' } }),
+      db.case.count({ where: { organizationId, status: 'PENDING' } }),
+      db.case.count({ where: { organizationId, status: 'IN_PROGRESS' } })
+    ])
+    
+    return [
+      { name: 'Open', value: open, color: '#3b82f6' },
+      { name: 'In Progress', value: inProgress, color: '#f59e0b' },
+      { name: 'Pending', value: pending, color: '#8b5cf6' },
+      { name: 'Closed', value: closed, color: '#10b981' }
+    ]
+  } catch (error) {
+    console.error('Case status data error:', error)
+    return []
+  }
+}
+
 export default async function DashboardPage() {
   const session = await auth()
   
@@ -343,9 +431,11 @@ export default async function DashboardPage() {
   }
 
   // Fetch dashboard data server-side
-  const [stats, activities] = await Promise.all([
+  const [stats, activities, revenueData, caseStatusData] = await Promise.all([
     getDashboardStats(organizationId),
-    getDashboardActivities(organizationId)
+    getDashboardActivities(organizationId),
+    getRevenueChartData(organizationId),
+    getCaseStatusData(organizationId)
   ])
 
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
@@ -428,26 +518,33 @@ export default async function DashboardPage() {
 
 
   return (
-    <div className="space-y-4 md:space-y-6 w-full container-overflow-fix">
-      <div className="w-full">
-        <h1 className="text-2xl md:text-3xl font-bold laptop-heading">
-          Dobrodošli, {session.user.name?.split(' ')[0] || 'korisniče'}!
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm md:text-base laptop-text">
-          Evo pregleda vaše kancelarije
+    <div className="space-y-6 w-full">
+      {/* Welcome Header */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" />
+          <h1 className="text-2xl md:text-3xl font-bold">
+            Welcome back, {session.user.name?.split(' ')[0] || 'User'}!
+          </h1>
+        </div>
+        <p className="text-muted-foreground">
+          Here's what's happening with your practice today
         </p>
       </div>
 
       {/* Quick Actions */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg md:text-xl">Brze akcije</CardTitle>
-          <CardDescription className="text-sm">
-            Često korištene funkcionalnosti
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <Activity className="h-5 w-5 text-primary" />
+            Quick Actions
+          </CardTitle>
+          <CardDescription>
+            Frequently used features to boost your productivity
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="responsive-grid responsive-grid-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {quickActions.map((action) => {
               const Icon = action.icon
               return (
@@ -455,13 +552,15 @@ export default async function DashboardPage() {
                   key={action.name}
                   variant="outline"
                   asChild
-                  className="h-auto p-3 md:p-4 flex flex-col items-center gap-2 min-h-[80px] w-full grid-overflow-fix"
+                  className="h-auto p-4 flex flex-col items-center gap-3 hover:shadow-md transition-all duration-200 group"
                 >
                   <Link href={action.href}>
-                    <Icon className="h-5 w-5 flex-shrink-0" />
-                    <div className="text-center w-full">
-                      <div className="font-medium text-xs md:text-sm leading-tight text-responsive-truncate">{action.name}</div>
-                      <div className="text-xs text-muted-foreground leading-tight text-responsive-truncate">{action.description}</div>
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                      <Icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="text-center">
+                      <div className="font-medium text-sm">{action.name}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{action.description}</div>
                     </div>
                   </Link>
                 </Button>
@@ -471,91 +570,184 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Stats Grid - Mobile Optimized */}
-      <div className="responsive-grid responsive-grid-4">
+      {/* Enhanced Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
-            name: 'Aktivni klijenti',
+            name: 'Active Clients',
             value: stats.activeClients.current.toString(),
             icon: Users,
-            description: 'Trenutno aktivno',
+            description: 'Currently active',
             trend: stats.activeClients.trend,
-            percentage: stats.activeClients.percentage
+            percentage: stats.activeClients.percentage,
+            color: 'text-blue-600',
+            bgColor: 'bg-blue-50 dark:bg-blue-950/20'
           },
           {
-            name: 'Otvoreni predmeti',
+            name: 'Open Cases',
             value: stats.openCases.current.toString(),
             icon: Briefcase,
-            description: 'U obradi',
+            description: 'In progress',
             trend: stats.openCases.trend,
-            percentage: stats.openCases.percentage
+            percentage: stats.openCases.percentage,
+            color: 'text-green-600',
+            bgColor: 'bg-green-50 dark:bg-green-950/20'
           },
           {
-            name: 'Dokumenti',
+            name: 'Documents',
             value: stats.documentsUploaded.current.toString(),
             icon: FileText,
-            description: 'Ukupno uploadano',
+            description: 'Total uploaded',
             trend: stats.documentsUploaded.trend,
-            percentage: stats.documentsUploaded.percentage
+            percentage: stats.documentsUploaded.percentage,
+            color: 'text-purple-600',
+            bgColor: 'bg-purple-50 dark:bg-purple-950/20'
           },
           {
-            name: 'Ovaj mjesec',
+            name: 'This Month',
             value: `€${stats.monthlyRevenue.current.toFixed(2)}`,
             icon: TrendingUp,
-            description: 'Fakturirano',
+            description: 'Revenue generated',
             trend: stats.monthlyRevenue.trend,
-            percentage: stats.monthlyRevenue.percentage
+            percentage: stats.monthlyRevenue.percentage,
+            color: 'text-orange-600',
+            bgColor: 'bg-orange-50 dark:bg-orange-950/20'
           },
         ].map((stat) => {
           const Icon = stat.icon
           return (
-            <TooltipProvider key={stat.name}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Card className="p-3 md:p-6 w-full grid-overflow-fix card-laptop hover:shadow-md transition-shadow cursor-pointer">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0">
-                      <CardTitle className="text-xs md:text-sm font-medium leading-tight text-responsive-truncate pr-2 laptop-text">
-                        {stat.name}
-                      </CardTitle>
-                      <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    </CardHeader>
-                    <CardContent className="px-0">
-                      <div className="text-lg md:text-xl lg:text-2xl font-bold text-responsive-truncate">{stat.value}</div>
-                      <div className="flex items-center gap-1 mt-1">
-                        {getTrendIcon(stat.trend)}
-                        <span className={`text-xs ${getTrendColor(stat.trend)}`}>
-                          {stat.percentage}%
-                        </span>
-                      </div>
-                      <div className="mt-2">
-                        <Progress 
-                          value={Math.min(stat.percentage, 100)} 
-                          className="h-1"
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-tight text-responsive-truncate laptop-text mt-2">
-                        {stat.description}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Kliknite za detalje o {stat.name.toLowerCase()}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Card key={stat.name} className="border-0 shadow-sm hover:shadow-md transition-all duration-200 group cursor-pointer">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className={cn("h-12 w-12 rounded-lg flex items-center justify-center", stat.bgColor)}>
+                    <Icon className={cn("h-6 w-6", stat.color)} />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {getTrendIcon(stat.trend)}
+                    <span className={cn("text-sm font-medium", getTrendColor(stat.trend))}>
+                      {stat.percentage}%
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <p className="text-2xl font-bold">{stat.value}</p>
+                  <p className="text-sm font-medium text-muted-foreground mt-1">{stat.name}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+                </div>
+                <div className="mt-4">
+                  <Progress 
+                    value={Math.min(stat.percentage, 100)} 
+                    className="h-2"
+                  />
+                </div>
+              </CardContent>
+            </Card>
           )
         })}
       </div>
 
-      <Separator className="my-6" />
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue Chart */}
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              Revenue Trend
+            </CardTitle>
+            <CardDescription>
+              Monthly revenue and client growth over the last 6 months
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={revenueData}>
+                  <defs>
+                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <RechartsTooltip 
+                    formatter={(value, name) => [
+                      name === 'revenue' ? `€${value}` : value,
+                      name === 'revenue' ? 'Revenue' : 'New Clients'
+                    ]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#3b82f6"
+                    fillOpacity={1}
+                    fill="url(#revenueGradient)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Recent Activity - Mobile Optimized */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg md:text-xl">Nedavne aktivnosti</CardTitle>
-          <CardDescription className="text-sm">
-            Posljednje aktivnosti u vašoj kancelariji
+        {/* Case Status Chart */}
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <PieChartIcon className="h-5 w-5 text-primary" />
+              Case Status Distribution
+            </CardTitle>
+            <CardDescription>
+              Overview of your case portfolio by status
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={caseStatusData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {caseStatusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip formatter={(value) => [value, 'Cases']} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {caseStatusData.map((item) => (
+                <div key={item.name} className="flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-sm text-muted-foreground">{item.name}</span>
+                  <span className="text-sm font-medium ml-auto">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <Activity className="h-5 w-5 text-primary" />
+            Recent Activity
+          </CardTitle>
+          <CardDescription>
+            Latest activities in your practice
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -563,43 +755,46 @@ export default async function DashboardPage() {
             <Alert>
               <Briefcase className="h-4 w-4" />
               <AlertDescription>
-                <div className="text-center py-4">
-                  <p className="text-sm font-medium">Još nema aktivnosti</p>
+                <div className="text-center py-8">
+                  <p className="text-sm font-medium">No activities yet</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Započnite dodavanjem klijenata i predmeta
+                    Start by adding clients and cases to see activity here
                   </p>
                 </div>
               </AlertDescription>
             </Alert>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {activities.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg border">
-                  <div className="flex-shrink-0 mt-0.5">
-                    {getActivityIcon(activity.type)}
+                <div key={activity.id} className="flex items-start gap-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                  <div className="flex-shrink-0 mt-1">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      {getActivityIcon(activity.type)}
+                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium truncate">{activity.title}</p>
+                    <div className="flex items-start justify-between">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium">{activity.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          by {activity.user}
+                        </p>
+                      </div>
                       <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
                         {formatDate(activity.timestamp)}
                       </span>
-
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {activity.user}
-                    </p>
                     {activity.relatedEntity && (
-                      <div className="mt-2">
+                      <div className="mt-3">
                         <Button
                           variant="ghost"
                           size="sm"
                           asChild
-                          className="h-6 px-2 text-xs"
+                          className="h-7 px-3 text-xs"
                         >
                           <Link href={`/dashboard/${activity.relatedEntity.type}s/${activity.relatedEntity.id}`}>
                             <Eye className="h-3 w-3 mr-1" />
-                            Pogledaj
+                            View Details
                           </Link>
                         </Button>
                       </div>
