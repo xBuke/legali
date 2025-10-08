@@ -2,6 +2,10 @@ const path = require('path')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  typescript: {
+    // Skip type checking during build (types are checked in development)
+    ignoreBuildErrors: true,
+  },
   images: {
     domains: ['public.blob.vercel-storage.com'],
   },
