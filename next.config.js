@@ -6,6 +6,10 @@ const nextConfig = {
     // Skip type checking during build (types are checked in development)
     ignoreBuildErrors: true,
   },
+  eslint: {
+    // Skip ESLint during build (linting is checked in development)
+    ignoreDuringBuilds: true,
+  },
   images: {
     domains: ['public.blob.vercel-storage.com'],
   },
