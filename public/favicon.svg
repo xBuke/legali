@@ -1,0 +1,19 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="16" fill="#667eea"/>
+  
+  <!-- Scale base -->
+  <rect x="15" y="8" width="2" height="16" fill="white"/>
+  
+  <!-- Scale beam -->
+  <rect x="6" y="14" width="20" height="2" fill="white"/>
+  
+  <!-- Left pan -->
+  <path d="M8 16L12 20H4L8 16Z" fill="white"/>
+  
+  <!-- Right pan -->
+  <path d="M24 16L20 20H28L24 16Z" fill="white"/>
+  
+  <!-- Center pivot -->
+  <circle cx="16" cy="15" r="1.5" fill="white"/>
+</svg>

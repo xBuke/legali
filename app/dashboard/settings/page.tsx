@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Settings, User, Shield, Globe, Database, Eye, EyeOff, CreditCard, Check, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { TeamMemberManagement } from '@/components/team/team-member-management';
 
 interface User {
   id: string;
@@ -702,26 +703,15 @@ export default function SettingsPage() {
                       Upravljaj članovima
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                  <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Upravljanje članovima tima</DialogTitle>
                       <DialogDescription>
                         Dodajte, uklonite ili upravljajte članovima vašeg tima.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="p-4 border rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">Test User</p>
-                            <p className="text-sm text-gray-600">test@example.com</p>
-                          </div>
-                          <Badge variant="secondary">ADMIN</Badge>
-                        </div>
-                      </div>
-                      <div className="text-center py-4 text-gray-500">
-                        <p>Funkcionalnost upravljanja članovima tima bit će dostupna u budućim verzijama.</p>
-                      </div>
+                    <div className="max-h-[60vh] overflow-y-auto">
+                      <TeamMemberManagement />
                     </div>
                     <DialogFooter>
                       <Button variant="outline" onClick={() => setTeamModalOpen(false)}>

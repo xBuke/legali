@@ -52,6 +52,7 @@ model Organization {
   caseTimeline      CaseTimeline[]
   caseDeadlines     CaseDeadline[]
   invoiceTemplates  InvoiceTemplate[]
+  teamInvitations   TeamInvitation[]
   
   @@index([stripeCustomerId])
   @@map("organizations")
@@ -103,6 +104,8 @@ model User {
   caseDeadlinesCreated  CaseDeadline[] @relation("DeadlineCreatedBy")
   documentTemplates DocumentTemplate[] @relation("TemplateAuthor")
   invoiceTemplates  InvoiceTemplate[]
+  invitationsSent    TeamInvitation[] @relation("InvitationSentBy")
+  invitationAccepted TeamInvitation? @relation("InvitationAcceptedBy")
   
   @@index([organizationId])
   @@map("users")
@@ -622,4 +625,39 @@ model InvoiceTemplate {
   
   @@index([organizationId])
   @@map("invoice_templates")
+}
+
+// ============================================
+// TEAM MEMBER INVITATIONS
+// ============================================
+
+model TeamInvitation {
+  id                String   @id @default(cuid())
+  email             String
+  role              String   // ADMIN, LAWYER, PARALEGAL, ACCOUNTANT, VIEWER
+  status            String   @default("PENDING") // PENDING, ACCEPTED, EXPIRED, CANCELLED
+  token             String   @unique // Secure invitation token
+  expiresAt         DateTime
+  acceptedAt        DateTime?
+  
+  // Who sent the invitation
+  invitedById       String
+  invitedBy         User     @relation("InvitationSentBy", fields: [invitedById], references: [id], onDelete: Cascade)
+  
+  // Which organization
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  // If accepted, link to the created user
+  acceptedUserId    String?  @unique
+  acceptedUser      User?    @relation("InvitationAcceptedBy", fields: [acceptedUserId], references: [id], onDelete: SetNull)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([organizationId])
+  @@index([email])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("team_invitations")
 }
