@@ -6,22 +6,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Users, 
   Plus, 
-  MoreVertical, 
   Mail, 
   Clock, 
   CheckCircle, 
   XCircle, 
-  AlertCircle,
   UserPlus,
   Trash2,
-  Edit,
   RefreshCw
 } from 'lucide-react'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -113,7 +110,7 @@ export function TeamMemberManagement() {
     if (canManageUsers()) {
       fetchData()
     }
-  }, [])
+  }, [canManageUsers])
 
   // Check if user can manage team members
   if (!canManageUsers()) {

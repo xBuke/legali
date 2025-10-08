@@ -271,7 +271,7 @@ async function getDashboardActivities(organizationId: string): Promise<ActivityI
     })
 
     // Transform activities to match the interface
-    return activities.map((activity: any) => {
+    return activities.map((activity: Record<string, unknown>) => {
       let type: 'client_created' | 'case_opened' | 'document_uploaded' | 'invoice_sent' | 'payment_received' = 'client_created'
       let title = activity.description
       let relatedEntity = null

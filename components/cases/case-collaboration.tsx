@@ -21,7 +21,6 @@ import {
   Send,
   Clock,
   CheckCircle,
-  AlertCircle
 } from 'lucide-react'
 
 interface TeamMember {

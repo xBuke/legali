@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,7 +11,6 @@ import {
   Plus, 
   Edit, 
   Trash2, 
-  User,
   Calendar,
   Clock,
   ChevronDown,
@@ -45,7 +43,7 @@ interface CaseNotesProps {
   className?: string;
 }
 
-export function CaseNotes({ caseId, caseNumber, caseTitle, className }: CaseNotesProps) {
+export function CaseNotes({ caseId, caseNumber, className }: CaseNotesProps) {
   const [notes, setNotes] = useState<CaseNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [newNote, setNewNote] = useState('');
@@ -58,7 +56,7 @@ export function CaseNotes({ caseId, caseNumber, caseTitle, className }: CaseNote
 
   useEffect(() => {
     loadNotes();
-  }, [caseId]);
+  }, [caseId, loadNotes]);
 
   const loadNotes = async () => {
     try {
@@ -158,7 +156,7 @@ export function CaseNotes({ caseId, caseNumber, caseTitle, className }: CaseNote
       } else {
         throw new Error();
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Greška pri ažuriranju napomene',
@@ -187,7 +185,7 @@ export function CaseNotes({ caseId, caseNumber, caseTitle, className }: CaseNote
       } else {
         throw new Error();
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Greška pri brisanju napomene',

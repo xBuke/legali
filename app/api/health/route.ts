@@ -117,8 +117,7 @@ export async function POST() {
 
     // Test database with more detailed info
     try {
-      const dbStartTime = Date.now();
-      const result = await db.$queryRaw`SELECT 1 as health_check, NOW() as current_time`;
+      await db.$queryRaw`SELECT 1 as health_check, NOW() as current_time`;
       detailedHealth.database = {
         connected: true,
         error: null

@@ -5,13 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -47,7 +40,7 @@ interface ClientSearchFiltersProps {
   }>
 }
 
-export function ClientSearchFilters({ filters, onFiltersChange, clients }: ClientSearchFiltersProps) {
+export function ClientSearchFilters({ filters, onFiltersChange }: ClientSearchFiltersProps) {
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false)
 
   const handleSearchChange = (value: string) => {

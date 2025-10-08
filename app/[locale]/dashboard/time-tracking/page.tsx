@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
@@ -24,18 +24,10 @@ import {
   Clock, 
   Edit, 
   Trash2, 
-  Filter, 
-  Play, 
-  Pause, 
   Square,
-  Search,
   Timer,
   TrendingUp,
   DollarSign,
-  Calendar,
-  User,
-  Briefcase,
-  FileText,
   PlayCircle,
   PauseCircle,
   StopCircle
@@ -90,9 +82,7 @@ interface Case {
 
 export default function TimeTrackingPage() {
   const t = useTranslations();
-  const { data: session } = useSession();
   const { toast } = useToast();
-  const { hasPermission } = usePermissions();
   
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [cases, setCases] = useState<Case[]>([]);
@@ -140,7 +130,7 @@ export default function TimeTrackingPage() {
     loadTimeEntries();
     loadCases();
     loadUsers();
-  }, []);
+  }, [loadTimeEntries, loadCases, loadUsers]);
 
   // Timer effect
   useEffect(() => {
@@ -203,7 +193,7 @@ export default function TimeTrackingPage() {
       if (response.ok) {
         const data = await response.json();
         const usersArray = Array.isArray(data) ? data : [];
-        setUsers(usersArray.map((user: any) => ({
+        setUsers(usersArray.map((user: { id: string; name: string; email: string }) => ({
           id: user.id,
           name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
           email: user.email,

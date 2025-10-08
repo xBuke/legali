@@ -8,17 +8,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
 import { 
   Workflow, 
   Plus, 
   Edit, 
-  Trash2, 
   ArrowRight, 
   Clock, 
-  FileText, 
-  Users,
+  FileText,
   CheckCircle,
   AlertCircle
 } from 'lucide-react'
@@ -183,7 +179,7 @@ const defaultWorkflows: CaseWorkflow[] = [
   }
 ]
 
-export function CaseWorkflow({ caseId, currentWorkflow, onWorkflowChange }: CaseWorkflowProps) {
+export function CaseWorkflow({ currentWorkflow, onWorkflowChange }: CaseWorkflowProps) {
   const [selectedWorkflow, setSelectedWorkflow] = useState<CaseWorkflow | null>(currentWorkflow || null)
   const [isCreatingWorkflow, setIsCreatingWorkflow] = useState(false)
   const [newWorkflow, setNewWorkflow] = useState<Partial<CaseWorkflow>>({

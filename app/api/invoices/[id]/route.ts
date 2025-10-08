@@ -112,7 +112,7 @@ export async function PATCH(
       )
     }
 
-    const updateData: any = {}
+    const updateData: Record<string, unknown> = {}
     if (status !== undefined) updateData.status = status
     if (dueDate !== undefined) updateData.dueDate = new Date(dueDate)
     if (notes !== undefined) updateData.notes = notes

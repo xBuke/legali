@@ -23,10 +23,8 @@ import {
   Plus, 
   FileText, 
   Download, 
-  Edit, 
   Trash2, 
   Eye, 
-  Calendar, 
   Euro, 
   CreditCard, 
   FileSearch, 
@@ -34,15 +32,13 @@ import {
   Receipt,
   TrendingUp,
   DollarSign,
-  Clock,
   CheckCircle,
-  AlertCircle,
-  XCircle
+  AlertCircle
 } from 'lucide-react';
 import { PaymentList } from '@/components/payments/payment-list';
 import { InvoiceTemplates } from '@/components/invoices/invoice-templates';
 import { InvoiceSearchFilters } from '@/components/invoices/invoice-search-filters';
-import { CustomLineChart, CustomBarChart, CustomPieChart } from '@/components/charts';
+import { CustomLineChart, CustomPieChart } from '@/components/charts';
 
 interface Invoice {
   id: string;
@@ -144,9 +140,7 @@ interface CaseInvoicePreview {
 
 export default function InvoicesPage() {
   const t = useTranslations();
-  const { data: session } = useSession();
   const { toast } = useToast();
-  const { hasPermission } = usePermissions();
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
@@ -191,7 +185,7 @@ export default function InvoicesPage() {
     loadInvoices();
     loadClients();
     loadCases();
-  }, []);
+  }, [loadInvoices, loadClients, loadCases]);
 
   const loadInvoices = async () => {
     try {
@@ -208,8 +202,8 @@ export default function InvoicesPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      console.error('Error loading invoices:', error);
+    } catch {
+      console.error('Error loading invoices');
       setInvoices([]);
       toast({
         title: 'Greška',
@@ -388,7 +382,7 @@ export default function InvoicesPage() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const getClientName = (client: any) => {
+  const getClientName = (client: { companyName?: string; firstName?: string; lastName?: string }) => {
     if (client.companyName) {
       return client.companyName;
     }
@@ -521,7 +515,7 @@ export default function InvoicesPage() {
     }
   };
 
-  const handleDownloadPDF = async (invoiceId: string, invoiceNumber: string) => {
+  const handleDownloadPDF = async (invoiceId: string) => {
     try {
       const response = await fetch(`/api/invoices/${invoiceId}/pdf`);
       
@@ -558,7 +552,7 @@ export default function InvoicesPage() {
     }
   };
 
-  const handlePreviewPDF = (invoiceId: string, invoiceNumber: string) => {
+  const handlePreviewPDF = (invoiceId: string) => {
     try {
       // Open PDF in new tab for preview
       const previewUrl = `/api/invoices/${invoiceId}/preview`;
@@ -637,7 +631,7 @@ export default function InvoicesPage() {
     setIsDialogOpen(true);
   };
 
-  const handleTemplateSelect = (template: any) => {
+  const handleTemplateSelect = (template: Record<string, unknown>) => {
     // When a template is selected, open the create invoice dialog with template data
     setFormData({
       clientId: '',
@@ -787,14 +781,14 @@ export default function InvoicesPage() {
                   <Button 
                     type="button" 
                     variant="outline"
-                    onClick={() => handlePreviewPDF(editingInvoice.id, editingInvoice.invoiceNumber)}
+                    onClick={() => handlePreviewPDF(editingInvoice.id)}
                   >
                     <FileSearch className="h-4 w-4 mr-2" />
                     Pregledaj PDF
                   </Button>
                   <Button 
                     type="button" 
-                    onClick={() => handleDownloadPDF(editingInvoice.id, editingInvoice.invoiceNumber)}
+                    onClick={() => handleDownloadPDF(editingInvoice.id)}
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Preuzmi PDF
@@ -1345,7 +1339,7 @@ export default function InvoicesPage() {
                         <Button 
                           size="icon" 
                           variant="outline"
-                          onClick={() => handlePreviewPDF(invoice.id, invoice.invoiceNumber)}
+                          onClick={() => handlePreviewPDF(invoice.id)}
                           title="Pregledaj PDF račun"
                           className="min-h-[44px] min-w-[44px]"
                         >
@@ -1354,7 +1348,7 @@ export default function InvoicesPage() {
                         <Button 
                           size="icon" 
                           variant="outline"
-                          onClick={() => handleDownloadPDF(invoice.id, invoice.invoiceNumber)}
+                          onClick={() => handleDownloadPDF(invoice.id)}
                           title="Preuzmi PDF račun"
                           className="min-h-[44px] min-w-[44px]"
                         >
@@ -1443,7 +1437,7 @@ export default function InvoicesPage() {
                             <Button 
                               size="sm" 
                               variant="outline"
-                              onClick={() => handlePreviewPDF(invoice.id, invoice.invoiceNumber)}
+                              onClick={() => handlePreviewPDF(invoice.id)}
                               title="Pregledaj PDF račun"
                             >
                               <FileSearch className="h-4 w-4" />
@@ -1451,7 +1445,7 @@ export default function InvoicesPage() {
                             <Button 
                               size="sm" 
                               variant="outline"
-                              onClick={() => handleDownloadPDF(invoice.id, invoice.invoiceNumber)}
+                              onClick={() => handleDownloadPDF(invoice.id)}
                               title="Preuzmi PDF račun"
                             >
                               <Download className="h-4 w-4" />

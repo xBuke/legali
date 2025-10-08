@@ -11,20 +11,11 @@ import {
   FileText, 
   Clock, 
   Receipt,
-  Shield,
   Check,
   Star,
   ArrowRight,
   Zap,
-  Globe,
-  Lock,
-  BarChart3,
-  Calendar,
-  MessageSquare,
-  Download,
-  Upload,
-  Bell,
-  Settings
+  BarChart3
 } from 'lucide-react'
 
 export default function HomePage() {

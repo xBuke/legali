@@ -37,7 +37,7 @@ export async function GET(
     }
 
     // Return the decrypted file
-    return new NextResponse(result.data as any, {
+    return new NextResponse(result.data as ArrayBuffer, {
       headers: {
         'Content-Type': result.mimeType || 'application/octet-stream',
         'Content-Disposition': `attachment; filename="${result.fileName}"`,

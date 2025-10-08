@@ -23,19 +23,14 @@ import {
   Clock,
   Receipt,
   Settings,
-  Search,
   Plus,
   BarChart3,
   Shield,
-  User,
-  Building,
-  CreditCard,
   UserPlus,
   FilePlus,
   Timer,
   ArrowRight,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 interface CommandPaletteProps {
   isOpen: boolean

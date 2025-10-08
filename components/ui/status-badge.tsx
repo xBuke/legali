@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { CheckCircle, Clock, AlertCircle, XCircle, Dot } from 'lucide-react'
+import { CheckCircle, Clock, AlertCircle, XCircle } from 'lucide-react'
 
 interface StatusBadgeProps {
   status: 'active' | 'inactive' | 'pending' | 'completed' | 'error' | 'warning' | 'info'

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { hr } from 'date-fns/locale';
@@ -13,11 +12,6 @@ import {
   Clock,
   Receipt, 
   Euro, 
-  Plus, 
-  Edit, 
-  Trash2,
-  Eye,
-  Download,
   Calendar,
   Briefcase
 } from 'lucide-react';
@@ -52,7 +46,7 @@ export function CaseTimeline({ caseId, caseNumber, caseTitle }: CaseTimelineProp
 
   useEffect(() => {
     loadActivities();
-  }, [caseId]);
+  }, [caseId, loadActivities]);
 
   const loadActivities = async () => {
     try {
@@ -79,7 +73,7 @@ export function CaseTimeline({ caseId, caseNumber, caseTitle }: CaseTimelineProp
     }
   };
 
-  const getActivityIcon = (entity: string, action: string) => {
+  const getActivityIcon = (entity: string) => {
     switch (entity) {
       case 'Client':
         return <User className="h-4 w-4" />;
@@ -157,7 +151,7 @@ export function CaseTimeline({ caseId, caseNumber, caseTitle }: CaseTimelineProp
         if (changedFields.length > 0) {
           description += ` (${changedFields.join(', ')})`;
         }
-      } catch (error) {
+      } catch {
         // Ignore JSON parse errors
       }
     }

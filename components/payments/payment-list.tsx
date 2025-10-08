@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Trash2, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { hr } from 'date-fns/locale';
 import { PaymentForm } from './payment-form';
@@ -44,7 +44,7 @@ export function PaymentList({ invoiceId, invoiceNumber, invoiceTotal, onPayments
 
   useEffect(() => {
     loadPayments();
-  }, [invoiceId]);
+  }, [invoiceId, loadPayments]);
 
   const loadPayments = async () => {
     try {

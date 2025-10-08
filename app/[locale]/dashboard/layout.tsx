@@ -4,7 +4,6 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ThemeToggle } from '@/components/theme-toggle'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { ThemePicker } from '@/components/theme-picker'
 import { CommandPalette } from '@/components/command-palette'
@@ -25,7 +24,6 @@ import {
   Settings,
   LogOut,
   Menu,
-  Search,
   User,
   ChevronDown,
   Command,

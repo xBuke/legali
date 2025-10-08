@@ -14,10 +14,8 @@ import {
   Filter, 
   Save, 
   Bookmark, 
-  Clock, 
   Star,
   X,
-  Plus,
   SortAsc,
   SortDesc
 } from 'lucide-react'

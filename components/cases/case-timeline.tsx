@@ -46,7 +46,7 @@ export function CaseTimeline({ caseId }: CaseTimelineProps) {
 
   useEffect(() => {
     fetchTimeline()
-  }, [caseId])
+  }, [caseId, fetchTimeline])
 
   async function fetchTimeline() {
     try {

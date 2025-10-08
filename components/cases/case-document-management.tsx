@@ -1,14 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
 import { 
   FileText, 
   Upload, 
@@ -16,9 +15,7 @@ import {
   Eye, 
   Edit, 
   Trash2, 
-  Plus,
   Search,
-  Filter,
   Tag,
   Clock,
   User,
@@ -172,9 +169,9 @@ const categories = [
   'Tužbe', 'Dokazi', 'Korespondencija', 'Ugovori', 'Zahtjevi', 'Odluke', 'Presude', 'Ostalo'
 ]
 
-export function CaseDocumentManagement({ caseId, caseNumber }: CaseDocumentManagementProps) {
+export function CaseDocumentManagement({ caseNumber }: CaseDocumentManagementProps) {
   const [documents, setDocuments] = useState<CaseDocument[]>(mockDocuments)
-  const [templates, setTemplates] = useState<DocumentTemplate[]>(mockTemplates)
+  const [templates] = useState<DocumentTemplate[]>(mockTemplates)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')

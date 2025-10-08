@@ -6,14 +6,6 @@ import { uploadEncryptedDocument } from '@/lib/document-storage'
 export const dynamic = 'force-dynamic'
 
 // Types for document upload
-interface DocumentUploadData {
-  caseId?: string
-  clientId?: string
-  title?: string
-  description?: string
-  category?: string
-  tags?: string
-}
 
 // GET /api/documents - List all documents
 export async function GET(request: NextRequest) {

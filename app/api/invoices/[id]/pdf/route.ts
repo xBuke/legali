@@ -89,7 +89,7 @@ export async function GET(
     // Create PDF document
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595.28, 841.89]); // A4 size
-    const { width, height } = page.getSize();
+    const { height } = page.getSize();
 
     // Load fonts
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -99,7 +99,7 @@ export async function GET(
     const black = rgb(0, 0, 0);
 
     // Helper function to draw text
-    const drawText = (text: string, x: number, y: number, options: any = {}) => {
+    const drawText = (text: string, x: number, y: number, options: Record<string, unknown> = {}) => {
       page.drawText(text, {
         x,
         y,
@@ -188,7 +188,6 @@ export async function GET(
         
         // Description (wrap if too long)
         const description = toAscii(entry.description);
-        const maxDescWidth = 180;
         if (description.length > 30) {
           const words = description.split(' ');
           let line = '';
@@ -295,7 +294,7 @@ export async function GET(
     const pdfBytes = await pdfDoc.save();
 
     // Return PDF as response
-    return new NextResponse(pdfBytes as any, {
+    return new NextResponse(pdfBytes as ArrayBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="racun-${invoice.invoiceNumber}.pdf"`,

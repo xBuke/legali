@@ -22,7 +22,7 @@ interface CreateCaseRequest {
 }
 
 // GET /api/cases - List all cases
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const user = await getAuthenticatedUser()
     

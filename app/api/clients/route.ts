@@ -5,15 +5,6 @@ import { db } from '@/lib/db'
 export const dynamic = 'force-dynamic'
 
 // Types for client data
-interface Client {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  organizationId: string
-  createdAt: Date
-  updatedAt: Date
-}
 
 interface CreateClientRequest {
   clientType?: string
@@ -37,7 +28,7 @@ interface CreateClientRequest {
  * GET /api/clients
  * List all clients for the authenticated user's organization
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const user = await getAuthenticatedUser()
     

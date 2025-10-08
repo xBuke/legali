@@ -22,12 +22,11 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const caseId = searchParams.get('caseId');
     const category = searchParams.get('category');
     const caseType = searchParams.get('caseType');
 
     // Build where clause
-    const whereClause: any = {
+    const whereClause: Record<string, unknown> = {
       OR: [
         { isPublic: true },
         { authorId: session.user.id },

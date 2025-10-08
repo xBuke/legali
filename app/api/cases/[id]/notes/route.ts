@@ -59,7 +59,7 @@ export async function GET(
       type: 'note',
       isPrivate: false,
     })).map(note => {
-      const { createdBy, ...noteWithoutCreatedBy } = note;
+      const { createdBy: _, ...noteWithoutCreatedBy } = note;
       return noteWithoutCreatedBy;
     });
 

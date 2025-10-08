@@ -65,8 +65,8 @@ export async function GET(
       isPublic: template.isPublic,
       createdAt: template.createdAt.toISOString(),
       updatedAt: template.updatedAt.toISOString(),
-      author: (template as any).author,
-      usageCount: (template as any)._count?.documents || 0,
+      author: (template as Record<string, unknown>).author,
+      usageCount: (template as Record<string, unknown>)._count?.documents || 0,
     };
 
     return NextResponse.json(templateWithUsage);
@@ -171,8 +171,8 @@ export async function PATCH(
       isPublic: template.isPublic,
       createdAt: template.createdAt.toISOString(),
       updatedAt: template.updatedAt.toISOString(),
-      author: (template as any).author,
-      usageCount: (template as any)._count?.documents || 0,
+      author: (template as Record<string, unknown>).author,
+      usageCount: (template as Record<string, unknown>)._count?.documents || 0,
     };
 
     return NextResponse.json(templateWithUsage);

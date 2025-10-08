@@ -13,12 +13,9 @@ import {
   Plus, 
   Edit, 
   Trash2, 
-  Download,
-  Upload,
   Copy,
   Eye,
-  Search,
-  Filter
+  Search
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -56,7 +53,7 @@ export function DocumentTemplates({ caseId, caseType, onTemplateSelect, classNam
   const [editingTemplate, setEditingTemplate] = useState<DocumentTemplate | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedCaseType, setSelectedCaseType] = useState('');
+  const [selectedCaseType] = useState('');
   const { toast } = useToast();
 
   // Form states
@@ -96,7 +93,7 @@ export function DocumentTemplates({ caseId, caseType, onTemplateSelect, classNam
 
   useEffect(() => {
     loadTemplates();
-  }, []);
+  }, [loadTemplates]);
 
   const loadTemplates = async () => {
     try {
@@ -147,7 +144,7 @@ export function DocumentTemplates({ caseId, caseType, onTemplateSelect, classNam
       } else {
         throw new Error();
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Greška pri stvaranju predloška',
@@ -190,7 +187,7 @@ export function DocumentTemplates({ caseId, caseType, onTemplateSelect, classNam
       } else {
         throw new Error();
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Greška pri ažuriranju predloška',
@@ -219,7 +216,7 @@ export function DocumentTemplates({ caseId, caseType, onTemplateSelect, classNam
       } else {
         throw new Error();
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Greška pri brisanju predloška',
@@ -266,7 +263,7 @@ export function DocumentTemplates({ caseId, caseType, onTemplateSelect, classNam
           title: 'Uspjeh',
           description: 'Predložak je otvoren u novom prozoru za kopiranje',
         });
-      } catch (error) {
+      } catch {
         toast({
           title: 'Greška',
           description: 'Greška pri otvaranju predloška',

@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -15,22 +14,16 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { 
-  Settings, 
   User, 
   Shield, 
-  Globe, 
-  Database, 
   Eye, 
   EyeOff, 
   CreditCard, 
-  Check, 
-  X,
+  Check,
   Building2,
   Users,
   Palette,
-  Bell,
   Key,
-  HardDrive,
   Crown
 } from 'lucide-react';
 import { TeamMemberManagement } from '@/components/team/team-member-management';
@@ -102,8 +95,7 @@ export default function SettingsPage() {
   
   // Modal states
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
-  const [organizationModalOpen, setOrganizationModalOpen] = useState(false);
-  const [teamModalOpen, setTeamModalOpen] = useState(false);
+  const [organizationModalOpen] = useState(false);
   
   // Form states
   const [profileForm, setProfileForm] = useState({
@@ -129,7 +121,7 @@ export default function SettingsPage() {
     if (session?.user?.id) {
       fetchUserData();
     }
-  }, [session]);
+  }, [session, fetchUserData]);
 
   const fetchUserData = async () => {
     try {
@@ -267,140 +259,8 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
 
-    try {
-      const response = await fetch('/api/auth/me', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          firstName: profileForm.firstName,
-          lastName: profileForm.lastName,
-        }),
-      });
 
-      if (response.ok) {
-        const updatedUser = await response.json();
-        setUser(updatedUser);
-        toast({
-          title: 'Uspjeh',
-          description: 'Profil je uspješno ažuriran'
-        });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Greška pri ažuriranju profila');
-      }
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast({
-        title: 'Greška',
-        description: error instanceof Error ? error.message : 'Greška pri ažuriranju profila',
-        variant: 'destructive'
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast({
-        title: 'Greška',
-        description: 'Nove lozinke se ne podudaraju',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    if (passwordForm.newPassword.length < 8) {
-      toast({
-        title: 'Greška',
-        description: 'Nova lozinka mora imati najmanje 8 znakova',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const response = await fetch('/api/auth/password', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          currentPassword: passwordForm.currentPassword,
-          newPassword: passwordForm.newPassword,
-        }),
-      });
-
-      if (response.ok) {
-        toast({
-          title: 'Uspjeh',
-          description: 'Lozinka je uspješno promijenjena'
-        });
-        setPasswordModalOpen(false);
-        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Greška pri promjeni lozinke');
-      }
-    } catch (error) {
-      console.error('Error changing password:', error);
-      toast({
-        title: 'Greška',
-        description: error instanceof Error ? error.message : 'Greška pri promjeni lozinke',
-        variant: 'destructive'
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleOrganizationUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      const response = await fetch('/api/organizations', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: organizationForm.name,
-        }),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        toast({
-          title: 'Uspjeh',
-          description: 'Organizacija je uspješno ažurirana'
-        });
-        setOrganizationModalOpen(false);
-        // Optionally refresh subscription data to reflect changes
-        fetchUserData();
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Greška pri ažuriranju organizacije');
-      }
-    } catch (error) {
-      console.error('Error updating organization:', error);
-      toast({
-        title: 'Greška',
-        description: error instanceof Error ? error.message : 'Greška pri ažuriranju organizacije',
-        variant: 'destructive'
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
 
 
   if (loading) {

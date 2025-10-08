@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
@@ -22,7 +21,7 @@ import { CaseWorkflow } from './case-workflow'
 import { AdvancedCaseSearch } from './advanced-case-search'
 import { CaseCollaboration } from './case-collaboration'
 import { CaseDocumentManagement } from './case-document-management'
-import { LazyCaseDetails, LazySection } from './lazy-case-details'
+import { LazyCaseDetails } from './lazy-case-details'
 import { caseCache, cacheInvalidation } from '@/lib/case-cache'
 
 interface CaseManagementSuiteProps {
@@ -52,7 +51,7 @@ export function CaseManagementSuite({
   currentUser 
 }: CaseManagementSuiteProps) {
   const [activeTab, setActiveTab] = useState('overview')
-  const [features, setFeatures] = useState<Phase2Features>({
+  const [features] = useState<Phase2Features>({
     workflow: true,
     advancedSearch: true,
     collaboration: true,
@@ -61,7 +60,6 @@ export function CaseManagementSuite({
     lazyLoading: true
   })
   const [cacheStats, setCacheStats] = useState(caseCache.getStats())
-  const [isLoading, setIsLoading] = useState(false)
 
   // Update cache stats periodically
   useEffect(() => {
@@ -72,25 +70,22 @@ export function CaseManagementSuite({
     return () => clearInterval(interval)
   }, [])
 
-  const handleSearch = (filters: any, sortBy: string, sortOrder: 'asc' | 'desc') => {
+  const handleSearch = (filters: Record<string, unknown>, sortBy: string, sortOrder: 'asc' | 'desc') => {
     console.log('Advanced search:', { filters, sortBy, sortOrder })
     // Implement search logic with caching
   }
 
-  const handleSaveSearch = (search: any) => {
+  const handleSaveSearch = (search: Record<string, unknown>) => {
     console.log('Saved search:', search)
     // Implement save search logic
   }
 
-  const handleWorkflowChange = (workflow: any) => {
+  const handleWorkflowChange = (workflow: Record<string, unknown>) => {
     console.log('Workflow changed:', workflow)
     // Invalidate related cache
     cacheInvalidation.invalidateCase(caseId)
   }
 
-  const getFeatureStatus = (feature: keyof Phase2Features) => {
-    return features[feature] ? 'active' : 'inactive'
-  }
 
   const getFeatureIcon = (feature: keyof Phase2Features) => {
     const isActive = features[feature]

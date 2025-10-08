@@ -278,11 +278,6 @@ export default function ClientsPage() {
     return true
   })
 
-  const statusColors = {
-    ACTIVE: 'bg-green-500/10 text-green-500',
-    INACTIVE: 'bg-gray-500/10 text-gray-500',
-    POTENTIAL: 'bg-blue-500/10 text-blue-500',
-  }
 
   if (loading && clients.length === 0) {
     return (

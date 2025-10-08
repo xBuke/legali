@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     let body;
     try {
       body = await request.json();
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         { error: 'Invalid JSON in request body' },
         { status: 400 }
@@ -59,7 +59,6 @@ export async function POST(request: NextRequest) {
 
     const organization = user.organization
     const subscriptionTier = tier as SubscriptionTier
-    const plan = SUBSCRIPTION_PLANS[subscriptionTier]
     const priceId = STRIPE_PRICE_IDS[subscriptionTier]
 
     // Create or get Stripe customer

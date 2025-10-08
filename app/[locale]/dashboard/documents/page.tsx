@@ -127,7 +127,7 @@ export default function DocumentsPage() {
     fetchDocuments()
     fetchCases()
     fetchClients()
-  }, [])
+  }, [fetchDocuments, fetchCases, fetchClients])
 
   // Auto-populate client when case is selected
   useEffect(() => {
@@ -287,7 +287,7 @@ export default function DocumentsPage() {
       link.click()
       window.document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Nije moguće preuzeti dokument',
@@ -315,7 +315,7 @@ export default function DocumentsPage() {
       } else {
         throw new Error()
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Nije moguće obrisati dokument',

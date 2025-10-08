@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
  * GET /api/organizations
  * Get current user's organization
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth();
     

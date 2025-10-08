@@ -14,7 +14,8 @@ import {
   Calendar, 
   Eye,
   Search,
-  Filter
+  Filter,
+  FileText
 } from 'lucide-react';
 import { DocumentViewer } from '@/components/document-viewer';
 
@@ -60,7 +61,7 @@ export default function ClientDocumentsPage() {
 
   useEffect(() => {
     filterDocuments();
-  }, [filterDocuments]);
+  }, [documents, searchTerm, selectedCategory]);
 
   const loadDocuments = async () => {
     try {
@@ -179,12 +180,6 @@ export default function ClientDocumentsPage() {
     return new Date(dateString).toLocaleDateString('hr-HR');
   };
 
-  const getFileIcon = (mimeType: string) => {
-    if (mimeType.includes('pdf')) return 'FileText';
-    if (mimeType.includes('image')) return 'FileImage';
-    if (mimeType.includes('video')) return 'FileVideo';
-    return 'File';
-  };
 
   const handleDownload = (doc: Document) => {
     const link = document.createElement('a');

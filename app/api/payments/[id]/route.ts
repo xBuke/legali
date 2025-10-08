@@ -114,7 +114,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Plaćanje nije pronađeno' }, { status: 404 });
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (amount !== undefined) updateData.amount = amount;
     if (paymentDate !== undefined) updateData.paymentDate = new Date(paymentDate);
     if (paymentMethod !== undefined) updateData.paymentMethod = paymentMethod;

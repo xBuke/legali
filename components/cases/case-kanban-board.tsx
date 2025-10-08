@@ -231,23 +231,6 @@ export function CaseKanbanBoard({ cases, onEdit, onDelete, onStatusChange }: Cas
     },
   ]
 
-  const statusColors = {
-    OPEN: 'bg-blue-500/10 text-blue-500',
-    IN_PROGRESS: 'bg-yellow-500/10 text-yellow-500',
-    ON_HOLD: 'bg-orange-500/10 text-orange-500',
-    CLOSED_WON: 'bg-green-500/10 text-green-500',
-    CLOSED_LOST: 'bg-red-500/10 text-red-500',
-    CLOSED_SETTLED: 'bg-purple-500/10 text-purple-500',
-    ARCHIVED: 'bg-gray-500/10 text-gray-500',
-  }
-
-  const priorityColors = {
-    LOW: 'bg-gray-500/10 text-gray-500',
-    MEDIUM: 'bg-blue-500/10 text-blue-500',
-    HIGH: 'bg-orange-500/10 text-orange-500',
-    URGENT: 'bg-red-500/10 text-red-500',
-  }
-
   function getClientName(client: Case['client']) {
     if (client.clientType === 'COMPANY') {
       return client.companyName || 'Bez naziva'

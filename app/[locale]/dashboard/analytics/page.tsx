@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -180,7 +179,7 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  }, [timeRange, toast]);
+  }, [toast]);
 
   const getTrendIcon = (value: number) => {
     if (value > 0) return <TrendingUp className="h-4 w-4 text-green-500" />;

@@ -95,7 +95,7 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, results, selectedIndex, onClose]);
+  }, [isOpen, results, selectedIndex, onClose, handleResultClick]);
 
   const performSearch = async (searchQuery: string) => {
     if (searchQuery.trim().length < 2) {

@@ -33,7 +33,7 @@ import {
   Edit,
   Trash2
 } from 'lucide-react'
-import { format, isAfter, isBefore, addDays } from 'date-fns'
+import { format, isBefore, addDays } from 'date-fns'
 import { hr } from 'date-fns/locale'
 
 interface CaseDeadline {
@@ -79,7 +79,7 @@ export function CaseDeadlines({ caseId, users }: CaseDeadlinesProps) {
 
   useEffect(() => {
     fetchDeadlines()
-  }, [caseId])
+  }, [caseId, fetchDeadlines])
 
   async function fetchDeadlines() {
     try {

@@ -83,7 +83,7 @@ export function DocumentViewer({ document: doc, isOpen, onClose }: DocumentViewe
         window.URL.revokeObjectURL(decryptedUrl);
       }
     };
-  }, [isOpen, doc.id]);
+  }, [isOpen, doc.id, decryptedUrl, fetchDecryptedFile, isImage, isPDF]);
 
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev + 25, 300));

@@ -2,8 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronRight, Home } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { ChevronRight } from 'lucide-react'
 
 interface BreadcrumbItem {
   label: string

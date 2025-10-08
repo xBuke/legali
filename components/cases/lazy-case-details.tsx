@@ -36,13 +36,11 @@ interface LazySectionProps {
  * Uses Intersection Observer API to load content when it comes into view
  */
 export function LazyCaseDetails({
-  caseId,
   children,
   fallback,
   threshold = 0.1,
   rootMargin = '50px',
-  onLoad,
-  onError
+  onLoad
 }: LazyCaseDetailsProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -77,8 +75,9 @@ export function LazyCaseDetails({
     }
 
     return () => {
-      if (elementRef.current) {
-        observer.unobserve(elementRef.current)
+      const currentElement = elementRef.current
+      if (currentElement) {
+        observer.unobserve(currentElement)
       }
     }
   }, [handleIntersection, threshold, rootMargin])
@@ -374,7 +373,7 @@ export function useInfiniteScroll<T>(
 
     try {
       await fetchMore()
-    } catch (error) {
+    } catch {
       setHasError(true)
     } finally {
       setIsLoading(false)

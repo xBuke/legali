@@ -6,20 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { StatusBadge } from '@/components/ui/status-badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { 
-  Shield, 
   QrCode, 
-  Key, 
   CheckCircle, 
   AlertCircle,
   Smartphone,
   Copy,
-  Download,
   ArrowLeft,
   Eye,
   EyeOff
@@ -47,7 +43,7 @@ export default function TwoFactorSetupPage() {
     if (session?.user?.id) {
       initializeSetup();
     }
-  }, [session]);
+  }, [session, initializeSetup]);
 
   const initializeSetup = async () => {
     try {
