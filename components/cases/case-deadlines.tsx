@@ -351,7 +351,7 @@ export function CaseDeadlines({ caseId, users }: CaseDeadlinesProps) {
                     <Label htmlFor="type">Tip</Label>
                     <Select
                       value={formData.type}
-                      onValueChange={(value: any) => setFormData({ ...formData, type: value })}
+                      onValueChange={(value: string) => setFormData({ ...formData, type: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -371,7 +371,7 @@ export function CaseDeadlines({ caseId, users }: CaseDeadlinesProps) {
                     <Label htmlFor="priority">Prioritet</Label>
                     <Select
                       value={formData.priority}
-                      onValueChange={(value: any) => setFormData({ ...formData, priority: value })}
+                      onValueChange={(value: string) => setFormData({ ...formData, priority: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />

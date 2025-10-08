@@ -3,10 +3,7 @@ import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { Separator } from '@/components/ui/separator'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { 
@@ -14,14 +11,12 @@ import {
   Briefcase, 
   FileText, 
   TrendingUp, 
-  Plus, 
   Clock, 
   Receipt,
   ArrowUp,
   ArrowDown,
   Minus,
   Eye,
-  Calendar,
   DollarSign,
   Activity,
   BarChart3,
@@ -290,7 +285,7 @@ async function getDashboardActivities(organizationId: string): Promise<ActivityI
     })
 
     // Transform activities to match the interface
-    return activities.map((activity: any) => {
+    return activities.map((activity: unknown) => {
       let type: 'client_created' | 'case_opened' | 'document_uploaded' | 'invoice_sent' | 'payment_received' = 'client_created'
       let title = activity.description
       let relatedEntity = null
@@ -476,8 +471,6 @@ export default async function DashboardPage() {
         return <Clock className="h-4 w-4 text-gray-500" />
     }
 
-  }
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
@@ -514,8 +507,7 @@ export default async function DashboardPage() {
       icon: Clock,
       description: 'Započni rad'
     }
-  ]
-
+  ];
 
   return (
     <div className="space-y-6 w-full">
@@ -524,11 +516,11 @@ export default async function DashboardPage() {
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
           <h1 className="text-2xl md:text-3xl font-bold">
-            Welcome back, {session.user.name?.split(' ')[0] || 'User'}!
+            Welcome back, {session.user.name?.split(&apos; &apos;)[0] || &apos;User&apos;}!
           </h1>
         </div>
         <p className="text-muted-foreground">
-          Here's what's happening with your practice today
+          Here&apos;s what&apos;s happening with your practice today
         </p>
       </div>
 

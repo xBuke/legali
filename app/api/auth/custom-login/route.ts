@@ -4,7 +4,6 @@ import { db } from '@/lib/db';
 // import { verifyTwoFactorCode, validateTwoFactorCode } from '@/lib/two-factor';
 import { logAuthActivity } from '@/lib/activity-logger';
 import { validateRequiredEnvironment } from '@/lib/env-validation';
-import crypto from 'crypto';
 
 /**
  * POST /api/auth/custom-login
@@ -15,7 +14,7 @@ export async function POST(request: NextRequest) {
     // Validate environment
     validateRequiredEnvironment();
 
-    const { email, password, twoFactorCode, sessionId } = await request.json();
+    const { email, password } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json(

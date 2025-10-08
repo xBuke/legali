@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } fro
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
 
 interface LineChartProps {
-  data: any[]
+  data: Record<string, unknown>[]
   config: ChartConfig
   className?: string
   height?: number

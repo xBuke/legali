@@ -255,7 +255,7 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
             {!loading && results && results.results.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>Nema rezultata za "{query}"</p>
+                <p>Nema rezultata za &quot;{query}&quot;</p>
               </div>
             )}
 
@@ -263,7 +263,7 @@ export function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
               <div className="space-y-2">
                 {/* Results Summary */}
                 <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                  <span>{results.total} rezultata za "{query}"</span>
+                  <span>{results.total} rezultata za &quot;{query}&quot;</span>
                   <div className="flex space-x-2">
                     {Object.entries(results.types).map(([type, count]) => (
                       count > 0 && (

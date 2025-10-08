@@ -1,8 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { db } from '@/lib/db';
-// import { setupTwoFactor } from '@/lib/two-factor';
-import { logActivity } from '@/lib/activity-logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +6,7 @@ export const dynamic = 'force-dynamic';
  * POST /api/auth/2fa/setup
  * Generate 2FA secret and QR code for user setup
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   return NextResponse.json(
     { error: '2FA functionality temporarily disabled' },
     { status: 501 }

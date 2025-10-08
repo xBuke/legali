@@ -135,7 +135,7 @@ export function DocumentSearchFilters({ filters, onFiltersChange, documents }: D
   const categories = Array.from(new Set(documentsArray.map(doc => doc.category).filter((cat): cat is string => Boolean(cat))))
   const fileTypes = Array.from(new Set(documentsArray.map(doc => doc.mimeType.split('/')[1] || doc.mimeType.split('/')[0])))
 
-  const getClientName = (client: any) => {
+  const getClientName = (client: Record<string, unknown>) => {
     if (!client) return ''
     if (client.clientType === 'COMPANY') {
       return client.companyName || 'Bez naziva'

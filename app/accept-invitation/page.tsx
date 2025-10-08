@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -57,9 +57,9 @@ export default function AcceptInvitationPage() {
     }
 
     fetchInvitationDetails()
-  }, [token])
+  }, [token, fetchInvitationDetails])
 
-  const fetchInvitationDetails = async () => {
+  const fetchInvitationDetails = useCallback(async () => {
     try {
       const response = await fetch(`/api/team/accept-invitation?token=${token}`)
       const data = await response.json()
@@ -75,7 +75,7 @@ export default function AcceptInvitationPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [token])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -230,7 +230,7 @@ export default function AcceptInvitationPage() {
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-gray-500" />
               <Badge className={getRoleBadgeColor(invitation.role)}>
-                {getRoleDisplayName(invitation.role as any)}
+                {getRoleDisplayName(invitation.role as string)}
               </Badge>
             </div>
             <p className="text-xs text-gray-500">
@@ -244,7 +244,7 @@ export default function AcceptInvitationPage() {
           {/* Role Description */}
           <div className="mb-6 p-3 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-800">
-              <strong>Uloga:</strong> {getRoleDescription(invitation.role as any)}
+              <strong>Uloga:</strong> {getRoleDescription(invitation.role as string)}
             </p>
           </div>
 
@@ -321,7 +321,7 @@ export default function AcceptInvitationPage() {
 
           <div className="mt-6 text-center">
             <p className="text-xs text-gray-500">
-              Klikom na "Kreiraj račun" prihvaćate uvjete korištenja i politiku privatnosti.
+              Klikom na &ldquo;Kreiraj račun&rdquo; prihvaćate uvjete korištenja i politiku privatnosti.
             </p>
           </div>
         </CardContent>

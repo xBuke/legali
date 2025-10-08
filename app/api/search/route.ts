@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Korisnik nije pronađen' }, { status: 404 });
     }
 
-    const results: any[] = [];
+    const results: Record<string, unknown>[] = [];
 
     // Search clients
     if (!type || type === 'clients') {

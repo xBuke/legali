@@ -7,10 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { 
   Briefcase, 
   FileText, 
-  Calendar, 
   Clock, 
   Euro,
-  TrendingUp,
   AlertCircle,
   CheckCircle
 } from 'lucide-react';

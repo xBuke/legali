@@ -264,7 +264,7 @@ export function CaseCollaboration({ caseId, currentUser }: CaseCollaborationProp
                   </div>
                   <div>
                     <Label htmlFor="member-role">Uloga</Label>
-                    <Select value={newMemberRole} onValueChange={(value: any) => setNewMemberRole(value)}>
+                    <Select value={newMemberRole} onValueChange={(value: string) => setNewMemberRole(value)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>

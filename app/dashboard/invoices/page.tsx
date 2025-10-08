@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,10 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { usePermissions } from '@/hooks/use-permissions';
 import { PermissionGuard } from '@/components/permission-guard';
 import { PERMISSIONS } from '@/lib/permissions';
-import { Plus, FileText, Download, Edit, Trash2, Eye, Calendar, Euro, CreditCard, FileSearch, Briefcase } from 'lucide-react';
+import { Plus, FileText, Download, Trash2, Eye, Euro, CreditCard, FileSearch, Briefcase } from 'lucide-react';
 import { PaymentList } from '@/components/payments/payment-list';
 import { InvoiceTemplates } from '@/components/invoices/invoice-templates';
 import { InvoiceSearchFilters } from '@/components/invoices/invoice-search-filters';
@@ -119,9 +117,7 @@ interface CaseInvoicePreview {
 
 
 export default function InvoicesPage() {
-  const { data: session } = useSession();
   const { toast } = useToast();
-  const { hasPermission } = usePermissions();
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
@@ -166,9 +162,9 @@ export default function InvoicesPage() {
     loadInvoices();
     loadClients();
     loadCases();
-  }, []);
+  }, [loadInvoices]);
 
-  const loadInvoices = async () => {
+  const loadInvoices = useCallback(async () => {
     try {
       const response = await fetch('/api/invoices');
       if (response.ok) {
@@ -183,8 +179,8 @@ export default function InvoicesPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      console.error('Error loading invoices:', error);
+    } catch {
+      console.error('Error loading invoices:');
       setInvoices([]);
       toast({
         title: 'Greška',
@@ -194,7 +190,7 @@ export default function InvoicesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   const loadClients = async () => {
     try {
@@ -203,8 +199,8 @@ export default function InvoicesPage() {
         const data = await response.json();
         setClients(Array.isArray(data.clients) ? data.clients : []);
       }
-    } catch (error) {
-      console.error('Error loading clients:', error);
+    } catch {
+      console.error('Error loading clients:');
     }
   };
 
@@ -215,8 +211,8 @@ export default function InvoicesPage() {
         const data = await response.json();
         setCases(Array.isArray(data.cases) ? data.cases : []);
       }
-    } catch (error) {
-      console.error('Error loading cases:', error);
+    } catch {
+      console.error('Error loading cases:');
     }
   };
 
@@ -241,8 +237,8 @@ export default function InvoicesPage() {
         });
         setCaseInvoicePreview(null);
       }
-    } catch (error) {
-      console.error('Error loading case preview:', error);
+    } catch {
+      console.error('Error loading case preview:');
       toast({
         title: 'Greška',
         description: 'Greška pri učitavanju podataka',
@@ -303,8 +299,8 @@ export default function InvoicesPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      console.error('Error generating invoice from case:', error);
+    } catch {
+      console.error('Error generating invoice from case:');
       toast({
         title: 'Greška',
         description: 'Greška pri kreiranju računa',
@@ -336,8 +332,8 @@ export default function InvoicesPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      console.error('Error loading billable time data:', error);
+    } catch {
+      console.error('Error loading billable time data:');
       setBillableTimeData(null);
       toast({
         title: 'Greška',
@@ -363,7 +359,7 @@ export default function InvoicesPage() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const getClientName = (client: any) => {
+  const getClientName = (client: unknown) => {
     if (client.companyName) {
       return client.companyName;
     }
@@ -414,8 +410,8 @@ export default function InvoicesPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      console.error('Error creating invoice:', error);
+    } catch {
+      console.error('Error creating invoice:');
       toast({
         title: 'Greška',
         description: 'Greška pri stvaranju računa',
@@ -448,8 +444,8 @@ export default function InvoicesPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      console.error('Error deleting invoice:', error);
+    } catch {
+      console.error('Error deleting invoice:');
       toast({
         title: 'Greška',
         description: 'Greška pri brisanju računa',
@@ -486,8 +482,8 @@ export default function InvoicesPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      console.error('Error updating invoice:', error);
+    } catch {
+      console.error('Error updating invoice:');
       toast({
         title: 'Greška',
         description: 'Greška pri ažuriranju računa',
@@ -523,8 +519,8 @@ export default function InvoicesPage() {
           variant: 'destructive',
         });
       }
-    } catch (error) {
-      console.error('Error downloading PDF:', error);
+    } catch {
+      console.error('Error downloading PDF:');
       toast({
         title: 'Greška',
         description: 'Greška pri preuzimanju PDF-a',
@@ -533,7 +529,7 @@ export default function InvoicesPage() {
     }
   };
 
-  const handlePreviewPDF = (invoiceId: string, invoiceNumber: string) => {
+  const handlePreviewPDF = (invoiceId: string) => {
     try {
       // Open PDF in new tab for preview
       const previewUrl = `/api/invoices/${invoiceId}/preview`;
@@ -543,8 +539,8 @@ export default function InvoicesPage() {
         title: 'Uspjeh',
         description: 'PDF račun je otvoren za pregled',
       });
-    } catch (error) {
-      console.error('Error previewing PDF:', error);
+    } catch {
+      console.error('Error previewing PDF:');
       toast({
         title: 'Greška',
         description: 'Greška pri otvaranju PDF pregleda',
@@ -612,7 +608,7 @@ export default function InvoicesPage() {
     setIsDialogOpen(true);
   };
 
-  const handleTemplateSelect = (template: any) => {
+  const handleTemplateSelect = (template: unknown) => {
     // When a template is selected, open the create invoice dialog with template data
     setFormData({
       clientId: '',

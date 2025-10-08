@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Transform activities to match the interface
-    const transformedActivities = activities.map((activity: any) => {
+    const transformedActivities = activities.map((activity: Record<string, unknown>) => {
       let type: 'client_created' | 'case_opened' | 'document_uploaded' | 'invoice_sent' | 'payment_received' = 'client_created'
       let title = activity.description
       let relatedEntity = null

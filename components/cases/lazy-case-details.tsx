@@ -252,7 +252,7 @@ export function ProgressiveImage({
     img.onerror = (error) => {
       setHasError(true)
       setIsLoading(false)
-      onError?.(error as any)
+      onError?.(error as Error)
     }
     
     img.src = src

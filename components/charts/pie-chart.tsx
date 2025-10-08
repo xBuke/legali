@@ -4,7 +4,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig } from '@/components/ui/chart'
 
 interface PieChartProps {
-  data: any[]
+  data: Record<string, unknown>[]
   config: ChartConfig
   className?: string
   height?: number

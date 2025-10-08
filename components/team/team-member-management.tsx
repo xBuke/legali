@@ -78,20 +78,6 @@ export function TeamMemberManagement() {
   const [createLastName, setCreateLastName] = useState('')
   const [createRole, setCreateRole] = useState('LAWYER')
 
-  // Check if user can manage team members
-  if (!canManageUsers()) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-gray-500">
-            <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Nemate dozvolu za upravljanje članovima tima.</p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
   // Fetch team members and invitations
   const fetchData = async () => {
     try {
@@ -124,8 +110,24 @@ export function TeamMemberManagement() {
   }
 
   useEffect(() => {
-    fetchData()
+    if (canManageUsers()) {
+      fetchData()
+    }
   }, [])
+
+  // Check if user can manage team members
+  if (!canManageUsers()) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-gray-500">
+            <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Nemate dozvolu za upravljanje članovima tima.</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   // Send invitation
   const handleSendInvitation = async () => {
@@ -434,7 +436,7 @@ export function TeamMemberManagement() {
                         </SelectContent>
                       </Select>
                       <p className="text-sm text-gray-600 mt-1">
-                        {getRoleDescription(inviteRole as any)}
+                        {getRoleDescription(inviteRole as string)}
                       </p>
                     </div>
                   </div>
@@ -515,7 +517,7 @@ export function TeamMemberManagement() {
                         </SelectContent>
                       </Select>
                       <p className="text-sm text-gray-600 mt-1">
-                        {getRoleDescription(createRole as any)}
+                        {getRoleDescription(createRole as string)}
                       </p>
                     </div>
                   </div>
@@ -574,7 +576,7 @@ export function TeamMemberManagement() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge className={getRoleBadgeColor(member.role)}>
-                          {getRoleDisplayName(member.role as any)}
+                          {getRoleDisplayName(member.role as string)}
                         </Badge>
                         {member.isActive ? (
                           <Badge variant="outline" className="text-green-600 border-green-600">
@@ -631,7 +633,7 @@ export function TeamMemberManagement() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge className={getRoleBadgeColor(invitation.role)}>
-                          {getRoleDisplayName(invitation.role as any)}
+                          {getRoleDisplayName(invitation.role as string)}
                         </Badge>
                         {getStatusBadge(invitation.status)}
                         {invitation.status === 'PENDING' && (

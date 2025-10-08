@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EmptyState } from '@/components/ui/empty-state';
 import { 
-  FileText,
   Download, 
   Calendar, 
   Eye,
@@ -61,7 +60,7 @@ export default function ClientDocumentsPage() {
 
   useEffect(() => {
     filterDocuments();
-  }, [documents, searchTerm, selectedCategory]);
+  }, [filterDocuments]);
 
   const loadDocuments = async () => {
     try {
@@ -150,7 +149,7 @@ export default function ClientDocumentsPage() {
     }
   };
 
-  const filterDocuments = () => {
+  const filterDocuments = useCallback(() => {
     let filtered = documents;
 
     if (searchTerm) {
@@ -166,7 +165,7 @@ export default function ClientDocumentsPage() {
     }
 
     setFilteredDocuments(filtered);
-  };
+  }, [documents, searchTerm, selectedCategory]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -181,10 +180,10 @@ export default function ClientDocumentsPage() {
   };
 
   const getFileIcon = (mimeType: string) => {
-    if (mimeType.includes('pdf')) return FileText;
-    if (mimeType.includes('image')) return FileImage;
-    if (mimeType.includes('video')) return FileVideo;
-    return File;
+    if (mimeType.includes('pdf')) return 'FileText';
+    if (mimeType.includes('image')) return 'FileImage';
+    if (mimeType.includes('video')) return 'FileVideo';
+    return 'File';
   };
 
   const handleDownload = (doc: Document) => {
@@ -324,12 +323,10 @@ export default function ClientDocumentsPage() {
               </TableHeader>
               <TableBody>
                 {filteredDocuments.map((document) => {
-                  const FileIcon = getFileIcon(document.mimeType);
                   return (
                     <TableRow key={document.id} className="hover:bg-muted/50">
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <FileIcon className="h-5 w-5 text-muted-foreground" />
                           <div>
                             <div className="font-medium">{document.title || document.originalName}</div>
                             <div className="text-sm text-muted-foreground">

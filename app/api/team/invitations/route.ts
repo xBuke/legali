@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user can manage team members (only ADMINs)
-    if (!canManageUsers(session.user.role as any)) {
+    if (!canManageUsers(session.user.role as string)) {
       return NextResponse.json(
         { error: 'Nemate dozvolu za upravljanje članovima tima' },
         { status: 403 }
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user can manage team members (only ADMINs)
-    if (!canManageUsers(session.user.role as any)) {
+    if (!canManageUsers(session.user.role as string)) {
       return NextResponse.json(
         { error: 'Nemate dozvolu za upravljanje članovima tima' },
         { status: 403 }

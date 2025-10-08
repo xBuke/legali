@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
-  FileText, 
   Download, 
   Calendar, 
   Eye,
@@ -58,7 +57,7 @@ export default function ClientDocumentsPage() {
 
   useEffect(() => {
     filterDocuments();
-  }, [documents, searchTerm, selectedCategory]);
+  }, [filterDocuments]);
 
   const loadDocuments = async () => {
     try {
@@ -147,7 +146,7 @@ export default function ClientDocumentsPage() {
     }
   };
 
-  const filterDocuments = () => {
+  const filterDocuments = useCallback(() => {
     let filtered = documents;
 
     if (searchTerm) {
@@ -163,7 +162,7 @@ export default function ClientDocumentsPage() {
     }
 
     setFilteredDocuments(filtered);
-  };
+  }, [documents, searchTerm, selectedCategory]);
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';

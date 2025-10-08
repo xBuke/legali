@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
 
 interface BarChartProps {
-  data: any[]
+  data: Record<string, unknown>[]
   config: ChartConfig
   className?: string
   height?: number

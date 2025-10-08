@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Briefcase, Calendar, User, FileText, Clock, CheckSquare, AlertCircle, Building2 } from 'lucide-react'
+import { ArrowLeft, Calendar, User, FileText, Clock, CheckSquare, AlertCircle, Building2 } from 'lucide-react'
 import { CaseTimeline } from '@/components/cases/case-timeline'
 import { CaseDeadlines } from '@/components/cases/case-deadlines'
 import { CaseNotes } from '@/components/cases/case-notes'
@@ -43,10 +43,10 @@ type CaseDetail = {
     lastName?: string
     email?: string
   }
-  documents?: any[]
-  timeEntries?: any[]
-  tasks?: any[]
-  notes?: any[]
+  documents?: unknown[]
+  timeEntries?: unknown[]
+  tasks?: unknown[]
+  notes?: unknown[]
 }
 
 export default function CaseDetailPage() {
@@ -60,7 +60,7 @@ export default function CaseDetailPage() {
   useEffect(() => {
     fetchCase()
     fetchUsers()
-  }, [params.id])
+  }, [params.id, fetchCase])
 
   async function fetchUsers() {
     try {
@@ -74,7 +74,7 @@ export default function CaseDetailPage() {
     }
   }
 
-  async function fetchCase() {
+  const fetchCase = useCallback(async () => {
     try {
       const response = await fetch(`/api/cases/${params.id}`)
       if (response.ok) {
@@ -88,7 +88,7 @@ export default function CaseDetailPage() {
         })
         router.push('/dashboard/cases')
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Nije moguće dohvatiti podatke o predmetu',
@@ -97,7 +97,7 @@ export default function CaseDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id, router, toast])
 
   if (loading) {
     return (

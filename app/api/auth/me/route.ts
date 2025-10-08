@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
  * GET /api/auth/me
  * Get current user data
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await auth();
     

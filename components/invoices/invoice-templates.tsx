@@ -65,7 +65,7 @@ export function InvoiceTemplates({ onTemplateSelect, showSelectButton = true }: 
       const response = await fetch('/api/invoices/templates');
       if (response.ok) {
         const data = await response.json();
-        setTemplates(data.map((template: any) => ({
+        setTemplates(data.map((template: Record<string, unknown>) => ({
           ...template,
           items: typeof template.items === 'string' ? JSON.parse(template.items) : template.items,
         })));
@@ -294,7 +294,7 @@ export function InvoiceTemplates({ onTemplateSelect, showSelectButton = true }: 
                 </div>
                 <div>
                   <Label htmlFor="templateType">Tip predloška</Label>
-                  <Select value={formData.templateType} onValueChange={(value: any) => 
+                  <Select value={formData.templateType} onValueChange={(value: string) => 
                     setFormData({ ...formData, templateType: value })
                   }>
                     <SelectTrigger>
@@ -331,7 +331,7 @@ export function InvoiceTemplates({ onTemplateSelect, showSelectButton = true }: 
                 </div>
                 
                 <div className="space-y-4">
-                  {items.map((item, index) => (
+                  {items.map((item) => (
                     <Card key={item.id} className="p-4">
                       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                         <div className="md:col-span-2">

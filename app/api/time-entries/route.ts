@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     const isBillable = searchParams.get('isBillable')
     const isBilled = searchParams.get('isBilled')
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       organizationId: user.organizationId,
     }
 

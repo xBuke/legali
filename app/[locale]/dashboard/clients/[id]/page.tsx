@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Users, Building2, Mail, Phone, MapPin, FileText, Briefcase } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, MapPin, FileText, Briefcase } from 'lucide-react'
 import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
 
@@ -23,9 +23,9 @@ type Client = {
   country?: string
   status: string
   createdAt: string
-  cases?: any[]
-  documents?: any[]
-  invoices?: any[]
+  cases?: unknown[]
+  documents?: unknown[]
+  invoices?: unknown[]
 }
 
 export default function ClientDetailPage() {
@@ -37,9 +37,9 @@ export default function ClientDetailPage() {
 
   useEffect(() => {
     fetchClient()
-  }, [params.id])
+  }, [params.id, fetchClient])
 
-  async function fetchClient() {
+  const fetchClient = useCallback(async () => {
     try {
       const response = await fetch(`/api/clients/${params.id}`)
       if (response.ok) {
@@ -53,7 +53,7 @@ export default function ClientDetailPage() {
         })
         router.push('/dashboard/clients')
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Nije moguće dohvatiti podatke o klijentu',
@@ -62,7 +62,7 @@ export default function ClientDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id, router, toast])
 
   if (loading) {
     return (

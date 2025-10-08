@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -30,7 +30,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, Briefcase, Pencil, Trash2, Eye, Calendar, AlertCircle } from 'lucide-react'
+import { Plus, Briefcase, Pencil, Trash2, Eye, Calendar } from 'lucide-react'
 import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
@@ -113,9 +113,9 @@ export default function CasesPage() {
     fetchCases()
     fetchClients()
     fetchUsers()
-  }, [])
+  }, [fetchCases])
 
-  async function fetchCases() {
+  const fetchCases = useCallback(async () => {
     try {
       const response = await fetch('/api/cases')
       if (response.ok) {
@@ -130,8 +130,8 @@ export default function CasesPage() {
           variant: 'destructive',
         })
       }
-    } catch (error) {
-      console.error('Error fetching cases:', error)
+    } catch {
+      console.error('Error fetching cases:')
       setCases([])
       toast({
         title: 'Greška',
@@ -141,7 +141,7 @@ export default function CasesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
 
   async function fetchClients() {
     try {
@@ -153,8 +153,8 @@ export default function CasesPage() {
         console.error('Failed to fetch clients:', response.status)
         setClients([])
       }
-    } catch (error) {
-      console.error('Error fetching clients:', error)
+    } catch {
+      console.error('Error fetching clients:')
       setClients([])
     }
   }
@@ -169,8 +169,8 @@ export default function CasesPage() {
         console.error('Failed to fetch users:', response.status)
         setUsers([])
       }
-    } catch (error) {
-      console.error('Error fetching users:', error)
+    } catch {
+      console.error('Error fetching users:')
       setUsers([])
     }
   }
@@ -202,7 +202,7 @@ export default function CasesPage() {
       } else {
         throw new Error()
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Nije moguće spremiti predmet',
@@ -232,7 +232,7 @@ export default function CasesPage() {
       } else {
         throw new Error()
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Nije moguće obrisati predmet',
@@ -258,7 +258,7 @@ export default function CasesPage() {
       } else {
         throw new Error()
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Nije moguće ažurirati status predmeta',
@@ -552,7 +552,7 @@ export default function CasesPage() {
                 {filteredCases.length > 50 ? (
                   <VirtualizedCasesTable
                     cases={filteredCases}
-                    onEdit={openEditDialog as any}
+                    onEdit={openEditDialog}
                     onDelete={handleDelete}
                     getClientName={getClientName}
                     getStatusLabel={(status) => status.replace('_', ' ')}

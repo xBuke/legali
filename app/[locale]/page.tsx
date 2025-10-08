@@ -299,7 +299,7 @@ export default function HomePage() {
                     ))}
                   </div>
                   <blockquote className="text-muted-foreground mb-4">
-                    "{testimonial.content}"
+                    &ldquo;{testimonial.content}&rdquo;
                   </blockquote>
                   <div>
                     <div className="font-semibold">{testimonial.name}</div>

@@ -27,8 +27,8 @@ export async function POST(req: Request) {
         signature,
         process.env.STRIPE_WEBHOOK_SECRET
       )
-    } catch (err: any) {
-      console.error('Webhook signature verification failed:', err.message)
+    } catch (err: unknown) {
+      console.error('Webhook signature verification failed:', err instanceof Error ? err.message : 'Unknown error')
       return NextResponse.json({ error: 'Webhook error' }, { status: 400 })
     }
 
@@ -128,14 +128,14 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ received: true })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error processing webhook:', err)
     return NextResponse.json(
       { error: 'Webhook handler failed' },
       { status: 500 }
     )
   }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error in webhook handler:', err)
     return NextResponse.json(
       { error: 'Webhook handler failed' },

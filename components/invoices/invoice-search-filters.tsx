@@ -50,7 +50,7 @@ export function InvoiceSearchFilters({ filters, onFiltersChange, clients }: Invo
     { value: 'CANCELLED', label: 'Otkazan' },
   ];
 
-  const getClientName = (client: any) => {
+  const getClientName = (client: Record<string, unknown>) => {
     if (client.companyName) {
       return client.companyName;
     }

@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     const caseId = searchParams.get('caseId')
     const clientId = searchParams.get('clientId')
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       organizationId: user.organizationId,
       deletedAt: null,
     }

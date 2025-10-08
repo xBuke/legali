@@ -108,7 +108,7 @@ export function AdvancedCaseSearch({
     }
   }, [])
 
-  const handleFilterChange = (key: keyof CaseFilters, value: any) => {
+  const handleFilterChange = (key: keyof CaseFilters, value: unknown) => {
     setFilters(prev => ({ ...prev, [key]: value }))
   }
 

@@ -302,7 +302,7 @@ export default function UIShowcasePage() {
                 <AccordionItem value="item-3">
                   <AccordionTrigger>Is it animated?</AccordionTrigger>
                   <AccordionContent>
-                    Yes. It's animated by default, but you can disable it if you prefer.
+                    Yes. It&apos;s animated by default, but you can disable it if you prefer.
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -439,7 +439,7 @@ export default function UIShowcasePage() {
                 <SheetHeader>
                   <SheetTitle>Edit profile</SheetTitle>
                   <SheetDescription>
-                    Make changes to your profile here. Click save when you're done.
+                    Make changes to your profile here. Click save when you&apos;re done.
                   </SheetDescription>
                 </SheetHeader>
                 <div className="grid gap-4 py-4">

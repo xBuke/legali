@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Korisnik nije pronađen' }, { status: 404 });
     }
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       organizationId: user.organizationId,
     };
 

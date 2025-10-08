@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -79,9 +79,9 @@ export default function ClientsPage() {
 
   useEffect(() => {
     fetchClients()
-  }, [])
+  }, [fetchClients])
 
-  async function fetchClients() {
+  const fetchClients = useCallback(async () => {
     try {
       const response = await fetch('/api/clients')
       if (response.ok) {
@@ -97,8 +97,8 @@ export default function ClientsPage() {
           variant: 'destructive',
         })
       }
-    } catch (error) {
-      console.error('Error fetching clients:', error)
+    } catch {
+      console.error('Error fetching clients:')
       setClients([])
       toast({
         title: 'Greška',
@@ -108,7 +108,7 @@ export default function ClientsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -137,7 +137,7 @@ export default function ClientsPage() {
       } else {
         throw new Error()
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Nije moguće spremiti klijenta',
@@ -167,7 +167,7 @@ export default function ClientsPage() {
       } else {
         throw new Error()
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Greška',
         description: 'Nije moguće obrisati klijenta',

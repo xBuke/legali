@@ -6,7 +6,7 @@ import { canManageUsers } from '@/lib/permissions'
 export const dynamic = 'force-dynamic';
 
 // GET /api/users - List all users in the organization
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth()
 
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user can manage team members (only ADMINs)
-    if (!canManageUsers(session.user.role as any)) {
+    if (!canManageUsers(session.user.role as string)) {
       return NextResponse.json(
         { error: 'Nemate dozvolu za upravljanje članovima tima' },
         { status: 403 }
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
-    const bcrypt = require('bcryptjs')
+    const bcrypt = await import('bcryptjs')
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Create user
