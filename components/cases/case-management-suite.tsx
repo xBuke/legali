@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Workflow, 
-  BarChart3, 
   Search, 
   Users, 
   FileText, 
@@ -20,7 +19,6 @@ import {
 
 // Import all Phase 2 components
 import { CaseWorkflow } from './case-workflow'
-import { CaseAnalytics } from './case-analytics'
 import { AdvancedCaseSearch } from './advanced-case-search'
 import { CaseCollaboration } from './case-collaboration'
 import { CaseDocumentManagement } from './case-document-management'
@@ -41,7 +39,6 @@ interface CaseManagementSuiteProps {
 
 interface Phase2Features {
   workflow: boolean
-  analytics: boolean
   advancedSearch: boolean
   collaboration: boolean
   documentManagement: boolean
@@ -57,7 +54,6 @@ export function CaseManagementSuite({
   const [activeTab, setActiveTab] = useState('overview')
   const [features, setFeatures] = useState<Phase2Features>({
     workflow: true,
-    analytics: true,
     advancedSearch: true,
     collaboration: true,
     documentManagement: true,
@@ -122,10 +118,6 @@ export function CaseManagementSuite({
               <span className="text-sm">Workflow</span>
             </div>
             <div className="flex items-center gap-2">
-              {getFeatureIcon('analytics')}
-              <span className="text-sm">Analitika</span>
-            </div>
-            <div className="flex items-center gap-2">
               {getFeatureIcon('advancedSearch')}
               <span className="text-sm">Napredna pretraga</span>
             </div>
@@ -171,10 +163,6 @@ export function CaseManagementSuite({
           <TabsTrigger value="workflow" className="flex items-center gap-2">
             <Workflow className="h-4 w-4" />
             Workflow
-          </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Analitika
           </TabsTrigger>
           <TabsTrigger value="search" className="flex items-center gap-2">
             <Search className="h-4 w-4" />
@@ -268,12 +256,6 @@ export function CaseManagementSuite({
           </LazyCaseDetails>
         </TabsContent>
 
-        {/* Analytics Tab */}
-        <TabsContent value="analytics">
-          <LazyCaseDetails caseId={caseId}>
-            <CaseAnalytics caseId={caseId} />
-          </LazyCaseDetails>
-        </TabsContent>
 
         {/* Search Tab */}
         <TabsContent value="search">
@@ -336,7 +318,7 @@ export function CaseManagementSuite({
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {features.workflow && features.analytics && features.collaboration ? '100%' : '75%'}
+                {features.workflow && features.collaboration ? '100%' : '75%'}
               </div>
               <div className="text-sm text-muted-foreground">Phase 2 implementacija</div>
             </div>

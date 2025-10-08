@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { db } from '@/lib/db'
+import { sendWelcomeEmail } from '@/lib/email'
 
 // TypeScript types for request and response
 interface SignupRequest {
@@ -142,6 +143,18 @@ export async function POST(request: Request): Promise<NextResponse<SignupRespons
 
       return { organization, user }
     })
+
+    // Send welcome email
+    try {
+      await sendWelcomeEmail(
+        result.user.email,
+        result.user.firstName || '',
+        result.organization.name
+      )
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError)
+      // Don't fail registration if email fails
+    }
 
     // Return success response (NO password in response)
     const response: SignupResponse = {

@@ -17,8 +17,7 @@ import {
   Minus,
   Eye,
   Calendar,
-  DollarSign,
-  BarChart3
+  DollarSign
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -419,12 +418,6 @@ export default async function DashboardPage() {
       href: '/dashboard/time-tracking',
       icon: Clock,
       description: 'Započni rad'
-    },
-    {
-      name: 'Analitika',
-      href: '/dashboard/analytics',
-      icon: BarChart3,
-      description: 'Pregled metrika'
     }
   ]
 

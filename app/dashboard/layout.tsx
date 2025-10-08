@@ -22,7 +22,6 @@ import {
   LogOut,
   Menu,
   Search,
-  BarChart3,
   User,
   ChevronDown,
 } from 'lucide-react'
@@ -60,7 +59,6 @@ export default function DashboardLayout({
 
   const allNavigation = [
     { name: 'Nadzorna ploča', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Analitika', href: '/dashboard/analytics', icon: BarChart3 },
     { name: 'Klijenti', href: '/dashboard/clients', icon: Users },
     { name: 'Predmeti', href: '/dashboard/cases', icon: Briefcase },
     { name: 'Dokumenti', href: '/dashboard/documents', icon: FileText },

@@ -20,9 +20,9 @@ interface TeamInvitationEmailData {
 
 export async function sendEmail(options: EmailOptions): Promise<boolean> {
   try {
-    // In development, just log the email
-    if (process.env.NODE_ENV === 'development') {
-      console.log('📧 EMAIL WOULD BE SENT:')
+    // Check if Resend API key is available
+    if (!process.env.RESEND_API_KEY) {
+      console.log('📧 RESEND_API_KEY not configured - logging email instead:')
       console.log('To:', options.to)
       console.log('Subject:', options.subject)
       console.log('HTML:', options.html)
@@ -30,9 +30,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
       return true
     }
 
-    // TODO: Integrate with Resend or other email service
-    // Example with Resend:
-    /*
+    // Use Resend for email sending
     const { Resend } = require('resend')
     const resend = new Resend(process.env.RESEND_API_KEY)
     
@@ -50,11 +48,6 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
     }
 
     console.log('Email sent successfully:', data)
-    return true
-    */
-
-    // For now, return true to simulate successful sending
-    console.log('📧 Email service not configured - would send to:', options.to)
     return true
 
   } catch (error) {
