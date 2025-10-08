@@ -470,6 +470,7 @@ export default async function DashboardPage() {
       default:
         return <Clock className="h-4 w-4 text-gray-500" />
     }
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -516,7 +517,7 @@ export default async function DashboardPage() {
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
           <h1 className="text-2xl md:text-3xl font-bold">
-            Welcome back, {session.user.name?.split(&apos; &apos;)[0] || &apos;User&apos;}!
+            Welcome back, {session.user.name?.split(' ')[0] || 'User'}!
           </h1>
         </div>
         <p className="text-muted-foreground">
