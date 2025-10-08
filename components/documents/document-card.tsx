@@ -39,9 +39,10 @@ interface DocumentCardProps {
   onEdit: () => void
   onDelete: () => void
   onView: () => void
+  onDownload?: () => void
 }
 
-export function DocumentCard({ document, viewMode, onEdit, onDelete, onView }: DocumentCardProps) {
+export function DocumentCard({ document, viewMode, onEdit, onDelete, onView, onDownload }: DocumentCardProps) {
   const getClientName = (client?: Document['client']) => {
     if (!client) return null
     if (client.clientType === 'COMPANY') {
@@ -154,7 +155,7 @@ export function DocumentCard({ document, viewMode, onEdit, onDelete, onView }: D
           <Button size="sm" variant="outline" onClick={onView}>
             <Eye className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="outline" onClick={() => window.open(document.fileUrl, '_blank')}>
+          <Button size="sm" variant="outline" onClick={onDownload || (() => {})}>
             <Download className="h-4 w-4" />
           </Button>
           <Button size="sm" variant="outline" onClick={onEdit}>

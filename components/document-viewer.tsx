@@ -55,6 +55,11 @@ export function DocumentViewer({ document: doc, isOpen, onClose }: DocumentViewe
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [decryptedUrl, setDecryptedUrl] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
+
+  const isPDF = doc.mimeType === 'application/pdf';
+  const isImage = doc.mimeType.startsWith('image/');
 
   useEffect(() => {
     if (isOpen) {
@@ -62,8 +67,23 @@ export function DocumentViewer({ document: doc, isOpen, onClose }: DocumentViewe
       setRotation(0);
       setLoading(true);
       setError(null);
+      setDecryptedUrl(null);
+
+      // Fetch decrypted file for preview if it's a PDF or image
+      if (isPDF || isImage) {
+        fetchDecryptedFile();
+      } else {
+        setLoading(false);
+      }
     }
-  }, [isOpen]);
+
+    // Cleanup blob URL on unmount
+    return () => {
+      if (decryptedUrl) {
+        window.URL.revokeObjectURL(decryptedUrl);
+      }
+    };
+  }, [isOpen, doc.id]);
 
   const handleZoomIn = () => {
     setZoom(prev => Math.min(prev + 25, 300));
@@ -77,11 +97,50 @@ export function DocumentViewer({ document: doc, isOpen, onClose }: DocumentViewe
     setRotation(prev => (prev + 90) % 360);
   };
 
-  const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = doc.fileUrl;
-    link.download = doc.originalName;
-    link.click();
+  const fetchDecryptedFile = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/documents/${doc.id}/download`);
+
+      if (!response.ok) {
+        throw new Error('Nije moguće dohvatiti dokument');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      setDecryptedUrl(url);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching decrypted document:', err);
+      setError(err instanceof Error ? err.message : 'Greška pri učitavanju dokumenta');
+      setLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      setDownloading(true);
+      const response = await fetch(`/api/documents/${doc.id}/download`);
+
+      if (!response.ok) {
+        throw new Error('Preuzimanje nije uspjelo');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = doc.originalName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading document:', err);
+      setError('Greška pri preuzimanju dokumenta');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -99,9 +158,6 @@ export function DocumentViewer({ document: doc, isOpen, onClose }: DocumentViewe
     }
     return `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Bez imena';
   };
-
-  const isPDF = doc.mimeType === 'application/pdf';
-  const isImage = doc.mimeType.startsWith('image/');
 
   const renderDocumentContent = () => {
     if (error) {
@@ -135,13 +191,12 @@ export function DocumentViewer({ document: doc, isOpen, onClose }: DocumentViewe
       );
     }
 
-    if (isPDF) {
+    if (isPDF && decryptedUrl) {
       return (
         <div className="w-full h-full">
           <iframe
-            src={`${doc.fileUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=${zoom}`}
+            src={`${decryptedUrl}#toolbar=1&navpanes=1&scrollbar=1&zoom=${zoom}`}
             className="w-full h-full border-0 rounded-lg"
-            onLoad={() => setLoading(false)}
             onError={() => {
               setError('Nije moguće učitati PDF datoteku');
               setLoading(false);
@@ -155,18 +210,17 @@ export function DocumentViewer({ document: doc, isOpen, onClose }: DocumentViewe
       );
     }
 
-    if (isImage) {
+    if (isImage && decryptedUrl) {
       return (
         <div className="flex items-center justify-center h-full bg-muted rounded-lg overflow-hidden">
           <img
-            src={doc.fileUrl}
+            src={decryptedUrl}
             alt={doc.title || doc.originalName}
             className="max-w-full max-h-full object-contain"
             style={{
               transform: `rotate(${rotation}deg) scale(${zoom / 100})`,
               transition: 'transform 0.3s ease',
             }}
-            onLoad={() => setLoading(false)}
             onError={() => {
               setError('Nije moguće učitati sliku');
               setLoading(false);
@@ -345,14 +399,15 @@ export function DocumentViewer({ document: doc, isOpen, onClose }: DocumentViewe
                   <CardTitle className="text-sm font-medium">Akcije</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={handleDownload}
+                    disabled={downloading}
                     className="w-full"
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Preuzmi
+                    {downloading ? 'Preuzimanje...' : 'Preuzmi'}
                   </Button>
                 </CardContent>
               </Card>

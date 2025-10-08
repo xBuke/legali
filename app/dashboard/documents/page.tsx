@@ -246,6 +246,32 @@ export default function DocumentsPage() {
     }
   }
 
+  async function handleDownload(document: Document) {
+    try {
+      const response = await fetch(`/api/documents/${document.id}/download`)
+
+      if (!response.ok) {
+        throw new Error('Preuzimanje nije uspjelo')
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = window.document.createElement('a')
+      link.href = url
+      link.download = document.originalName
+      window.document.body.appendChild(link)
+      link.click()
+      window.document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      toast({
+        title: 'Greška',
+        description: 'Nije moguće preuzeti dokument',
+        variant: 'destructive',
+      })
+    }
+  }
+
   async function handleDelete(id: string) {
     if (!confirm('Jeste li sigurni da želite obrisati ovaj dokument?')) {
       return
@@ -501,6 +527,7 @@ export default function DocumentsPage() {
                       onEdit={() => openEditDialog(document)}
                       onDelete={() => handleDelete(document.id)}
                       onView={() => setViewingDocument(document)}
+                      onDownload={() => handleDownload(document)}
                     />
                   ))}
                 </div>
@@ -517,6 +544,7 @@ export default function DocumentsPage() {
                       onEdit={() => openEditDialog(document)}
                       onDelete={() => handleDelete(document.id)}
                       onView={() => setViewingDocument(document)}
+                      onDownload={() => handleDownload(document)}
                     />
                   ))}
                 </div>
@@ -600,7 +628,7 @@ export default function DocumentsPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => window.open(document.fileUrl, '_blank')}
+                                onClick={() => handleDownload(document)}
                               >
                                 <Download className="h-4 w-4" />
                               </Button>
@@ -638,6 +666,7 @@ export default function DocumentsPage() {
                       onEdit={() => openEditDialog(document)}
                       onDelete={() => handleDelete(document.id)}
                       onView={() => setViewingDocument(document)}
+                      onDownload={() => handleDownload(document)}
                     />
                   ))}
                 </div>
