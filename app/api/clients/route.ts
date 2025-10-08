@@ -16,9 +16,21 @@ interface Client {
 }
 
 interface CreateClientRequest {
-  name: string
-  email: string
+  clientType?: string
+  firstName?: string
+  lastName?: string
+  companyName?: string
+  email?: string
   phone?: string
+  mobile?: string
+  address?: string
+  city?: string
+  postalCode?: string
+  country?: string
+  personalId?: string
+  taxId?: string
+  notes?: string
+  status?: string
 }
 
 /**
@@ -89,37 +101,59 @@ export async function POST(request: NextRequest) {
 
     const body: CreateClientRequest = await request.json()
 
-    // Validate required fields
-    if (!body.name || !body.email) {
-      return NextResponse.json(
-        { error: 'Ime i email su obavezni' },
-        { status: 400 }
-      )
+    // Validate required fields based on client type
+    if (body.clientType === 'COMPANY') {
+      if (!body.companyName) {
+        return NextResponse.json(
+          { error: 'Naziv tvrtke je obavezan' },
+          { status: 400 }
+        )
+      }
+    } else {
+      if (!body.firstName || !body.lastName) {
+        return NextResponse.json(
+          { error: 'Ime i prezime su obavezni' },
+          { status: 400 }
+        )
+      }
     }
 
-    // Check if client with same email already exists in organization
-    const existingClient = await db.client.findFirst({
-      where: {
-        email: body.email,
-        organizationId: user.organizationId,
-        deletedAt: null
-      }
-    })
+    // Check if client with same email already exists in organization (only if email is provided)
+    if (body.email) {
+      const existingClient = await db.client.findFirst({
+        where: {
+          email: body.email,
+          organizationId: user.organizationId,
+          deletedAt: null
+        }
+      })
 
-    if (existingClient) {
-      return NextResponse.json(
-        { error: 'Klijent s ovom email adresom već postoji' },
-        { status: 409 }
-      )
+      if (existingClient) {
+        return NextResponse.json(
+          { error: 'Klijent s ovom email adresom već postoji' },
+          { status: 409 }
+        )
+      }
     }
 
     // Create new client
     const newClient = await db.client.create({
       data: {
-        firstName: body.name.split(' ')[0] || '',
-        lastName: body.name.split(' ').slice(1).join(' ') || '',
+        clientType: body.clientType || 'INDIVIDUAL',
+        firstName: body.firstName,
+        lastName: body.lastName,
+        companyName: body.companyName,
         email: body.email,
         phone: body.phone,
+        mobile: body.mobile,
+        address: body.address,
+        city: body.city,
+        postalCode: body.postalCode,
+        country: body.country || 'Croatia',
+        personalId: body.personalId,
+        taxId: body.taxId,
+        notes: body.notes,
+        status: body.status || 'ACTIVE',
         organizationId: user.organizationId,
       },
       select: {
