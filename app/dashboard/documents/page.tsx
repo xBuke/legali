@@ -69,6 +69,7 @@ type Case = {
   id: string
   caseNumber: string
   title: string
+  clientId: string
 }
 
 type Client = {
@@ -114,6 +115,16 @@ export default function DocumentsPage() {
     fetchCases()
     fetchClients()
   }, [])
+
+  // Auto-populate client when case is selected
+  useEffect(() => {
+    if (formData.caseId && formData.caseId !== 'none') {
+      const selectedCase = cases.find(c => c.id === formData.caseId)
+      if (selectedCase?.clientId) {
+        setFormData(prev => ({ ...prev, clientId: selectedCase.clientId }))
+      }
+    }
+  }, [formData.caseId, cases])
 
   async function fetchDocuments() {
     try {
@@ -756,10 +767,18 @@ export default function DocumentsPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="clientId">Klijent</Label>
+              <Label htmlFor="clientId">
+                Klijent
+                {formData.caseId && formData.caseId !== 'none' && (
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    (automatski iz predmeta)
+                  </span>
+                )}
+              </Label>
               <Select
                 value={formData.clientId}
                 onValueChange={(value) => setFormData({ ...formData, clientId: value })}
+                disabled={formData.caseId !== '' && formData.caseId !== 'none'}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Odaberite klijenta" />
