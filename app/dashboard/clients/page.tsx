@@ -86,9 +86,20 @@ export default function ClientsPage() {
       const response = await fetch('/api/clients')
       if (response.ok) {
         const data = await response.json()
-        setClients(data)
+        // Extract clients array from response object
+        setClients(data.clients || [])
+      } else {
+        console.error('Failed to fetch clients:', response.status)
+        setClients([])
+        toast({
+          title: 'Greška',
+          description: 'Nije moguće dohvatiti klijente',
+          variant: 'destructive',
+        })
       }
     } catch (error) {
+      console.error('Error fetching clients:', error)
+      setClients([])
       toast({
         title: 'Greška',
         description: 'Nije moguće dohvatiti klijente',

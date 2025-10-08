@@ -120,9 +120,19 @@ export default function DocumentsPage() {
       const response = await fetch('/api/documents')
       if (response.ok) {
         const data = await response.json()
-        setDocuments(data)
+        setDocuments(data.documents || [])
+      } else {
+        console.error('Failed to fetch documents:', response.status)
+        setDocuments([])
+        toast({
+          title: 'Greška',
+          description: 'Nije moguće dohvatiti dokumente',
+          variant: 'destructive',
+        })
       }
     } catch (error) {
+      console.error('Error fetching documents:', error)
+      setDocuments([])
       toast({
         title: 'Greška',
         description: 'Nije moguće dohvatiti dokumente',
@@ -138,8 +148,14 @@ export default function DocumentsPage() {
       const response = await fetch('/api/cases')
       if (response.ok) {
         const data = await response.json()
-        setCases(data)
+        setCases(data.cases || [])
+      } else {
+        console.error('Failed to fetch cases:', response.status)
+        setCases([])
       }
+    } catch (error) {
+      console.error('Error fetching cases:', error)
+      setCases([])
     } catch (error) {
       console.error('Error fetching cases:', error)
     }

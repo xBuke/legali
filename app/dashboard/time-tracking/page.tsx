@@ -160,10 +160,14 @@ export default function TimeTrackingPage() {
       const response = await fetch('/api/cases');
       if (response.ok) {
         const data = await response.json();
-        setCases(data);
+        setCases(data.cases || []);
+      } else {
+        console.error('Failed to load cases:', response.status);
+        setCases([]);
       }
     } catch (error) {
       console.error('Error loading cases:', error);
+      setCases([]);
     }
   };
 

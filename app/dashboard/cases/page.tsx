@@ -122,9 +122,19 @@ export default function CasesPage() {
       const response = await fetch('/api/cases')
       if (response.ok) {
         const data = await response.json()
-        setCases(data)
+        setCases(data.cases || [])
+      } else {
+        console.error('Failed to fetch cases:', response.status)
+        setCases([])
+        toast({
+          title: 'Greška',
+          description: 'Nije moguće dohvatiti predmete',
+          variant: 'destructive',
+        })
       }
     } catch (error) {
+      console.error('Error fetching cases:', error)
+      setCases([])
       toast({
         title: 'Greška',
         description: 'Nije moguće dohvatiti predmete',

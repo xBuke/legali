@@ -95,8 +95,10 @@ export default function InvoicesPage() {
       const response = await fetch('/api/invoices');
       if (response.ok) {
         const data = await response.json();
-        setInvoices(data);
+        setInvoices(data.invoices || []);
       } else {
+        console.error('Failed to load invoices:', response.status);
+        setInvoices([]);
         toast({
           title: 'Greška',
           description: 'Greška pri učitavanju računa',
@@ -105,6 +107,7 @@ export default function InvoicesPage() {
       }
     } catch (error) {
       console.error('Error loading invoices:', error);
+      setInvoices([]);
       toast({
         title: 'Greška',
         description: 'Greška pri učitavanju računa',
