@@ -4,6 +4,10 @@ import { db } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Separator } from '@/components/ui/separator'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   Users, 
   Briefcase, 
@@ -381,6 +385,7 @@ export default async function DashboardPage() {
       default:
         return <Clock className="h-4 w-4 text-gray-500" />
     }
+
   }
 
   const formatDate = (dateString: string) => {
@@ -504,29 +509,46 @@ export default async function DashboardPage() {
         ].map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.name} className="p-3 md:p-6 w-full grid-overflow-fix card-laptop">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0">
-                <CardTitle className="text-xs md:text-sm font-medium leading-tight text-responsive-truncate pr-2 laptop-text">
-                  {stat.name}
-                </CardTitle>
-                <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              </CardHeader>
-              <CardContent className="px-0">
-                <div className="text-lg md:text-xl lg:text-2xl font-bold text-responsive-truncate">{stat.value}</div>
-                <div className="flex items-center gap-1 mt-1">
-                  {getTrendIcon(stat.trend)}
-                  <span className={`text-xs ${getTrendColor(stat.trend)}`}>
-                    {stat.percentage}%
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground leading-tight text-responsive-truncate laptop-text">
-                  {stat.description}
-                </p>
-              </CardContent>
-            </Card>
+            <TooltipProvider key={stat.name}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Card className="p-3 md:p-6 w-full grid-overflow-fix card-laptop hover:shadow-md transition-shadow cursor-pointer">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 px-0">
+                      <CardTitle className="text-xs md:text-sm font-medium leading-tight text-responsive-truncate pr-2 laptop-text">
+                        {stat.name}
+                      </CardTitle>
+                      <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    </CardHeader>
+                    <CardContent className="px-0">
+                      <div className="text-lg md:text-xl lg:text-2xl font-bold text-responsive-truncate">{stat.value}</div>
+                      <div className="flex items-center gap-1 mt-1">
+                        {getTrendIcon(stat.trend)}
+                        <span className={`text-xs ${getTrendColor(stat.trend)}`}>
+                          {stat.percentage}%
+                        </span>
+                      </div>
+                      <div className="mt-2">
+                        <Progress 
+                          value={Math.min(stat.percentage, 100)} 
+                          className="h-1"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-tight text-responsive-truncate laptop-text mt-2">
+                        {stat.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Kliknite za detalje o {stat.name.toLowerCase()}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )
         })}
       </div>
+
+      <Separator className="my-6" />
 
       {/* Recent Activity - Mobile Optimized */}
       <Card>
@@ -538,13 +560,17 @@ export default async function DashboardPage() {
         </CardHeader>
         <CardContent>
           {activities.length === 0 ? (
-            <div className="text-center py-8 md:py-12 text-muted-foreground">
-              <Briefcase className="h-8 w-8 md:h-12 md:w-12 mx-auto mb-3 md:mb-4 opacity-50" />
-              <p className="text-sm md:text-base">Još nema aktivnosti</p>
-              <p className="text-xs md:text-sm mt-2">
-                Započnite dodavanjem klijenata i predmeta
-              </p>
-            </div>
+            <Alert>
+              <Briefcase className="h-4 w-4" />
+              <AlertDescription>
+                <div className="text-center py-4">
+                  <p className="text-sm font-medium">Još nema aktivnosti</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Započnite dodavanjem klijenata i predmeta
+                  </p>
+                </div>
+              </AlertDescription>
+            </Alert>
           ) : (
             <div className="space-y-3">
               {activities.map((activity) => (
@@ -558,6 +584,7 @@ export default async function DashboardPage() {
                       <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
                         {formatDate(activity.timestamp)}
                       </span>
+
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       {activity.user}
@@ -587,3 +614,5 @@ export default async function DashboardPage() {
     </div>
   )
 }
+
+
