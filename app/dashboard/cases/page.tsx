@@ -150,10 +150,14 @@ export default function CasesPage() {
       const response = await fetch('/api/clients')
       if (response.ok) {
         const data = await response.json()
-        setClients(data)
+        setClients(Array.isArray(data.clients) ? data.clients : [])
+      } else {
+        console.error('Failed to fetch clients:', response.status)
+        setClients([])
       }
     } catch (error) {
       console.error('Error fetching clients:', error)
+      setClients([])
     }
   }
 
@@ -162,10 +166,14 @@ export default function CasesPage() {
       const response = await fetch('/api/users')
       if (response.ok) {
         const data = await response.json()
-        setUsers(data)
+        setUsers(Array.isArray(data) ? data : [])
+      } else {
+        console.error('Failed to fetch users:', response.status)
+        setUsers([])
       }
     } catch (error) {
       console.error('Error fetching users:', error)
+      setUsers([])
     }
   }
 

@@ -248,7 +248,7 @@ export function CaseSearchFilters({
                     <SelectValue placeholder="Odaberite klijenta" />
                   </SelectTrigger>
                   <SelectContent>
-                    {clients.map((client) => (
+                    {(clients || []).map((client) => (
                       <SelectItem key={client.id} value={client.id}>
                         {client.clientType === 'COMPANY'
                           ? client.companyName
@@ -274,7 +274,7 @@ export function CaseSearchFilters({
                     <SelectValue placeholder="Odaberite korisnika" />
                   </SelectTrigger>
                   <SelectContent>
-                    {users.map((user) => (
+                    {(users || []).map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {`${user.firstName} ${user.lastName}`}
                       </SelectItem>
@@ -376,7 +376,7 @@ export function CaseSearchFilters({
             </Badge>
           ))}
           {filters.client.map((clientId) => {
-            const client = clients.find((c) => c.id === clientId)
+            const client = (clients || []).find((c) => c.id === clientId)
             return (
               <Badge key={clientId} variant="secondary" className="gap-1">
                 {client?.clientType === 'COMPANY'
@@ -394,7 +394,7 @@ export function CaseSearchFilters({
             )
           })}
           {filters.assignedTo.map((userId) => {
-            const user = users.find((u) => u.id === userId)
+            const user = (users || []).find((u) => u.id === userId)
             return (
               <Badge key={userId} variant="secondary" className="gap-1">
                 {`${user?.firstName} ${user?.lastName}`}
