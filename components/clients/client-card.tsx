@@ -18,7 +18,7 @@ type Client = {
   phone?: string
   status: string
   createdAt: string
-  _count: {
+  _count?: {
     cases: number
     documents: number
   }
@@ -89,8 +89,8 @@ export function ClientCard({ client, viewMode, onEdit, onDelete }: ClientCardPro
                 <span>Registriran: {format(new Date(client.createdAt), 'dd.MM.yyyy', { locale: hr })}</span>
               </div>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span>{client._count.cases} predmeta</span>
-                <span>{client._count.documents} dokumenata</span>
+                <span>{client._count?.cases || 0} predmeta</span>
+                <span>{client._count?.documents || 0} dokumenata</span>
               </div>
             </div>
           )}
@@ -103,7 +103,7 @@ export function ClientCard({ client, viewMode, onEdit, onDelete }: ClientCardPro
                   <span className="truncate">{client.email}</span>
                 </div>
               )}
-              <span>{client._count.cases} predmeta</span>
+              <span>{client._count?.cases || 0} predmeta</span>
             </div>
           )}
         </div>
